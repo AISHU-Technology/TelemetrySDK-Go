@@ -98,17 +98,18 @@ type InternalSpan interface {
 }
 
 type internalSpanV1 struct {
-	Records  []Field
-	Metrics  []Field
-	httpSpan []Field
-	transfer func(InternalSpan) // use to transfer span's ownership
-	children []InternalSpan
-	id       string
-	wg       sync.WaitGroup
-	time     time.Time
-	lock     sync.RWMutex
-	traceID  string
-	parentID string
+	Records             []Field
+	Metrics             []Field
+	httpSpan            []Field
+	transfer            func(InternalSpan) // use to transfer span's ownership
+	children            []InternalSpan
+	id                  string
+	wg                  sync.WaitGroup
+	time                time.Time
+	lock                sync.RWMutex
+	traceID             string
+	parentID            string
+	externalParentField string
 }
 
 var Pool = sync.Pool{
@@ -164,6 +165,7 @@ func (l *internalSpanV1) newChildren() *internalSpanV1 {
 		l.wg.Done()
 	}, l.traceID).(*internalSpanV1)
 	s.SetParentID(l.id)
+	s.externalParentField = l.externalParentField
 	l.children = append(l.children, s)
 	return s
 }
@@ -173,16 +175,16 @@ func (l *internalSpanV1) ListChildren() []InternalSpan {
 }
 
 func (l *internalSpanV1) Signal() {
-	// go func() {
-	// 	l.wg.Wait()
-	// 	if l.transfer != nil {
-	// 		l.transfer(l)
-	// 	}
-	// }()
-	l.wg.Wait()
-	if l.transfer != nil {
-		l.transfer(l)
-	}
+	go func() {
+		l.wg.Wait()
+		if l.transfer != nil {
+			l.transfer(l)
+		}
+	}()
+	// l.wg.Wait()
+	// if l.transfer != nil {
+	// 	l.transfer(l)
+	// }
 }
 
 func (l *internalSpanV1) Free() {
@@ -232,14 +234,17 @@ func (l *internalSpanV1) ParentID() string {
 
 func (l *internalSpanV1) SetParentID(ID string) {
 	l.parentID = ID
+	l.externalParentField = ID
 }
 
 // NewHttpSpan create a httpspan
 // user should write data to span before span.signal
 func (l *internalSpanV1) NewExternalSpan() *ExternalSpanField {
 	span := &ExternalSpanField{
-		TraceID: l.traceID,
-		Id:      GenSpanID(),
+		traceID:          l.traceID,
+		id:               GenSpanID(),
+		parentID:         l.externalParentField,
+		internalParentID: l.id,
 	}
 	l.httpSpan = append(l.httpSpan, span)
 	return span

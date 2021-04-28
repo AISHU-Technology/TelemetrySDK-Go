@@ -29,10 +29,9 @@ import (
 	"span/encoder"
 	"span/field"
 	"span/open_standard"
+	"span/runtime"
 	"sync"
 	"testing"
-
-	"span"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -71,7 +70,7 @@ func BenchmarkEncodeAndMalloc(b *testing.B) {
 		writer := &open_standard.OpenTelemetry{
 			Encoder: encoder.NewJsonEncoder(ioutil.Discard),
 		}
-		logger := span.NewRuntime(writer, field.NewSpanFromPool)
+		logger := runtime.NewRuntime(writer, field.NewSpanFromPool)
 		go logger.Run()
 		defer logger.Signal()
 
@@ -188,12 +187,7 @@ func BenchmarkDiscardWrite(b *testing.B) {
 	})
 
 	b.Run("Myspan/runtime", func(b *testing.B) {
-		// tmp := &writer.JsonWriter{
-		// 	W: ioutil.Discard,
-		// }
-
-		r := fakeSpanStructField()
-		logger := span.NewRuntime(&open_standard.OpenTelemetry{
+		logger := runtime.NewRuntime(&open_standard.OpenTelemetry{
 			Encoder: encoder.NewJsonEncoder(ioutil.Discard),
 		}, field.NewSpanFromPool)
 		go logger.Run()
@@ -201,7 +195,7 @@ func BenchmarkDiscardWrite(b *testing.B) {
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				// r.Write(tmp)
+				r := fakeSpanStructField()
 				l := logger.Children()
 				l.Record(r)
 				l.Signal()
@@ -210,7 +204,7 @@ func BenchmarkDiscardWrite(b *testing.B) {
 	})
 
 	b.Run("Myspan/object", func(b *testing.B) {
-		logger := span.NewRuntime(&open_standard.OpenTelemetry{
+		logger := runtime.NewRuntime(&open_standard.OpenTelemetry{
 			Encoder: encoder.NewJsonEncoder(ioutil.Discard),
 		}, field.NewSpanFromPool)
 		go logger.Run()
@@ -219,7 +213,6 @@ func BenchmarkDiscardWrite(b *testing.B) {
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				// r.Write(w)
 				r := fakeSpanStructField()
 				l := logger.Children()
 				l.Record(r)
@@ -282,7 +275,7 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 		// }
 
 		r := fakeSpanStructField()
-		logger := span.NewRuntime(&open_standard.OpenTelemetry{
+		logger := runtime.NewRuntime(&open_standard.OpenTelemetry{
 			Encoder: encoder.NewJsonEncoder(ioutil.Discard),
 		}, field.NewSpanFromPool)
 		go logger.Run()
@@ -304,7 +297,7 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 			fmt.Println(err)
 		}
 		tmp1 := bufio.NewWriter(tmp)
-		logger := span.NewRuntime(&open_standard.OpenTelemetry{
+		logger := runtime.NewRuntime(&open_standard.OpenTelemetry{
 			Encoder: encoder.NewJsonEncoder(tmp1),
 		}, field.NewSpanFromPool)
 		go logger.Run()
@@ -382,7 +375,7 @@ func BenchmarkFileWrite(b *testing.B) {
 			fmt.Println(err)
 		}
 		tmp1 := bufio.NewWriter(tmp)
-		logger := span.NewRuntime(&open_standard.OpenTelemetry{
+		logger := runtime.NewRuntime(&open_standard.OpenTelemetry{
 			Encoder: encoder.NewJsonEncoder(tmp1),
 		}, field.NewSpanFromPool)
 		go logger.Run()
@@ -392,7 +385,6 @@ func BenchmarkFileWrite(b *testing.B) {
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				// r.Write(w)
 				r := fakeSpanStructField()
 				l := logger.Children()
 				l.Record(r)

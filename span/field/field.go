@@ -48,11 +48,11 @@ func (f TimeField) Type() FieldTpye {
 
 func (f TimeField) protect() {}
 
-func (f ArrayField) Type() FieldTpye {
+func (f *ArrayField) Type() FieldTpye {
 	return ArrayType
 }
 
-func (f ArrayField) protect() {}
+func (f *ArrayField) protect() {}
 
 func (f *StructField) Type() FieldTpye {
 	return StructType

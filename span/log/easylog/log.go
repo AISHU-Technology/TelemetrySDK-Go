@@ -2,11 +2,11 @@ package log
 
 import (
 	"os"
-	"span"
 	"span/encoder"
 	"span/field"
 	"span/log"
 	"span/open_standard"
+	"span/runtime"
 )
 
 var _defaultSamplelogger *log.SamplerLogger
@@ -15,9 +15,10 @@ func init() {
 	writer := &open_standard.OpenTelemetry{
 		Encoder: encoder.NewJsonEncoder(os.Stdout),
 	}
-	deafaultRuntime := span.NewRuntime(writer, field.NewSpanFromPool)
+	deafaultRuntime := runtime.NewRuntime(writer, field.NewSpanFromPool)
 	_defaultSamplelogger = log.NewdefaultSamplerLogger()
-	_defaultSamplelogger.Runtime = deafaultRuntime
+	_defaultSamplelogger.SetRuntime(deafaultRuntime)
+	// _defaultSamplelogger.Runtime = deafaultRuntime
 	go deafaultRuntime.Run()
 }
 
@@ -26,6 +27,10 @@ func init() {
 func SetLogger(l *log.SamplerLogger) {
 	_defaultSamplelogger.Close()
 	_defaultSamplelogger = l
+}
+
+func Close() {
+	_defaultSamplelogger.Close()
 }
 
 func TraceField(message field.Field, l field.InternalSpan) {

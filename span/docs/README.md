@@ -178,6 +178,134 @@
 
 ### 4.3.2 example
 
+例子中包含单线程日志数据记录和多线程下数据记录的操作。需要注意的是`InternalSpan`的操作是非线程安全的，并且在使用结束后必须要通过`Signal`手工释放
+
+```go
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"span/encoder"
+	"span/field"
+	"span/open_standard"
+	"span/runtime"
+	"testing"
+	"time"
+
+	"gotest.tools/assert"
+)
+
+
+func TestSamplerLogger(t *testing.T) {
+	// 0. create logger and start runtime
+	buf := bytes.NewBuffer(nil)
+	l := NewdefaultSamplerLogger()
+	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
+		Encoder: encoder.NewJsonEncoder(buf),
+	}, field.NewSpanFromPool)
+	l.SetRuntime(run)
+	l.LogLevel = AllLevel
+	go run.Run()
+
+	// 1. first create a root internalSpan
+	root := l.NewInternalSpan()
+
+	// 1.0 set trace info for root internalSpan
+	traceID := field.GenSpanID()
+	externalParentID := field.GenSpanID()
+	l.SetTraceID(traceID, root)
+	l.SetParentID(externalParentID, root)
+
+	// 1.1 log message into roor internalSpan
+	l.Debug("debug string message", root)
+	l.DebugField(field.StringField("debug field message"), root)
+
+	// 1.2 create a child internalSpan from root for a sub thread/task
+	child0 := l.ChildrenInternalSpan(root)
+
+	// 1.3 start a new thread for sub task
+	go func() {
+		// 2.1 log message into child internalSpan for child thread
+		l.Debug("debug string", child0)
+
+		// 2.X signal child0
+		child0.Signal()
+	}()
+
+	// 1.4 record some metric into root internalSpan
+	m := field.Mmetric{}
+	m.Set("root thread", 0.0)
+	m.AddLabel("root")
+	m.AddLabel("metric")
+	m.AddAttribute("root", "root span")
+	l.RecordMetrics(m, root)
+
+	// 1.5 record first external request into root internalSpan
+	es, err := l.NewExternalSpan(root)
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+
+	// 1.5.1 get trace info for some work
+	tID := es.TraceID()
+	espID := es.ParentID()
+	parentID := es.ParentID()
+	spanID := es.ID()
+	// 1.5.2 write info to external span
+	es.StartTime = time.Now()
+	es.EndTime = time.Now()
+	es.Attributes.Set("method", field.StringField("test"))
+	es.Attributes.Set("host", field.StringField("test"))
+	es.Attributes.Set("attr0", field.StringField(tID))
+	es.Attributes.Set("attr1", field.StringField(espID))
+	es.Attributes.Set("attr2", field.StringField(parentID))
+	es.Attributes.Set("attr3", field.StringField(spanID))
+
+	// 1.X signal root internalSpan
+	root.Signal()
+
+	// final close runtime and clean work space
+	l.Close()
+	// run.Signal()
+
+	// check test result
+	assert.Equal(t, traceID, tID)
+	assert.Equal(t, externalParentID, espID)
+
+	cap := map[string]interface{}{}
+	bytes := buf.Bytes()
+	left := 0
+	i := 0
+	n := 0
+	for ; i < len(bytes); i += 1 {
+		if bytes[i] == '\n' {
+			if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+				t.Error(err)
+				t.FailNow()
+			} else {
+				n += 1
+				fmt.Println(string(bytes[left:i]))
+				fmt.Println()
+			}
+			left = i + 1
+		}
+	}
+	if left < len(bytes) {
+		if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+			t.Error(err)
+			t.FailNow()
+		} else {
+			n += 1
+			fmt.Println(string(bytes[left:i]))
+		}
+	}
+
+	// fmt.Print(buf.String())
+}
+```
+
 
 
 

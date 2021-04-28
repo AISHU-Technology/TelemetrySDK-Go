@@ -1,4 +1,4 @@
-package span
+package runtime
 
 import (
 	"os"
@@ -29,8 +29,55 @@ type Runtime struct {
 	stop    chan int
 	wg      *sync.WaitGroup
 	// id      uint64
-	close bool
-	w     open_standard.Writer
+	close     bool
+	closeLock sync.RWMutex
+	w         open_standard.Writer
+	once      sync.Once
+}
+
+// NewRuntime return a runtime
+func NewRuntime(w open_standard.Writer, builder func(func(field.InternalSpan), string) field.InternalSpan) *Runtime {
+	r := &Runtime{
+		cache:     make(chan field.InternalSpan, 100),
+		builder:   builder,
+		stop:      make(chan int, 1),
+		wg:        &sync.WaitGroup{},
+		close:     false,
+		closeLock: sync.RWMutex{},
+		w:         w,
+		once:      sync.Once{},
+	}
+
+	return r
+}
+
+// Children() return a logger span
+// if Runtime has been close return nil
+// user should return span's onwership after Span is useless by Span.Signal()
+func (r *Runtime) Children() field.InternalSpan {
+	r.closeLock.RLock()
+	defer r.closeLock.RUnlock()
+	if r.close {
+		return nil
+	}
+	s := r.builder(r.transfer, "")
+	r.wg.Add(1)
+	return s
+}
+
+// stop runtime thread
+func (r *Runtime) Signal() {
+	r.closeLock.Lock()
+	r.wg.Wait()
+	r.once.Do(func() {
+		r.stop <- 0
+		r.close = true
+	})
+	r.closeLock.Unlock()
+}
+
+func (r *Runtime) transfer(s field.InternalSpan) {
+	r.cache <- s
 }
 
 // Run will deal Runtime's span in current go runtine
@@ -62,14 +109,12 @@ func (r *Runtime) Run() {
 			go r.Signal()
 		case <-r.stop:
 			close(r.cache)
-			// log.Info("stoping")
-			// fmt.Println("stoping")
-			// return
 		case s, ok := <-(r.cache):
 			if !ok {
 				// sugar.Info("logger end, run: ", time.Now().Second()-start)
 				// fmt.Println("logger end, run: ", time.Now().Second()-start)
 				// r.w.Close()
+				r.close = true
 				return
 			}
 
@@ -97,41 +142,4 @@ func (r *Runtime) Run() {
 		}
 	}
 
-}
-
-// NewRuntime return a runtime
-func NewRuntime(w open_standard.Writer, builder func(func(field.InternalSpan), string) field.InternalSpan) *Runtime {
-	r := &Runtime{
-		cache:   make(chan field.InternalSpan, 100),
-		builder: builder,
-		stop:    make(chan int, 1),
-		wg:      &sync.WaitGroup{},
-		close:   false,
-		w:       w,
-	}
-
-	return r
-}
-
-// Children() return a logger span
-// if Runtime has been close return nil
-// user should return span's onwership after Span is useless by Span.Signal()
-func (r *Runtime) Children() field.InternalSpan {
-	if r.close {
-		return nil
-	}
-	s := r.builder(r.transfer, "")
-	r.wg.Add(1)
-	return s
-}
-
-// stop runtime thread
-func (r *Runtime) Signal() {
-	r.close = true
-	r.wg.Wait()
-	r.stop <- 0
-}
-
-func (r *Runtime) transfer(s field.InternalSpan) {
-	r.cache <- s
 }

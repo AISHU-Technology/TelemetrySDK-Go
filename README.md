@@ -1,1 +1,1 @@
-span/README.md
+span/docs/README.md

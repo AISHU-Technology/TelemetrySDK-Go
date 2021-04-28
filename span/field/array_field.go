@@ -4,7 +4,7 @@ type ArrayField []Field
 
 func MallocArrayField(n int) *ArrayField {
 
-	res := ArrayField(make([]Field, 0, n))
+	var res = ArrayField(make([]Field, 0, n))
 	return &res
 }
 
@@ -18,7 +18,7 @@ func (f *ArrayField) Length() int {
 
 func (f *ArrayField) At(i int) (Field, error) {
 	if i >= f.Length() {
-		return nil, OverIndexError{}
+		return nil, OverIndexError
 	}
 	return (*f)[i], nil
 }

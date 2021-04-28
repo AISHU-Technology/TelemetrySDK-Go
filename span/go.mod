@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/apex/log v1.9.0
 	github.com/go-kit/kit v0.10.0
+	github.com/gogo/protobuf v1.2.1
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/pkg/errors v0.9.1 // indirect

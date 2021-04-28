@@ -55,13 +55,13 @@ func (js *JsonEncoder) write(f field.Field) error {
 	default:
 		return nil
 	case field.IntType:
-		v := int(f.(field.IntField))
-		bytes := js.string2Bytes(strconv.Itoa(v))
+		v := strconv.Itoa(int(f.(field.IntField)))
+		bytes := js.string2Bytes(v)
 		_, res := w.WriteBytes(bytes)
 		return res
 	case field.Float64Type:
-		v := float64(f.(field.Float64Field))
-		bytes := js.string2Bytes(strconv.FormatFloat(v, 'f', -1, 64))
+		v := strconv.FormatFloat(float64(f.(field.Float64Field)), 'f', -1, 64)
+		bytes := js.string2Bytes(v)
 		_, res := w.WriteBytes(bytes)
 		return res
 	case field.StringType:
@@ -71,20 +71,20 @@ func (js *JsonEncoder) write(f field.Field) error {
 		_, res := w.WriteBytes(_quotation)
 		return res
 	case field.TimeType:
-		v := time.Time(f.(field.TimeField)).Unix()
-		bytes := js.string2Bytes(strconv.FormatInt(v, 10))
+		v := strconv.FormatInt(time.Time(f.(field.TimeField)).Unix(), 10)
+		bytes := js.string2Bytes(v)
 		_, res := w.WriteBytes(bytes)
 		return res
 	case field.ArrayType:
-		v := f.(field.ArrayField)
+		v := f.(*field.ArrayField)
 		w.WriteBytes(_leftBracket)
 		i := 0
-		for ; i < len(v)-1; i += 1 {
-			js.write(v[i])
+		for ; i < len(*v)-1; i += 1 {
+			js.write((*v)[i])
 			w.WriteBytes(_seperator)
 		}
-		if i < len(v) {
-			js.write(v[i])
+		if i < len(*v) {
+			js.write((*v)[i])
 		}
 		_, res := w.WriteBytes(_rightBracket)
 		return res
@@ -129,7 +129,7 @@ func (js *JsonEncoder) write(f field.Field) error {
 		js.safeWriteString("Labels")
 		w.WriteBytes(_quotation)
 		w.WriteBytes(_colon)
-		js.write(m.Labels)
+		js.write(&m.Labels)
 
 		_, res := w.WriteBytes(_rightBigBracket)
 		return res
@@ -142,7 +142,25 @@ func (js *JsonEncoder) write(f field.Field) error {
 		w.WriteBytes(_quotation)
 		w.WriteBytes(_colon)
 		w.WriteBytes(_quotation)
-		js.WriteString(span.TraceID)
+		js.WriteString(span.TraceID())
+		w.WriteBytes(_quotation)
+		w.WriteBytes(_seperator)
+
+		w.WriteBytes(_quotation)
+		js.safeWriteString("ParentId")
+		w.WriteBytes(_quotation)
+		w.WriteBytes(_colon)
+		w.WriteBytes(_quotation)
+		js.WriteString(span.ParentID())
+		w.WriteBytes(_quotation)
+		w.WriteBytes(_seperator)
+
+		w.WriteBytes(_quotation)
+		js.safeWriteString("InternalParentId")
+		w.WriteBytes(_quotation)
+		w.WriteBytes(_colon)
+		w.WriteBytes(_quotation)
+		js.WriteString(span.InternalParentID())
 		w.WriteBytes(_quotation)
 		w.WriteBytes(_seperator)
 
@@ -151,16 +169,7 @@ func (js *JsonEncoder) write(f field.Field) error {
 		w.WriteBytes(_quotation)
 		w.WriteBytes(_colon)
 		w.WriteBytes(_quotation)
-		js.WriteString(span.Id)
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("SpanId")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		w.WriteBytes(_quotation)
-		js.WriteString(span.Id)
+		js.WriteString(span.ID())
 		w.WriteBytes(_quotation)
 		w.WriteBytes(_seperator)
 
@@ -168,16 +177,14 @@ func (js *JsonEncoder) write(f field.Field) error {
 		js.safeWriteString("StartTime")
 		w.WriteBytes(_quotation)
 		w.WriteBytes(_colon)
-		js.Write(field.TimeField(span.StartTime))
+		js.write(field.TimeField(span.StartTime))
 		w.WriteBytes(_seperator)
 
 		w.WriteBytes(_quotation)
 		js.safeWriteString("EndTime")
 		w.WriteBytes(_quotation)
 		w.WriteBytes(_colon)
-		w.WriteBytes(_quotation)
-		js.Write(field.TimeField(span.EndTime))
-		w.WriteBytes(_quotation)
+		js.write(field.TimeField(span.EndTime))
 		w.WriteBytes(_seperator)
 
 		w.WriteBytes(_quotation)
@@ -253,7 +260,8 @@ func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 
 func (js *JsonEncoder) WriteString(c string) (int, error) {
 	b := js.string2Bytes(c)
-	return js.W.Write(b)
+	n, err := js.W.Write(b)
+	return n, err
 }
 
 func (js *JsonEncoder) WriteBytes(c []byte) (int, error) {

@@ -1,7 +1,12 @@
 package field
 
-type OverIndexError struct{}
+type StringError string
 
-func (e OverIndexError) Error() string {
-	return "over index"
+func (e StringError) Error() string {
+	return string(e)
 }
+
+const (
+	NilPointerError = StringError("nil pointer")
+	OverIndexError  = StringError("over index")
+)

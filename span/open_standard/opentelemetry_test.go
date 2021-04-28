@@ -8,6 +8,7 @@ import (
 	"span/encoder"
 	"span/field"
 	"testing"
+	"time"
 )
 
 func getTestMetric() field.Mmetric {
@@ -63,25 +64,54 @@ func setTestSpance(s field.InternalSpan) {
 }
 
 func TestOpenTelemetryWrite(t *testing.T) {
-	s := field.NewSpanFromPool(nil, "")
-	setTestSpance(s)
+
+	rootSpan := field.NewSpanFromPool(nil, "")
+
+	// 1.0 set external traceID and parentID
+	rootSpan.SetParentID(field.GenSpanID())
+	rootSpan.SetTraceID(field.GenTraceID())
+
+	// 1.1 record event to span
+	setTestSpance(rootSpan)
 	b := bytes.NewBuffer(nil)
 
-	s.Metric(getTestMetric())
-	s.Metric(getTestMetric())
-	s.Metric(getTestMetric())
+	// 1.2 record metrics to span
+	rootSpan.Metric(getTestMetric())
+	rootSpan.Metric(getTestMetric())
+	rootSpan.Metric(getTestMetric())
 
-	c0 := s.Children()
-	setTestSpance(c0)
-	c0.Signal()
+	// 1.3 sub task or thread need new children Span
+	childrenSpan0 := rootSpan.Children()
+
+	// 1.4 Get external span from internalSpan
+	external0 := rootSpan.NewExternalSpan()
+	// 1.4.1 record info to external span
+	external0.StartTime = time.Now()
+	external0.EndTime = time.Now()
+	// external0.
+
+	// 1.5. won't use root span, free it
+	rootSpan.Signal()
+
+	// 2.1 record sub span
+	setTestSpance(childrenSpan0)
+
+	// 2.2 write external span
+	es0 := childrenSpan0.NewExternalSpan()
+	es0.Attributes.Set("test.opentelemetry", field.StringField("telemetry"))
+	es0.Attributes.Set("method", field.StringField("test telemetry"))
+
+	// 2.2 won't use sub span, free sub span
+	childrenSpan0.Signal()
 
 	enc := encoder.NewJsonEncoder(b)
 	open := OpenTelemetry{
 		Encoder: enc,
 	}
-	err := open.Write(s)
+	err := open.Write(rootSpan)
 	if err != nil {
 		t.Error(err)
+		t.FailNow()
 	}
 
 	// check result
@@ -89,10 +119,14 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	bytes := b.Bytes()
 	left := 0
 	i := 0
+	n := 0
 	for ; i < len(bytes); i += 1 {
 		if bytes[i] == '\n' {
 			if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
 				t.Error(err)
+				t.FailNow()
+			} else {
+				n += 1
 			}
 			left = i + 1
 		}
@@ -100,9 +134,11 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	if left < len(bytes) {
 		if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
 			t.Error(err)
+			t.FailNow()
+		} else {
+			n += 1
 		}
 	}
 
-	fmt.Println("--------log-------------:")
 	fmt.Print(b.String())
 }

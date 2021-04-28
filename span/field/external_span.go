@@ -20,6 +20,24 @@ type ExternalSpanField struct {
 	StartTime  time.Time
 	EndTime    time.Time
 	// Attrs      [][2]string
-	TraceID string
-	Id      string
+	traceID          string
+	id               string
+	parentID         string
+	internalParentID string
+}
+
+func (f *ExternalSpanField) TraceID() string {
+	return f.traceID
+}
+
+func (f *ExternalSpanField) ID() string {
+	return f.id
+}
+
+func (f *ExternalSpanField) ParentID() string {
+	return f.parentID
+}
+
+func (f *ExternalSpanField) InternalParentID() string {
+	return f.internalParentID
 }
