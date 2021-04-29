@@ -1,2 +1,1 @@
-# TelemetryGo
-
+span/docs/README.md
