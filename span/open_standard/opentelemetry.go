@@ -1,55 +1,61 @@
 package open_standard
 
 import (
-	"span/encoder"
-	"span/field"
-	"time"
+    "span/encoder"
+    "span/field"
+    "time"
 )
 
 const (
-	rootSpan = iota
+    rootSpan = iota
 )
 
 type Writer interface {
-	Write(field.InternalSpan) error
+    Write(field.InternalSpan) error
+    Close() error
 }
 
 type OpenTelemetry struct {
-	Encoder encoder.Encoder
+    Encoder encoder.Encoder
 }
 
 func (o *OpenTelemetry) Write(t field.InternalSpan) error {
-	return o.write(t, rootSpan)
+    return o.write(t, rootSpan)
+}
+
+func (o *OpenTelemetry) Close() error {
+    return o.Encoder.Close()
 }
 
 func (o *OpenTelemetry) write(t field.InternalSpan, flag int) error {
-	var err error
-	telemetry := field.MallocStructField(8)
-	telemetry.Set("TraceId", field.StringField(t.TraceID()))
-	telemetry.Set("SpanId", field.StringField(t.ID()))
-	telemetry.Set("ParentId", field.StringField(t.ParentID()))
-	telemetry.Set("StartTime", field.TimeField(t.Time()))
-	telemetry.Set("EndTime", field.TimeField(time.Now()))
+    var err error
+    telemetry := field.MallocStructField(8)
+    telemetry.Set("TraceId", field.StringField(t.TraceID()))
+    telemetry.Set("SpanId", field.StringField(t.ID()))
+    telemetry.Set("ParentId", field.StringField(t.ParentID()))
+    telemetry.Set("StartTime", field.TimeField(t.Time()))
+    telemetry.Set("EndTime", field.TimeField(time.Now()))
 
-	events := field.ArrayField(t.ListRecord())
-	telemetry.Set("Events", &events)
-	metrics := field.ArrayField(t.ListMetric())
-	telemetry.Set("metrics", &metrics)
-	external := field.ArrayField(t.ListExternalSpan())
-	telemetry.Set("externalSpans", &external)
+    events := field.ArrayField(t.ListRecord())
+    telemetry.Set("Events", &events)
+    metrics := field.ArrayField(t.ListMetric())
+    telemetry.Set("metrics", &metrics)
+    external := field.ArrayField(t.ListExternalSpan())
+    telemetry.Set("externalSpans", &external)
 
-	err = o.Encoder.Write(telemetry)
-	if err != nil {
-		return err
-	}
+    err = o.Encoder.Write(telemetry)
+    if err != nil {
+        return err
+    }
 
-	// for _, m := range t.ListMetric() {
-	// 	err = o.Encoder.Write(&m)
-	// }
+    // for _, m := range t.ListMetric() {
+    //  err = o.Encoder.Write(&m)
+    // }
 
-	for _, c := range t.ListChildren() {
-		err = o.Write(c)
-	}
+    for _, c := range t.ListChildren() {
+        err = o.Write(c)
+    }
 
-	return err
+    return err
 }
+
