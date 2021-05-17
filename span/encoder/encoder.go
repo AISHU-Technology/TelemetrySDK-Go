@@ -34,17 +34,30 @@ type Encoder interface {
 }
 
 type JsonEncoder struct {
-    w   io.Writer
-    End []byte
-    buf *bytes.Buffer
+    w       io.Writer
+    buf     io.Writer
+    End     []byte
+    bufReal *bytes.Buffer
 }
 
 func NewJsonEncoder(w io.Writer) Encoder {
-    return &JsonEncoder{
-        w:   w,
-        End: _lineFeed,
-        buf: bytes.NewBuffer(make([]byte, 0, 4096)),
+    res := &JsonEncoder{
+        w:       w,
+        End:     _lineFeed,
+        bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
     }
+    res.buf = res.bufReal
+    return res
+}
+
+func NewJsonEncoderBench(w io.Writer) Encoder {
+    res := &JsonEncoder{
+        w:       w,
+        End:     _lineFeed,
+        bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
+        buf:     io.Discard,
+    }
+    return res
 }
 
 // buffer by encoder for output
@@ -53,20 +66,20 @@ func (js *JsonEncoder) Write(f field.Field) error {
     // _, res := js.WriteBytes(js.End)
     js.WriteBytes(js.End)
 
-    if js.buf.Len() > 4096 {
+    if js.bufReal.Len() > 4096 {
         return js.flush()
     }
     return nil
 }
 
 func (js *JsonEncoder) flush() error {
-    _, res := js.w.Write(js.buf.Bytes())
-    js.buf.Reset()
+    _, res := js.w.Write(js.bufReal.Bytes())
+    js.bufReal.Reset()
     return res
 }
 
 func (js *JsonEncoder) Close() error {
-    if js.buf.Len() > 0 {
+    if js.bufReal.Len() > 0 {
         return js.flush()
     }
     return nil
