@@ -1,6 +1,7 @@
 package encoder
 
 import (
+	"bytes"
 	"io"
 	"reflect"
 	"span/field"
@@ -32,22 +33,50 @@ type Encoder interface {
 }
 
 type JsonEncoder struct {
-	W   io.Writer
+	w   io.Writer
 	End []byte
+	buf *bytes.Buffer
 }
 
 func NewJsonEncoder(w io.Writer) Encoder {
 	return &JsonEncoder{
-		W:   w,
+		w:   w,
 		End: _lineFeed,
+		buf: bytes.NewBuffer(make([]byte, 0, 4096)),
 	}
 }
 
+// buffer by encoder for output
 func (js *JsonEncoder) Write(f field.Field) error {
 	js.write(f)
-	_, res := js.WriteBytes(js.End)
-	return res
+	// _, res := js.WriteBytes(js.End)
+	js.WriteBytes(js.End)
+
+	if js.buf.Len() > 4096 {
+		_, res := js.w.Write(js.buf.Bytes())
+		js.buf.Reset()
+		return res
+	}
+	return nil
 }
+
+// type JsonEncoder struct {
+// 	buf io.Writer
+// 	End []byte
+// }
+
+// func NewJsonEncoder(w io.Writer) Encoder {
+// 	return &JsonEncoder{
+// 		buf: w,
+// 		End: _lineFeed,
+// 	}
+// }
+
+// func (js *JsonEncoder) Write(f field.Field) error {
+// 	js.write(f)
+// 	_, res := js.WriteBytes(js.End)
+// 	return res
+// }
 
 func (js *JsonEncoder) write(f field.Field) error {
 	w := js
@@ -260,10 +289,10 @@ func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 
 func (js *JsonEncoder) WriteString(c string) (int, error) {
 	b := js.string2Bytes(c)
-	n, err := js.W.Write(b)
+	n, err := js.buf.Write(b)
 	return n, err
 }
 
 func (js *JsonEncoder) WriteBytes(c []byte) (int, error) {
-	return js.W.Write(c)
+	return js.buf.Write(c)
 }

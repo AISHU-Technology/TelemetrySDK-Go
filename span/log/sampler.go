@@ -73,7 +73,7 @@ func (s *SamplerLogger) TraceField(message field.Field, l field.InternalSpan) {
 	r := newStructRecord()
 	r.Set("level", TraceLevelString)
 
-	r.Set("message", field.StringField("message...."))
+	r.Set("message", message)
 	l.Record(r)
 }
 
