@@ -25,12 +25,12 @@ func testLogString(l *SamplerLogger, span field.InternalSpan) {
 }
 
 func testLogField(l *SamplerLogger, span field.InternalSpan) {
-    l.TraceField(TraceLevelString, span)
-    l.DebugField(DebugLevelString, span)
-    l.InfoField(InfoLevelString, span)
-    l.WarnField(WarnLevelString, span)
-    l.ErrorField(ErrorLevelString, span)
-    l.FatalField(FatalLevelString, span)
+    l.TraceField(TraceLevelString, "test", span)
+    l.DebugField(DebugLevelString, "test", span)
+    l.InfoField(InfoLevelString, "test", span)
+    l.WarnField(WarnLevelString, "test", span)
+    l.ErrorField(ErrorLevelString, "test", span)
+    l.FatalField(FatalLevelString, "test", span)
 }
 
 func testLogLevel(t *testing.T, l *SamplerLogger, level int) {
@@ -220,12 +220,19 @@ func TestSamplerLogger(t *testing.T) {
 
     // 1.1 log message into roor internalSpan
     l.Debug("debug string message", root)
-    l.DebugField(field.StringField("debug field message"), root)
+    l.DebugField(field.StringField("debug field message"), "test", root)
 
-    // 1.2 create a child internalSpan from root for a sub thread/task
+    // 1.2 set attributes for a span
+    attrs := field.MallocStructField(3)
+    attrs.Set("work", field.StringField("test"))
+    attrs.Set("testFunc", field.StringField("TestSamplerLogger"))
+    attrs.Set("testSpan", field.StringField("root"))
+    l.SetAttributes("SampleLogerTest", attrs, root)
+
+    // 1.3 create a child internalSpan from root for a sub thread/task
     child0 := l.ChildrenInternalSpan(root)
 
-    // 1.3 start a new thread for sub task
+    // 1.4 start a new thread for sub task
     go func() {
         // 2.1 log message into child internalSpan for child thread
         l.Debug("debug string", child0)
@@ -234,7 +241,7 @@ func TestSamplerLogger(t *testing.T) {
         child0.Signal()
     }()
 
-    // 1.4 record some metric into root internalSpan
+    // 1.5 record some metric into root internalSpan
     m := field.Mmetric{}
     m.Set("root thread", 0.0)
     m.AddLabel("root")
@@ -242,19 +249,19 @@ func TestSamplerLogger(t *testing.T) {
     m.AddAttribute("root", "root span")
     l.RecordMetrics(m, root)
 
-    // 1.5 record first external request into root internalSpan
+    // 1.6 record first external request into root internalSpan
     es, err := l.NewExternalSpan(root)
     if err != nil {
         t.Error(err)
         t.FailNow()
     }
 
-    // 1.5.1 get trace info for some work
+    // 1.6.1 get trace info for some work
     tID := es.TraceID()
     espID := es.ParentID()
     parentID := es.ParentID()
     spanID := es.ID()
-    // 1.5.2 write info to external span
+    // 1.6.2 write info to external span
     es.StartTime = time.Now()
     es.EndTime = time.Now()
     es.Attributes.Set("method", field.StringField("test"))
@@ -270,6 +277,8 @@ func TestSamplerLogger(t *testing.T) {
     // final close runtime and clean work space
     l.Close()
     // run.Signal()
+
+    time.Sleep(1 * time.Second)
 
     // check test result
     assert.Equal(t, traceID, tID)

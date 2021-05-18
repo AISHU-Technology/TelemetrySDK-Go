@@ -60,7 +60,7 @@ func (s *SamplerLogger) sampleCheck() bool {
     return rand.Float32() <= s.Sample
 }
 
-func (s *SamplerLogger) TraceField(message field.Field, l field.InternalSpan) {
+func (s *SamplerLogger) TraceField(message field.Field, typ string, l field.InternalSpan) {
     if TraceLevel < s.LogLevel || !s.sampleCheck() {
         return
     }
@@ -73,13 +73,16 @@ func (s *SamplerLogger) TraceField(message field.Field, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", TraceLevelString)
+    r.Set("SeverityText", TraceLevelString)
 
     r.Set("message", message)
+    r.Set("timestamp", field.TimeField(time.Now()))
+    r.Set("type", field.StringField(typ))
+
     l.Record(r)
 }
 
-func (s *SamplerLogger) DebugField(message field.Field, l field.InternalSpan) {
+func (s *SamplerLogger) DebugField(message field.Field, typ string, l field.InternalSpan) {
     if DebugLevel < s.LogLevel || !s.sampleCheck() {
         return
     }
@@ -92,12 +95,14 @@ func (s *SamplerLogger) DebugField(message field.Field, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", DebugLevelString)
+    r.Set("SeverityText", DebugLevelString)
     r.Set("message", message)
+    r.Set("timestamp", field.TimeField(time.Now()))
+    r.Set("type", field.StringField(typ))
     l.Record(r)
 }
 
-func (s *SamplerLogger) InfoField(message field.Field, l field.InternalSpan) {
+func (s *SamplerLogger) InfoField(message field.Field, typ string, l field.InternalSpan) {
     if InfoLevel < s.LogLevel || !s.sampleCheck() {
         return
     }
@@ -110,12 +115,14 @@ func (s *SamplerLogger) InfoField(message field.Field, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", InfoLevelString)
+    r.Set("SeverityText", InfoLevelString)
     r.Set("message", message)
+    r.Set("timestamp", field.TimeField(time.Now()))
+    r.Set("type", field.StringField(typ))
     l.Record(r)
 }
 
-func (s *SamplerLogger) WarnField(message field.Field, l field.InternalSpan) {
+func (s *SamplerLogger) WarnField(message field.Field, typ string, l field.InternalSpan) {
     if WarnLevel < s.LogLevel || !s.sampleCheck() {
         return
     }
@@ -128,12 +135,14 @@ func (s *SamplerLogger) WarnField(message field.Field, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", WarnLevelString)
+    r.Set("SeverityText", WarnLevelString)
     r.Set("message", message)
+    r.Set("timestamp", field.TimeField(time.Now()))
+    r.Set("type", field.StringField(typ))
     l.Record(r)
 }
 
-func (s *SamplerLogger) ErrorField(message field.Field, l field.InternalSpan) {
+func (s *SamplerLogger) ErrorField(message field.Field, typ string, l field.InternalSpan) {
     if ErrorLevel < s.LogLevel || !s.sampleCheck() {
         return
     }
@@ -146,12 +155,14 @@ func (s *SamplerLogger) ErrorField(message field.Field, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", ErrorLevelString)
+    r.Set("SeverityText", ErrorLevelString)
     r.Set("message", message)
+    r.Set("timestamp", field.TimeField(time.Now()))
+    r.Set("type", field.StringField(typ))
     l.Record(r)
 }
 
-func (s *SamplerLogger) FatalField(message field.Field, l field.InternalSpan) {
+func (s *SamplerLogger) FatalField(message field.Field, typ string, l field.InternalSpan) {
     if FatalLevel < s.LogLevel {
         return
     }
@@ -164,8 +175,10 @@ func (s *SamplerLogger) FatalField(message field.Field, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", FatalLevelString)
+    r.Set("SeverityText", FatalLevelString)
     r.Set("message", message)
+    r.Set("timestamp", field.TimeField(time.Now()))
+    r.Set("type", field.StringField(typ))
     l.Record(r)
 }
 
@@ -182,8 +195,9 @@ func (s *SamplerLogger) Trace(message string, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", TraceLevelString)
+    r.Set("SeverityText", TraceLevelString)
     r.Set("message", field.StringField(message))
+    r.Set("timestamp", field.TimeField(time.Now()))
     l.Record(r)
 }
 
@@ -199,8 +213,9 @@ func (s *SamplerLogger) Debug(message string, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", DebugLevelString)
+    r.Set("SeverityText", DebugLevelString)
     r.Set("message", field.StringField(message))
+    r.Set("timestamp", field.TimeField(time.Now()))
     l.Record(r)
 }
 
@@ -216,8 +231,9 @@ func (s *SamplerLogger) Info(message string, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", InfoLevelString)
+    r.Set("SeverityText", InfoLevelString)
     r.Set("message", field.StringField(message))
+    r.Set("timestamp", field.TimeField(time.Now()))
     l.Record(r)
 }
 
@@ -234,8 +250,9 @@ func (s *SamplerLogger) Warn(message string, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", WarnLevelString)
+    r.Set("SeverityText", WarnLevelString)
     r.Set("message", field.StringField(message))
+    r.Set("timestamp", field.TimeField(time.Now()))
     l.Record(r)
 }
 
@@ -251,8 +268,9 @@ func (s *SamplerLogger) Error(message string, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", ErrorLevelString)
+    r.Set("SeverityText", ErrorLevelString)
     r.Set("message", field.StringField(message))
+    r.Set("timestamp", field.TimeField(time.Now()))
     l.Record(r)
 }
 
@@ -268,8 +286,9 @@ func (s *SamplerLogger) Fatal(message string, l field.InternalSpan) {
         defer l.Signal()
     }
     r := newStructRecord()
-    r.Set("level", FatalLevelString)
+    r.Set("SeverityText", FatalLevelString)
     r.Set("message", field.StringField(message))
+    r.Set("timestamp", field.TimeField(time.Now()))
     l.Record(r)
 }
 
@@ -323,6 +342,14 @@ func (s *SamplerLogger) SetTraceID(ID string, span field.InternalSpan) {
     }
 
     span.SetTraceID(ID)
+}
+
+func (s *SamplerLogger) SetAttributes(t string, attrs field.Field, span field.InternalSpan) {
+    if span == nil {
+        return
+    }
+
+    span.SetAttributes(t, attrs)
 }
 
 // func (s *SamplerLogger) Signal(span field.InternalSpan) {

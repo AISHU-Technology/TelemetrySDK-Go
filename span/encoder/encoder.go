@@ -3,6 +3,7 @@ package encoder
 import (
     "bytes"
     "io"
+    "io/ioutil"
     "reflect"
     "span/field"
     "strconv"
@@ -55,7 +56,7 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
         w:       w,
         End:     _lineFeed,
         bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
-        buf:     io.Discard,
+        buf:     ioutil.Discard,
     }
     return res
 }
@@ -66,7 +67,7 @@ func (js *JsonEncoder) Write(f field.Field) error {
     // _, res := js.WriteBytes(js.End)
     js.WriteBytes(js.End)
 
-    if js.bufReal.Len() > 4096 {
+    if js.bufReal.Len() >= 4096 {
         return js.flush()
     }
     return nil
