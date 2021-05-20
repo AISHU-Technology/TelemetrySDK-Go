@@ -155,3 +155,4 @@ type Logger interface {
 	// to log the info and signal the InternalSpan.
 	RecordMetrics(m field.Mmetric, l field.InternalSpan)
 }
+
