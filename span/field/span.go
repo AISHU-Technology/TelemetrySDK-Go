@@ -160,10 +160,10 @@ func (l *internalSpanV1) reset() {
 	l.transfer = nil
 }
 
-func (l *internalSpanV1) SetAttributes(t string, attrs Field) {
+func (l *internalSpanV1) SetAttributes(typ string, attrs Field) {
 	a := MallocStructField(2)
-	a.Set("type", StringField(t))
-	a.Set("Attributes", attrs)
+	a.Set("type", StringField(typ))
+	a.Set(typ, attrs)
 	l.attributes = a
 }
 

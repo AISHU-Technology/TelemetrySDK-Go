@@ -5,7 +5,12 @@ import (
 	"span/runtime"
 )
 
-var (
+func simpleDoc() {}
+
+func allDoc() {}
+
+// log level text format
+const (
 	TraceLevelString = field.StringField("Trace")
 	DebugLevelString = field.StringField("Debug")
 	InfoLevelString  = field.StringField("Info")
@@ -14,6 +19,7 @@ var (
 	FatalLevelString = field.StringField("Fatal")
 )
 
+// log level int format
 const (
 	AllLevel = iota
 	TraceLevel
@@ -155,4 +161,3 @@ type Logger interface {
 	// to log the info and signal the InternalSpan.
 	RecordMetrics(m field.Mmetric, l field.InternalSpan)
 }
-

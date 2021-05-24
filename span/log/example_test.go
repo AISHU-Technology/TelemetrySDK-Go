@@ -200,4 +200,3 @@ func Example_allDoc() {
 	// final close runtime and clean work space
 	l.Close()
 }
-
