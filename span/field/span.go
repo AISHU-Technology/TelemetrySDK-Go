@@ -270,3 +270,4 @@ func (l *internalSpanV1) NewExternalSpan() *ExternalSpanField {
 func (l *internalSpanV1) ListExternalSpan() []Field {
 	return l.httpSpan[:]
 }
+

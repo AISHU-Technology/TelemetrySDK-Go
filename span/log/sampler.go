@@ -457,3 +457,4 @@ func (s *SamplerLogger) SetAttributes(t string, attrs field.Field, span field.In
 // func (s *SamplerLogger) Signal(span field.InternalSpan) {
 // 	span.Signal()
 // }
+

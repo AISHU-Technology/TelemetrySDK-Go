@@ -34,12 +34,12 @@
 
 所有类型的Event应该通过流程严格管理，确保全局唯一
 
-| 字段名         | 类型         | 描述                                                         |
-| :------------- | :----------- | :----------------------------------------------------------- |
-| SeverityNumber | Int          | 日志级别，Trace->Fatal对应值为1->6                           |
-| SeverityText   | string       | 日志级别，字符串格式                                         |
-| type           | string       | event类型，默认为空，非空值时由应用定义用于扩展数据类型      |
-| message        | string或任意 | type为空时为字符串，type非空时由上层应用定义，由对应定义者提供数据模型 |
+| 字段名             | 类型         | 描述                                                         |
+| :----------------- | :----------- | :----------------------------------------------------------- |
+| SeverityNumber     | Int          | 日志级别，Trace->Fatal对应值为1->6                           |
+| SeverityText       | string       | 日志级别，字符串格式                                         |
+| type               | string       | event类型，默认为空，非空值时由应用定义用于扩展数据类型      |
+| message/type字段值 | string或任意 | type为空时message字段为字符串，type非空时由上层应用定义，由对应定义者提供数据模型此时message字段不存在，同时该字段名为type字段值 |
 
 ## Metric 结构定义
 
@@ -56,7 +56,7 @@
 | 字段名     | 类型   | 描述                                                         |
 | :--------- | :----- | :----------------------------------------------------------- |
 | Type       | string | 指明该Attributes的类型，该类型应该全局唯一，不可重复，避免数据冲突 |
-| Attributes | 任意   | 其他字段提供给使用者定义属性信息                             |
+| Type字段值 | 任意   | 其他字段提供给使用者定义属性信息                             |
 
 
 
@@ -75,13 +75,13 @@
 以下数据为无外部干扰的理想数据，每个InternalSpan中含有一些ExternalSpan外部调用、metric以及应用业务事件日志。为方便介绍，日志为美观输出，真实输出仅为一行
 
 ```
-{`` ``"Version"``: ``"AISHUV0"``,`` ``"TraceId"``: ``"02278ca70000100000000000000000050000000000000000"``,`` ``"SpanId"``: ``"02278bc60000100000000000000000040000000000000000"``,`` ``"ParentId"``: ``"02278d280000100000000000000000060000000000000000"``,`` ``"StartTime"``: ``1621318003``,`` ``"EndTime"``: ``1621318003``,`` ``"Body"``: {``  ``"Events"``: [``   ``{``    ``"SeverityText"``: ``"Debug"``,``    ``"message"``: ``"debug string message"``,``    ``"timestamp"``: ``1621318003``   ``},``   ``{``    ``"SeverityText"``: ``"Debug"``,``    ``"message"``: ``"debug field message"``,``    ``"timestamp"``: ``1621318003``,``    ``"type"``: ``"test"``   ``}``  ``],``  ``"Metrics"``: [``   ``{``    ``"root thread"``: ``0``,``    ``"Attributes"``: {``     ``"root"``: ``"root span"``    ``},``    ``"Labels"``: [``     ``"root"``,``     ``"metric"``    ``]``   ``}``  ``],``  ``"ExternalSpans"``: [``   ``{``    ``"TraceId"``: ``"02278ca70000100000000000000000050000000000000000"``,``    ``"ParentId"``: ``"02278d280000100000000000000000060000000000000000"``,``    ``"InternalParentId"``: ``"02278bc60000100000000000000000040000000000000000"``,``    ``"SpanId"``: ``"0227bc5100001000000000000000000a0000000000000000"``,``    ``"StartTime"``: ``1621318003``,``    ``"EndTime"``: ``1621318003``,``    ``"Attributes"``: {``     ``"method"``: ``"test"``,``     ``"host"``: ``"test"``,``     ``"attr0"``: ``"02278ca70000100000000000000000050000000000000000"``,``     ``"attr1"``: ``"02278d280000100000000000000000060000000000000000"``,``     ``"attr2"``: ``"02278d280000100000000000000000060000000000000000"``,``     ``"attr3"``: ``"0227bc5100001000000000000000000a0000000000000000"``    ``}``   ``}``  ``]`` ``},`` ``"Attributes"``: {``  ``"type"``: ``"SampleLogerTest"``,``  ``"Attributes"``: {``   ``"work"``: ``"test"``,``   ``"testFunc"``: ``"TestSamplerLogger"``,``   ``"testSpan"``: ``"root"``  ``}`` ``},`` ``"Resource"``: {``  ``"HOSTNAME"``: ``"localhost.localdomain"``,``  ``"telemetry.sdk.name"``: ``"Aishu custom opentelemetry"``,``  ``"telemetry.sdk.version"``: ``"1.0.0"``,``  ``"telemetry.sdk.language"``: ``"go"`` ``}``}
+{`` ``"Version"``: ``"AISHUV0"``,`` ``"TraceId"``: ``"091488ec0000100000000000000000300000000000000000"``,`` ``"SpanId"``: ``"0914876800001000000000000000002f0000000000000000"``,`` ``"ParentId"``: ``"091489790000100000000000000000310000000000000000"``,`` ``"StartTime"``: ``1621840900``,`` ``"EndTime"``: ``1621840900``,`` ``"Body"``: {``  ``"Events"``: [``   ``{``    ``"SeverityText"``: ``"Debug"``,``    ``"message"``: ``"debug string message"``,``    ``"timestamp"``: ``1621840900``   ``},``   ``{``    ``"SeverityText"``: ``"Debug"``,``    ``"test"``: ``"debug field message"``,``    ``"timestamp"``: ``1621840900``,``    ``"type"``: ``"test"``   ``}``  ``],``  ``"Metrics"``: [``   ``{``    ``"root thread"``: ``0``,``    ``"Attributes"``: {``     ``"root"``: ``"root span"``    ``},``    ``"Labels"``: [``     ``"root"``,``     ``"metric"``    ``]``   ``}``  ``],``  ``"ExternalSpans"``: [``   ``{``    ``"TraceId"``: ``"091488ec0000100000000000000000300000000000000000"``,``    ``"ParentId"``: ``"091489790000100000000000000000310000000000000000"``,``    ``"InternalParentId"``: ``"0914876800001000000000000000002f0000000000000000"``,``    ``"SpanId"``: ``"091598710000100000000000000000330000000000000000"``,``    ``"StartTime"``: ``1621840900``,``    ``"EndTime"``: ``1621840900``,``    ``"Attributes"``: {``     ``"method"``: ``"test"``,``     ``"host"``: ``"test"``,``     ``"attr0"``: ``"091488ec0000100000000000000000300000000000000000"``,``     ``"attr1"``: ``"091489790000100000000000000000310000000000000000"``,``     ``"attr2"``: ``"091489790000100000000000000000310000000000000000"``,``     ``"attr3"``: ``"091598710000100000000000000000330000000000000000"``    ``}``   ``}``  ``]`` ``},`` ``"Attributes"``: {``  ``"type"``: ``"SampleLogerTest"``,``  ``"SampleLogerTest"``: {``   ``"work"``: ``"test"``,``   ``"testFunc"``: ``"TestSamplerLogger"``,``   ``"testSpan"``: ``"root"``  ``}`` ``},`` ``"Resource"``: {``  ``"HOSTNAME"``: ``"localhost.localdomain"``,``  ``"telemetry.sdk.name"``: ``"Aishu custom opentelemetry"``,``  ``"telemetry.sdk.version"``: ``"1.0.0"``,``  ``"telemetry.sdk.language"``: ``"go"`` ``}``}
 ```
 
 Standalone Log
 
 ```
-{`` ``"Version"``: ``"AISHUV0"``,`` ``"TraceId"``: ``"02278ca70000100000000000000000050000000000000000"``,`` ``"SpanId"``: ``"0227b1a10000100000000000000000090000000000000000"``,`` ``"ParentId"``: ``"02278bc60000100000000000000000040000000000000000"``,`` ``"StartTime"``: ``1621318003``,`` ``"EndTime"``: ``1621318003``,`` ``"Body"``: {``  ``"Events"``: [``   ``{``    ``"SeverityText"``: ``"Debug"``,``    ``"message"``: ``"debug string"``,``    ``"timestamp"``: ``1621318003``   ``}``  ``],``  ``"Metrics"``: [],``  ``"ExternalSpans"``: []`` ``},`` ``"Attributes"``: {``  ``"type"``: ``"SampleLogerTest"``,``  ``"Attributes"``: {``   ``"work"``: ``"test"``,``   ``"testFunc"``: ``"TestSamplerLogger"``,``   ``"testSpan"``: ``"root"``  ``}`` ``},`` ``"Resource"``: {``  ``"HOSTNAME"``: ``"localhost.localdomain"``,``  ``"telemetry.sdk.name"``: ``"Aishu custom opentelemetry"``,``  ``"telemetry.sdk.version"``: ``"1.0.0"``,``  ``"telemetry.sdk.language"``: ``"go"`` ``}``}
+{`` ``"Version"``: ``"AISHUV0"``,`` ``"TraceId"``: ``"091488ec0000100000000000000000300000000000000000"``,`` ``"SpanId"``: ``"0914fafc0000100000000000000000320000000000000000"``,`` ``"ParentId"``: ``"0914876800001000000000000000002f0000000000000000"``,`` ``"StartTime"``: ``1621840900``,`` ``"EndTime"``: ``1621840900``,`` ``"Body"``: {``  ``"Events"``: [``   ``{``    ``"SeverityText"``: ``"Debug"``,``    ``"message"``: ``"debug string"``,``    ``"timestamp"``: ``1621840900``   ``}``  ``],``  ``"Metrics"``: [],``  ``"ExternalSpans"``: []`` ``},`` ``"Attributes"``: {``  ``"type"``: ``"SampleLogerTest"``,``  ``"SampleLogerTest"``: {``   ``"work"``: ``"test"``,``   ``"testFunc"``: ``"TestSamplerLogger"``,``   ``"testSpan"``: ``"root"``  ``}`` ``},`` ``"Resource"``: {``  ``"HOSTNAME"``: ``"localhost.localdomain"``,``  ``"telemetry.sdk.name"``: ``"Aishu custom opentelemetry"``,``  ``"telemetry.sdk.version"``: ``"1.0.0"``,``  ``"telemetry.sdk.language"``: ``"go"`` ``}``}
 ```
 
 ### 真实标准输出数据
