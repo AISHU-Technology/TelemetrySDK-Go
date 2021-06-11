@@ -2,7 +2,8 @@
 
 ## Please ensure run this script after  login docker regitry
 set -e 
-source get_env.sh
+SCRIPTPATH=$(dirname $(readlink -f "$0"))
+source $SCRIPTPATH/get_env.sh
 
 BuildImage="golang:1.15"
 
