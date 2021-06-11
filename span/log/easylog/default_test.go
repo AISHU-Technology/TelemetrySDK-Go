@@ -1,14 +1,15 @@
 package easylog
 
 import (
-	"testing"
+    "testing"
 
-	"gotest.tools/assert"
+    // "gotest.tools/assert"
 )
 
-func NewdefaultSamplerLoggerTest(t *testing.T) {
-	l := NewdefaultSamplerLogger()
-	assert.Equal(t, l, nil)
-
-	l.Close()
+func TestNewdefaultSamplerLogger(t *testing.T) {
+    l := NewdefaultSamplerLogger()
+    // assert.Equal(t, l, nil)
+    l.Info("test", nil)
+    l.Close()
 }
+
