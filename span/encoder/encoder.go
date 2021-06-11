@@ -75,6 +75,9 @@ func (js *JsonEncoder) Write(f field.Field) error {
 
 func (js *JsonEncoder) flush() error {
 	_, res := js.w.Write(js.bufReal.Bytes())
+    if res != nil {
+        panic(res)
+    }
 	js.bufReal.Reset()
 	return res
 }
