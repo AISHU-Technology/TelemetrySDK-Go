@@ -12,7 +12,7 @@ import (
 // return a Default SamplerLogger
 func NewdefaultSamplerLogger() log.Logger {
 	l := log.NewdefaultSamplerLogger()
-	output := os.Stdin
+	output := os.Stdout
 	writer := &open_standard.OpenTelemetry{
 		Encoder: encoder.NewJsonEncoder(output),
 	}
