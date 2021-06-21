@@ -129,7 +129,7 @@ func (js *JsonEncoder) write(f field.Field) error {
 		_, res := w.WriteBytes(_quotation)
 		return res
 	case field.TimeType:
-		v := strconv.FormatInt(time.Time(f.(field.TimeField)).Nanosecond(), 10)
+		v := strconv.FormatInt(int64(time.Time(f.(field.TimeField)).Nanosecond()), 10)
 		bytes := js.string2Bytes(v)
 		_, res := w.WriteBytes(bytes)
 		return res
