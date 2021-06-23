@@ -5,8 +5,10 @@ import (
 	"span/runtime"
 )
 
+// simple logger usecase document with nil span for easy use
 func simpleDoc() {}
 
+// logger usecase document with span for all info
 func allDoc() {}
 
 // log level text format

@@ -52,7 +52,7 @@ func NewRuntime(w open_standard.Writer, builder func(func(field.InternalSpan), s
 // if Runtime has been close return nil
 // user should return span's onwership after Span is useless by Span.Signal()
 func (r *Runtime) Children() field.InternalSpan {
-	// todo remove read lock
+    // TODO: remove read lock
 	r.closeLock.RLock()
 	defer r.closeLock.RUnlock()
 
