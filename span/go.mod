@@ -1,4 +1,4 @@
-module span
+module gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span
 
 go 1.15
 

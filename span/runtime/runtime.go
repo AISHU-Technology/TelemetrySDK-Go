@@ -1,8 +1,8 @@
 package runtime
 
 import (
-	"span/field"
-	"span/open_standard"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/open_standard"
 	"sync"
 	// "go.uber.org/zap"
 )

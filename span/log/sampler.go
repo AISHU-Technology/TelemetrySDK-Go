@@ -10,8 +10,8 @@ package log
 
 import (
 	"math/rand"
-	"span/field"
-	"span/runtime"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
 	"time"
 )
 

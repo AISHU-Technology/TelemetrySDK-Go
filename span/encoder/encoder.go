@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"reflect"
-	"span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"strconv"
 	"time"
 	"unsafe"

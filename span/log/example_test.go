@@ -2,10 +2,10 @@ package log
 
 import (
 	"os"
-	"span/encoder"
-	"span/field"
-	"span/open_standard"
-	"span/runtime"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/open_standard"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
 	"time"
 )
 

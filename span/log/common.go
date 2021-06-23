@@ -1,8 +1,8 @@
 package log
 
 import (
-	"span/field"
-	"span/runtime"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
 )
 
 // simple logger usecase document with nil span for easy use

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
-	"span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"testing"
 
 	"gotest.tools/assert"
