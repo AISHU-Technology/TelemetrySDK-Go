@@ -298,7 +298,7 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 		}, field.NewSpanFromPool)
 		go logger.Run()
 		defer logger.Signal()
-		defer tmp.Close()
+		// defer tmp.Close()
 
 		r := fakeSpanStructField()
 		b.ResetTimer()
@@ -377,7 +377,7 @@ func BenchmarkFileWrite(b *testing.B) {
 		}, field.NewSpanFromPool)
 		go logger.Run()
 		defer logger.Signal()
-		defer tmp.Close()
+		// defer tmp.Close()
 
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
