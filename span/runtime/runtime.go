@@ -1,9 +1,9 @@
 package runtime
 
 import (
+	"sync"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/open_standard"
-	"sync"
 	// "go.uber.org/zap"
 )
 
@@ -20,6 +20,7 @@ func init() {
 
 }
 
+// Runtime read data from channel and write data in a single goroutine
 type Runtime struct {
 	cache   chan field.InternalSpan
 	builder func(func(field.InternalSpan), string) field.InternalSpan
@@ -28,6 +29,7 @@ type Runtime struct {
 	// id      uint64
 	close     bool
 	closeLock sync.RWMutex
+	runLock   sync.Mutex
 	w         open_standard.Writer
 	once      sync.Once
 }
@@ -35,24 +37,28 @@ type Runtime struct {
 // NewRuntime return a runtime
 func NewRuntime(w open_standard.Writer, builder func(func(field.InternalSpan), string) field.InternalSpan) *Runtime {
 	r := &Runtime{
-		cache:     make(chan field.InternalSpan, 100),
-		builder:   builder,
-		stop:      make(chan int, 1),
-		wg:        &sync.WaitGroup{},
-		close:     false,
+		cache:   make(chan field.InternalSpan, 100),
+		builder: builder,
+		stop:    make(chan int, 1),
+		wg:      &sync.WaitGroup{},
+		// false = running, true = closed or closing
+		close: false,
+		// protect the close value
 		closeLock: sync.RWMutex{},
-		w:         w,
-		once:      sync.Once{},
+		// represent the state of runtime thread, runtime thread will lock this until thread over
+		runLock: sync.Mutex{},
+		w:       w,
+		once:    sync.Once{},
 	}
 
 	return r
 }
 
-// Children() return a logger span
+// Children return a logger span
 // if Runtime has been close return nil
 // user should return span's onwership after Span is useless by Span.Signal()
 func (r *Runtime) Children() field.InternalSpan {
-    // TODO: remove read lock
+	// TODO: remove read lock
 	r.closeLock.RLock()
 	defer r.closeLock.RUnlock()
 
@@ -64,7 +70,7 @@ func (r *Runtime) Children() field.InternalSpan {
 	return s
 }
 
-// stop runtime thread
+//Signal stop runtime thread
 func (r *Runtime) Signal() {
 	r.closeLock.Lock()
 	r.close = true
@@ -74,6 +80,9 @@ func (r *Runtime) Signal() {
 		close(r.cache)
 		// r.close = true
 	})
+
+	r.runLock.Lock()
+	r.runLock.Unlock()
 	r.closeLock.Unlock()
 }
 
@@ -104,10 +113,15 @@ func (r *Runtime) Run() {
 
 	// enc := encoder.NewJsonEncoder(r.w)
 
+	r.runLock.Lock()
+	defer r.runLock.Unlock()
 	for {
 		s, ok := <-(r.cache)
-		if !ok {
-			r.w.Close()
+		if ok != true {
+			err := r.w.Close()
+			if err != nil {
+				panic(err)
+			}
 			return
 		}
 		r.w.Write(s)
@@ -154,3 +168,4 @@ func (r *Runtime) Run() {
 	}
 
 }
+
