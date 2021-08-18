@@ -88,5 +88,6 @@ func TestFieldType(t *testing.T) {
 	assert.Equal(t, FieldTpye(StructType), MallocStructField(0).Type())
 	assert.Equal(t, FieldTpye(ExternalSpanType), (&ExternalSpanField{}).Type())
 	assert.Equal(t, FieldTpye(MetricType), (&Mmetric{}).Type())
-
+	assert.Equal(t, FieldTpye(JsonType), (&JsonFiled{}).Type())
 }
+

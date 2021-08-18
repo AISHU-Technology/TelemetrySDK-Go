@@ -60,6 +60,15 @@ func Example_simpleDoc() {
 	l.Debug("debug string message", nil)
 	l.DebugField(field.StringField("debug field message"), "test", nil)
 
+	type A struct {
+		Name string
+		Age int
+	}
+	var a = &A{Name:"123",Age:12,}
+
+
+	l.DebugField(field.MallocJsonFiled(a),"detail",nil)
+
 	// 1.1 start a new thread for sub task
 	go func() {
 		// 2.1 log message  for child thread

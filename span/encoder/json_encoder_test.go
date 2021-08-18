@@ -21,6 +21,18 @@ func getTestMetric() field.Mmetric {
 	return m
 }
 
+func getTestJson() field.Field {
+
+	type A struct {
+		Name string
+		Age int
+	}
+	var a = &A{Name:"123",Age:12,}
+
+
+	return field.MallocJsonFiled(a)
+}
+
 func GetTestFieds() []field.Field {
 	r0 := fakeTestStructField()
 
@@ -28,7 +40,8 @@ func GetTestFieds() []field.Field {
 	r1.Set("Level", field.IntField(1))
 	r1.Set("eventNum", field.IntField(2))
 
-	return []field.Field{r0, r1}
+	r3 := getTestJson()
+	return []field.Field{r0, r1,r3}
 
 	// m0 := getTestMetric()
 

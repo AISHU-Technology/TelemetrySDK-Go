@@ -7,6 +7,9 @@ type Float64Field float64
 type StringField string
 type TimeField time.Time
 type FieldTpye int
+type JsonFiled struct{
+	Data interface{}
+}
 
 const (
 	IntType = iota
@@ -17,6 +20,7 @@ const (
 	StructType
 	ExternalSpanType
 	MetricType
+	JsonType
 )
 
 type Field interface {
@@ -78,3 +82,17 @@ func (f *ExternalSpanField) Type() FieldTpye {
 
 // Avoiding irrelevant personnel to implement Field interface
 func (f *ExternalSpanField) protect() {}
+
+func (f *JsonFiled) Type() FieldTpye {
+	return JsonType
+}
+
+// Avoiding irrelevant personnel to implement Field interface
+func (f *JsonFiled) protect() {}
+
+
+func MallocJsonFiled(data interface{})*JsonFiled{
+	return &JsonFiled{
+		Data:data,
+	}
+}

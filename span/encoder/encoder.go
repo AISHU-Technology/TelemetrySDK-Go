@@ -1,6 +1,7 @@
 package encoder
 
 import (
+	"encoding/json"
 	"bytes"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"io"
@@ -254,7 +255,17 @@ func (js *JsonEncoder) write(f field.Field) error {
 		_, res := w.WriteBytes(_rightBigBracket)
 		return res
 
+	case field.JsonType:
+		j := f.(*field.JsonFiled)
+		b,err := json.Marshal(j.Data)
+
+		if err != nil{
+			return err
+		}
+		_,res := w.WriteBytes(b)
+		return res
 	}
+
 }
 
 // String2Bytes unsafe convert string to []byte, they point to the same memory
