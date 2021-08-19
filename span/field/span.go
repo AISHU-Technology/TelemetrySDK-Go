@@ -46,7 +46,7 @@ func GenTraceID() string {
 func genSpanID(service [8]byte, base uint64) string {
 	var id [24]byte
 	now := time.Now().Nanosecond()
-	timeLow := uint32(now & 0xffffffff)
+	timeLow := uint32(now & 0xffffff)
 	timeMid := uint16((now >> 32) & 0xffff)
 	timeHi := uint16((now >> 48) & 0x0fff)
 	timeHi |= 0x1000 // Version 1
@@ -270,4 +270,3 @@ func (l *internalSpanV1) NewExternalSpan() *ExternalSpanField {
 func (l *internalSpanV1) ListExternalSpan() []Field {
 	return l.httpSpan[:]
 }
-
