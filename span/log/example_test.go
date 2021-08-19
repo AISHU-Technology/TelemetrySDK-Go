@@ -67,7 +67,7 @@ func Example_simpleDoc() {
 	var a = &A{Name:"123",Age:12,}
 
 
-	l.DebugField(field.MallocJsonFiled(a),"detail",nil)
+	l.DebugField(field.MallocJsonField(a),"detail",nil)
 
 	// 1.1 start a new thread for sub task
 	go func() {

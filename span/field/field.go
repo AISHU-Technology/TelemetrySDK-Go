@@ -91,7 +91,7 @@ func (f *JsonFiled) Type() FieldTpye {
 func (f *JsonFiled) protect() {}
 
 
-func MallocJsonFiled(data interface{})*JsonFiled{
+func MallocJsonField(data interface{})*JsonFiled{
 	return &JsonFiled{
 		Data:data,
 	}

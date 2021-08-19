@@ -30,7 +30,7 @@ func getTestJson() field.Field {
 	var a = &A{Name:"123",Age:12,}
 
 
-	return field.MallocJsonFiled(a)
+	return field.MallocJsonField(a)
 }
 
 func GetTestFieds() []field.Field {
