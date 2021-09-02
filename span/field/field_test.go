@@ -91,3 +91,11 @@ func TestFieldType(t *testing.T) {
 	assert.Equal(t, FieldTpye(JsonType), (&JsonFiled{}).Type())
 }
 
+func TestMallocJsonField(t *testing.T) {
+	type People struct {
+	}
+	var p = &People{
+	}
+	j := MallocJsonField(p)
+	assert.Equal(t,FieldTpye(JsonType),j.Type())
+}
