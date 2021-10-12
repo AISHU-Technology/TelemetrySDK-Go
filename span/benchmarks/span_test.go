@@ -3,7 +3,9 @@ package benchmarks
 import (
 	"bytes"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
 	"sync"
+	"testing"
 	"time"
 )
 
@@ -116,4 +118,38 @@ type fakeJson struct {
 	User1   *user
 	User2   *user
 	User    []*user
+}
+
+func getTestStructField() field.Field {
+	res := field.MallocStructField(2)
+	res.Set("name", field.StringField("123"))
+	res.Set("age", field.IntField(12))
+	return res
+}
+
+
+func getTestJson() field.Field {
+
+	type A struct {
+		Name string
+		Age int
+	}
+	var a = &A{Name:"123",Age:12,}
+
+
+	return field.MallocJsonField(a)
+}
+
+func BenchmarkJsonEncoder_Write_Struct(b *testing.B) {
+	a := getTestStructField()
+	buf := bytes.NewBuffer(nil)
+	enc := encoder.NewJsonEncoder(buf)
+	enc.Write(a)
+}
+
+func BenchmarkJsonEncoder_Write_Json(b *testing.B) {
+	a := getTestJson()
+	buf := bytes.NewBuffer(nil)
+	enc := encoder.NewJsonEncoder(buf)
+	enc.Write(a)
 }
