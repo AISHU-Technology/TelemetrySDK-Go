@@ -1,8 +1,8 @@
 package encoder
 
 import (
-	"encoding/json"
 	"bytes"
+	"encoding/json"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"io"
 	"io/ioutil"
@@ -68,17 +68,15 @@ func (js *JsonEncoder) Write(f field.Field) error {
 	// _, res := js.WriteBytes(js.End)
 	js.WriteBytes(js.End)
 
-	if js.bufReal.Len() >= 4096 {
-		return js.flush()
-	}
-	return nil
+	return js.flush()
+
 }
 
 func (js *JsonEncoder) flush() error {
 	_, res := js.w.Write(js.bufReal.Bytes())
-    if res != nil {
-        panic(res)
-    }
+	if res != nil {
+		panic(res)
+	}
 	js.bufReal.Reset()
 	return res
 }
@@ -89,24 +87,6 @@ func (js *JsonEncoder) Close() error {
 	}
 	return nil
 }
-
-// type JsonEncoder struct {
-// 	buf io.Writer
-// 	End []byte
-// }
-
-// func NewJsonEncoder(w io.Writer) Encoder {
-// 	return &JsonEncoder{
-// 		buf: w,
-// 		End: _lineFeed,
-// 	}
-// }
-
-// func (js *JsonEncoder) Write(f field.Field) error {
-// 	js.write(f)
-// 	_, res := js.WriteBytes(js.End)
-// 	return res
-// }
 
 func (js *JsonEncoder) write(f field.Field) error {
 	w := js
@@ -169,100 +149,15 @@ func (js *JsonEncoder) write(f field.Field) error {
 		}
 		_, res := w.WriteBytes(_rightBigBracket)
 		return res
-	case field.MetricType:
-		m := f.(*field.Mmetric)
-		w.WriteBytes(_leftBigBracket)
-		js.write(m.Name)
-		w.WriteBytes(_colon)
-		js.write(m.Value)
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("Attributes")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		js.write(&m.Attrs)
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("Labels")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		js.write(&m.Labels)
-
-		_, res := w.WriteBytes(_rightBigBracket)
-		return res
-	case field.ExternalSpanType:
-		span := f.(*field.ExternalSpanField)
-		w.WriteBytes(_leftBigBracket)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("TraceId")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		w.WriteBytes(_quotation)
-		js.WriteString(span.TraceID())
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("ParentId")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		w.WriteBytes(_quotation)
-		js.WriteString(span.ParentID())
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("InternalParentId")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		w.WriteBytes(_quotation)
-		js.WriteString(span.InternalParentID())
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("SpanId")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		w.WriteBytes(_quotation)
-		js.WriteString(span.ID())
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("StartTime")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		js.write(field.TimeField(span.StartTime))
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("EndTime")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		js.write(field.TimeField(span.EndTime))
-		w.WriteBytes(_seperator)
-
-		w.WriteBytes(_quotation)
-		js.safeWriteString("Attributes")
-		w.WriteBytes(_quotation)
-		w.WriteBytes(_colon)
-		js.write(&span.Attributes)
-
-		_, res := w.WriteBytes(_rightBigBracket)
-		return res
 
 	case field.JsonType:
 		j := f.(*field.JsonFiled)
-		b,err := json.Marshal(j.Data)
+		b, err := json.Marshal(j.Data)
 
-		if err != nil{
+		if err != nil {
 			return err
 		}
-		_,res := w.WriteBytes(b)
+		_, res := w.WriteBytes(b)
 		return res
 	}
 
@@ -325,12 +220,6 @@ func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 		_, res = w.WriteBytes(bytes[left:])
 	}
 	return left, res
-}
-
-func (js *JsonEncoder) WriteString(c string) (int, error) {
-	b := js.string2Bytes(c)
-	n, err := js.buf.Write(b)
-	return n, err
 }
 
 func (js *JsonEncoder) WriteBytes(c []byte) (int, error) {

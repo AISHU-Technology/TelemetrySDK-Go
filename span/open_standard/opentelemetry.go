@@ -1,18 +1,23 @@
 package open_standard
 
 import (
-	"os"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+
+	"os"
 	"time"
 )
 
 const (
-	rootSpan = iota
+	rootSpan                = iota
+	OpenTelemetrySDKVersion = "v1.6.1"
+	SDKName                 = "Telemetry SDK"
+	SDKVersion              = "2.0.0"
+	SDKLanguage             = "go"
 )
 
 type Writer interface {
-	Write(field.InternalSpan) error
+	Write(field.LogSpan) error
 	Close() error
 }
 
@@ -33,7 +38,7 @@ func NewOpenTelemetry(enc encoder.Encoder, resources field.Field) OpenTelemetry 
 	return res
 }
 
-func (o *OpenTelemetry) Write(t field.InternalSpan) error {
+func (o *OpenTelemetry) Write(t field.LogSpan) error {
 	return o.write(t, rootSpan)
 }
 
@@ -45,9 +50,9 @@ func (o *OpenTelemetry) SetDefultResources() {
 			f.Set(k, field.StringField(v))
 		}
 	}
-	f.Set("telemetry.sdk.name", field.StringField("Aishu custom opentelemetry"))
-	f.Set("telemetry.sdk.version", field.StringField("1.0.0"))
-	f.Set("telemetry.sdk.language", field.StringField("go"))
+	f.Set("telemetry.sdk.name", field.StringField(SDKName))
+	f.Set("telemetry.sdk.version", field.StringField(SDKVersion))
+	f.Set("telemetry.sdk.language", field.StringField(SDKLanguage))
 
 	o.Resource = f
 }
@@ -56,28 +61,18 @@ func (o *OpenTelemetry) Close() error {
 	return o.Encoder.Close()
 }
 
-func (o *OpenTelemetry) write(t field.InternalSpan, flag int) error {
+func (o *OpenTelemetry) write(t field.LogSpan, flag int) error {
 	var err error
 	telemetry := field.MallocStructField(8)
-	telemetry.Set("Version", field.StringField("AISHUV0"))
+	telemetry.Set("Version", field.StringField(OpenTelemetrySDKVersion))
 	telemetry.Set("TraceId", field.StringField(t.TraceID()))
-	telemetry.Set("SpanId", field.StringField(t.ID()))
-	telemetry.Set("ParentId", field.StringField(t.ParentID()))
-	telemetry.Set("StartTime", field.TimeField(t.Time()))
-	telemetry.Set("EndTime", field.TimeField(time.Now()))
+	telemetry.Set("SpanId", field.StringField(t.SpanID()))
+	telemetry.Set("Timestamp", field.TimeField(time.Now()))
 
-	events := field.ArrayField(t.ListRecord())
-	body := field.MallocStructField(3)
-	body.Set("Events", &events)
-	metrics := field.ArrayField(t.ListMetric())
-	body.Set("Metrics", &metrics)
-	external := field.ArrayField(t.ListExternalSpan())
-	body.Set("ExternalSpans", &external)
-	telemetry.Set("Body", body)
+	telemetry.Set("Body", t.GetRecord())
 	attrs := t.GetAttributes()
-	if attrs != nil {
-		telemetry.Set("Attributes", attrs)
-	}
+
+	telemetry.Set("Attributes", attrs)
 
 	if o.Resource == nil {
 		o.SetDefultResources()
@@ -88,14 +83,6 @@ func (o *OpenTelemetry) write(t field.InternalSpan, flag int) error {
 	err = o.Encoder.Write(telemetry)
 	if err != nil {
 		return err
-	}
-
-	// for _, m := range t.ListMetric() {
-	// 	err = o.Encoder.Write(&m)
-	// }
-
-	for _, c := range t.ListChildren() {
-		err = o.Write(c)
 	}
 
 	return err

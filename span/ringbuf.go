@@ -13,7 +13,7 @@ type ringBuffer struct {
 	length     int
 	head       int
 	tail       int
-	buffer     []field.InternalSpan
+	buffer     []field.LogSpan
 	headLocker *sync.RWMutex
 	tailLocker *sync.RWMutex
 	dataLocker sync.Locker
@@ -26,7 +26,7 @@ func initRingBuffer(l int) ringBuffer {
 		length:     0,
 		head:       0,
 		tail:       0,
-		buffer:     make([]field.InternalSpan, l),
+		buffer:     make([]field.LogSpan, l),
 		headLocker: &sync.RWMutex{},
 		tailLocker: &sync.RWMutex{},
 		dataLocker: &sync.Mutex{},
@@ -34,7 +34,7 @@ func initRingBuffer(l int) ringBuffer {
 	}
 }
 
-func (b *ringBuffer) push(s field.InternalSpan) {
+func (b *ringBuffer) push(s field.LogSpan) {
 	for {
 		b.tailLocker.RLock()
 		b.dataLocker.Lock()
@@ -61,7 +61,7 @@ func (b *ringBuffer) push(s field.InternalSpan) {
 
 }
 
-func (b *ringBuffer) pull() field.InternalSpan {
+func (b *ringBuffer) pull() field.LogSpan {
 	b.headLocker.RLock()
 	defer b.headLocker.RUnlock()
 	b.dataLocker.Lock()

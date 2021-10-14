@@ -2,59 +2,70 @@ package log
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/open_standard"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
+	"io/ioutil"
 	"testing"
 	"time"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
-func testLogString(l *SamplerLogger, span field.InternalSpan) {
-	l.Trace(string(TraceLevelString), span)
-	l.Debug(string(DebugLevelString), span)
-	l.Info(string(InfoLevelString), span)
-	l.Warn(string(WarnLevelString), span)
-	l.Error(string(ErrorLevelString), span)
-	l.Fatal(string(FatalLevelString), span)
+func testLogString(l *SamplerLogger) {
+	attr := field.NewAttribute("test", field.StringField("test attr"))
+	l.Trace(string(TraceLevelString), nil)
+	l.Debug(string(DebugLevelString), nil)
+	l.Info(string(InfoLevelString), nil)
+	l.Warn(string(WarnLevelString), nil)
+	l.Error(string(ErrorLevelString), nil)
+	l.Fatal(string(FatalLevelString), nil)
+
+	l.Trace(string(TraceLevelString), attr)
+	l.Debug(string(DebugLevelString), attr)
+	l.Info(string(InfoLevelString), attr)
+	l.Warn(string(WarnLevelString), attr)
+	l.Error(string(ErrorLevelString), attr)
+	l.Fatal(string(FatalLevelString), attr)
 }
 
-func testLogField(l *SamplerLogger, span field.InternalSpan) {
-	l.TraceField(TraceLevelString, "test", span)
-	l.DebugField(DebugLevelString, "test", span)
-	l.InfoField(InfoLevelString, "test", span)
-	l.WarnField(WarnLevelString, "test", span)
-	l.ErrorField(ErrorLevelString, "test", span)
-	l.FatalField(FatalLevelString, "test", span)
+func testLogField(l *SamplerLogger) {
+	attr := field.NewAttribute("test", field.StringField("test attr"))
+	l.TraceField(TraceLevelString, "test", attr)
+	l.DebugField(DebugLevelString, "test", attr)
+	l.InfoField(InfoLevelString, "test", attr)
+	l.WarnField(WarnLevelString, "test", attr)
+	l.ErrorField(ErrorLevelString, "test", attr)
+	l.FatalField(FatalLevelString, "test", attr)
+
+	l.TraceField(TraceLevelString, "test", nil)
+	l.DebugField(DebugLevelString, "test", nil)
+	l.InfoField(InfoLevelString, "test", nil)
+	l.WarnField(WarnLevelString, "test", nil)
+	l.ErrorField(ErrorLevelString, "test", nil)
+	l.FatalField(FatalLevelString, "test", nil)
 }
 
 func testLogLevel(t *testing.T, l *SamplerLogger, level int) {
-	l.LogLevel = level
-	s := l.NewInternalSpan()
-	testLogString(l, s)
-	s.Signal()
-	assert.Equal(t, len(s.ListRecord()), FatalLevel-level+1)
-
-	s = l.NewInternalSpan()
-	testLogField(l, s)
-	assert.Equal(t, len(s.ListRecord()), FatalLevel-level+1)
-	s.Signal()
-
+	l.SetLevel(level)
+	testLogString(l)
+	testLogField(l)
 }
 
 func TestSamplerLoggerSpan(t *testing.T) {
 	buf := ioutil.Discard
-	l := NewdefaultSamplerLogger()
+	l := NewDefaultSamplerLogger()
 	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
 		Encoder: encoder.NewJsonEncoder(buf),
 	}, field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()
+
+	l.SetContext(context.Background())
 
 	testLogLevel(t, l, TraceLevel)
 	testLogLevel(t, l, DebugLevel)
@@ -66,19 +77,10 @@ func TestSamplerLoggerSpan(t *testing.T) {
 	l.Close()
 }
 
-// func TestDefer(t *testing.T) {
-// 	fmt.Println("1111")
-// 	b := true
-// 	if b {
-// 		defer fmt.Println("3333")
-// 	}
-// 	fmt.Println("2222")
-// }
-
 func TestSampleCheck(t *testing.T) {
 	count := 1000000
 	total := 0
-	l := NewdefaultSamplerLogger()
+	l := NewDefaultSamplerLogger()
 	l.Sample = 1
 	for i := 0; i < count; i += 1 {
 		if l.sampleCheck() {
@@ -111,7 +113,7 @@ func TestSampleCheck(t *testing.T) {
 
 func TestSamplerLoggerNil(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
-	l := NewdefaultSamplerLogger()
+	l := NewDefaultSamplerLogger()
 	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
 		Encoder: encoder.NewJsonEncoder(buf),
 	}, field.NewSpanFromPool)
@@ -120,14 +122,11 @@ func TestSamplerLoggerNil(t *testing.T) {
 	go run.Run()
 
 	// test nil span to record
-	testLogField(l, nil)
-
-	m := field.Mmetric{}
-	l.RecordMetrics(m, nil)
+	testLogField(l)
 
 	l.Close()
 	time.Sleep(1 * time.Second)
-	assert.Assert(t, buf.Len() > 0, "record shouldn't drop")
+	assert.True(t, buf.Len() > 0, "record shouldn't drop")
 
 	// test runtime is nil
 	run = runtime.NewRuntime(&open_standard.OpenTelemetry{
@@ -138,75 +137,49 @@ func TestSamplerLoggerNil(t *testing.T) {
 
 	l.runtime = nil
 	buf.Reset()
-	testLogField(l, nil)
+	testLogField(l)
 	l.Close()
 	run.Signal()
 	time.Sleep(1 * time.Second)
-	assert.Assert(t, buf.Len() == 0, "record should drop")
+	assert.True(t, buf.Len() == 0, "record should drop")
 
-	testLogString(l, nil)
-	assert.Assert(t, buf.Len() == 0, "record should drop")
-
-	l.RecordMetrics(m, nil)
-	assert.Assert(t, buf.Len() == 0, "metrics should drop")
+	testLogString(l)
+	assert.True(t, buf.Len() == 0, "record should drop")
 
 }
 
 func TestSamplerLoggerClose(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
-	l := NewdefaultSamplerLogger()
+	l := NewDefaultSamplerLogger()
 	enc := encoder.NewJsonEncoder(buf)
-	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
-		Encoder: enc,
-	}, field.NewSpanFromPool)
+	ot := open_standard.NewOpenTelemetry(enc, nil)
+	run := runtime.NewRuntime(&ot, field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()
 
-	// runtime will wait sub internalSpan completed
-	s := l.NewInternalSpan()
+	// runtime will wait sub LogSpan completed
+
 	go l.Close()
-	testLogField(l, s)
-	s.Signal()
+	testLogField(l)
 
 	// run.Signal()
 	// assert.Equal(t, nil, enc.Close())
 	time.Sleep(1 * time.Second)
-	assert.Assert(t, buf.Len() > 0, "record drop")
+	assert.True(t, buf.Len() > 0, "record drop")
 
 	buf.Reset()
 
 	// will not log after runtime is closed
-	testLogField(l, nil)
+	testLogField(l)
 
 	time.Sleep(1 * time.Second)
-	assert.Assert(t, buf.Len() == 0, "record error")
-
-	assert.Equal(t, l.NewInternalSpan(), nil)
-	es, err := l.NewExternalSpan(nil)
-	assert.Assert(t, es == nil, "NewExternalSpan error")
-	assert.Equal(t, err, field.NilPointerError)
-
-	es, err = l.NewExternalSpan(s)
-	assert.Assert(t, es != nil, "NewExternalSpan error")
-	assert.Equal(t, err, nil)
-
+	assert.True(t, buf.Len() == 0, "record error")
 }
 
-// func TestwaitgroupSync(t *testing.T) {
-// 	wg := &sync.WaitGroup{}
-// 	wg.Add(1)
-// 	go func() {
-// 		time.Sleep(1 * time.Second)
-// 		wg.Done()
-// 	}()
-// 	wg.Wait()
-// 	fmt.Println("wait first")
-// 	wg.Wait()
-// }
 func TestSamplerLogger(t *testing.T) {
 	// 0. create logger and start runtime
 	buf := bytes.NewBuffer(nil)
-	l := NewdefaultSamplerLogger()
+	l := NewDefaultSamplerLogger()
 	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
 		Encoder: encoder.NewJsonEncoder(buf),
 	}, field.NewSpanFromPool)
@@ -214,80 +187,24 @@ func TestSamplerLogger(t *testing.T) {
 	l.LogLevel = AllLevel
 	go run.Run()
 
-	// 1. first create a root internalSpan
-	root := l.NewInternalSpan()
+	// 1.1 log message into roor LogSpan
+	l.Debug("debug string message", nil)
+	l.DebugField(field.StringField("debug field message"), "test", nil)
 
-	// 1.0 set trace info for root internalSpan
-	traceID := field.GenSpanID()
-	externalParentID := field.GenSpanID()
-	l.SetTraceID(traceID, root)
-	l.SetParentID(externalParentID, root)
-
-	// 1.1 log message into roor internalSpan
-	l.Debug("debug string message", root)
-	l.DebugField(field.StringField("debug field message"), "test", root)
-
-	// 1.2 set attributes for a span
 	attrs := field.MallocStructField(3)
 	attrs.Set("work", field.StringField("test"))
 	attrs.Set("testFunc", field.StringField("TestSamplerLogger"))
 	attrs.Set("testSpan", field.StringField("root"))
-	l.SetAttributes("SampleLogerTest", attrs, root)
+	// set attr
 
-	// 1.3 create a child internalSpan from root for a sub thread/task
-	child0 := l.ChildrenInternalSpan(root)
-
-	// 1.4 start a new thread for sub task
-	go func() {
-		// 2.1 log message into child internalSpan for child thread
-		l.Debug("debug string", child0)
-
-		// 2.X signal child0
-		child0.Signal()
-	}()
-
-	// 1.5 record some metric into root internalSpan
-	m := field.Mmetric{}
-	m.Set("root thread", 0.0)
-	m.AddLabel("root")
-	m.AddLabel("metric")
-	m.AddAttribute("root", "root span")
-	l.RecordMetrics(m, root)
-
-	// 1.6 record first external request into root internalSpan
-	es, err := l.NewExternalSpan(root)
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-
-	// 1.6.1 get trace info for some work
-	tID := es.TraceID()
-	espID := es.ParentID()
-	parentID := es.ParentID()
-	spanID := es.ID()
-	// 1.6.2 write info to external span
-	es.StartTime = time.Now()
-	es.EndTime = time.Now()
-	es.Attributes.Set("method", field.StringField("test"))
-	es.Attributes.Set("host", field.StringField("test"))
-	es.Attributes.Set("attr0", field.StringField(tID))
-	es.Attributes.Set("attr1", field.StringField(espID))
-	es.Attributes.Set("attr2", field.StringField(parentID))
-	es.Attributes.Set("attr3", field.StringField(spanID))
-
-	// 1.X signal root internalSpan
-	root.Signal()
+	attr := field.NewAttribute("attr", attrs)
+	l.Info("infomessage", attr)
 
 	// final close runtime and clean work space
 	l.Close()
 	// run.Signal()
 
 	time.Sleep(1 * time.Second)
-
-	// check test result
-	assert.Equal(t, traceID, tID)
-	assert.Equal(t, externalParentID, espID)
 
 	cap := map[string]interface{}{}
 	bytes := buf.Bytes()
@@ -296,7 +213,7 @@ func TestSamplerLogger(t *testing.T) {
 	n := 0
 	for ; i < len(bytes); i += 1 {
 		if bytes[i] == '\n' {
-			if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+			if err := json.Unmarshal(bytes[left:i], &cap); err != nil {
 				t.Error(err)
 				t.FailNow()
 			} else {
@@ -308,7 +225,7 @@ func TestSamplerLogger(t *testing.T) {
 		}
 	}
 	if left < len(bytes) {
-		if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+		if err := json.Unmarshal(bytes[left:i], &cap); err != nil {
 			t.Error(err)
 			t.FailNow()
 		} else {

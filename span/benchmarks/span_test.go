@@ -2,8 +2,8 @@ package benchmarks
 
 import (
 	"bytes"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"sync"
 	"testing"
 	"time"
@@ -127,15 +127,13 @@ func getTestStructField() field.Field {
 	return res
 }
 
-
 func getTestJson() field.Field {
 
 	type A struct {
 		Name string
-		Age int
+		Age  int
 	}
-	var a = &A{Name:"123",Age:12,}
-
+	var a = &A{Name: "123", Age: 12}
 
 	return field.MallocJsonField(a)
 }

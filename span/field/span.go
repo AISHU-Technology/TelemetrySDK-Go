@@ -1,273 +1,206 @@
 package field
 
 import (
-	// "span/field"
+	"context"
+	crand "crypto/rand"
 	"encoding/binary"
-	"encoding/hex"
+	"go.opentelemetry.io/otel/trace"
+	"math/rand"
 	"sync"
-	"time"
 )
 
-var BaseNum uint64
-var BaseNumLock sync.Locker
-var ServiceID [8]byte
+type LogSpan interface {
+	SetAttributes(attribute *Attribute)
 
-func init() {
-	BaseNum = uint64(0)
-	ServiceID = [8]byte{}
-	BaseNumLock = &sync.RWMutex{}
-}
-
-// type OpenTelemetry struct {
-// 	Time       time.Time
-// 	Trace      []*HttpInfo
-// 	Severity   int
-// 	Name       string
-// 	Body       interface{}
-// 	Resource   interface{}
-// 	Attributes interface{}
-// 	Sub        []OpenTelemetry
-// }
-
-// GenSpanID is unsafe
-func GenSpanID() string {
-	BaseNumLock.Lock()
-	defer BaseNumLock.Unlock()
-	BaseNum += 1
-	return genSpanID(ServiceID, BaseNum)
-
-}
-
-func GenTraceID() string {
-	return GenSpanID()
-}
-
-// genSpanID support 2^64 item/ns, thread unsafe
-func genSpanID(service [8]byte, base uint64) string {
-	var id [24]byte
-	now := time.Now().Nanosecond()
-	timeLow := uint32(now & 0xffffffff)
-	timeMid := uint16((now >> 32) & 0xffff)
-	timeHi := uint16((now >> 48) & 0x0fff)
-	timeHi |= 0x1000 // Version 1
-
-	binary.BigEndian.PutUint32(id[0:], timeLow)
-	binary.BigEndian.PutUint16(id[4:], timeMid)
-	binary.BigEndian.PutUint16(id[6:], timeHi)
-
-	base += 1
-	binary.BigEndian.PutUint64(id[8:], base)
-	copy(id[16:], service[:])
-
-	return hex.EncodeToString(id[:])
-
-}
-
-type InternalSpan interface {
-	// Children create children span, children work for sub thread or sub task
-	Children() InternalSpan
-	ListChildren() []InternalSpan
-	// Parent(Span)
-	ParentID() string
-	SetParentID(string)
-
-	// SetAttributes
-	SetAttributes(string, Field)
 	GetAttributes() Field
-
 	// Recode record log
-	Record(Field)
-	ListRecord() []Field
+	SetRecord(Field)
 
-	// metric record metric info
-	Metric(Mmetric)
-	ListMetric() []Field
+	GetRecord() Field
 
-	// trace init a trace for request
 	TraceID() string
-	ID() string
-	SetTraceID(ID string)
-	ListExternalSpan() []Field
+	SpanID() string
 
-	// NewExternalSpan create a httpspan
-	// user should write data to span before span.Signal() for thread safe
-	NewExternalSpan() *ExternalSpanField
+	GetLogLevel() Field
+	SetLogLevel(field Field)
 
 	// Signal notify parent span， this span's work is done
 	// Span should do Signal after work end
 	Signal()
 
-	Time() time.Time
+	SetContext(ctx context.Context)
+
+	GetContext() context.Context
+
 	Free()
 }
 
-type internalSpanV1 struct {
-	Records             []Field
-	Metrics             []Field
-	httpSpan            []Field
-	transfer            func(InternalSpan) // use to transfer span's ownership
-	children            []InternalSpan
-	id                  string
-	wg                  sync.WaitGroup
-	time                time.Time
-	lock                sync.RWMutex
-	traceID             string
-	parentID            string
-	externalParentField string
-	attributes          Field
+type Attribute struct {
+	Type    string
+	Message Field
+}
+
+func NewAttribute(typ string, message Field) *Attribute {
+	return &Attribute{
+		Type:    typ,
+		Message: message,
+	}
+}
+
+type LogSpanV1 struct {
+	log      Field
+	transfer func(LogSpan) // use to transfer span's ownership
+	level    Field
+	wg       sync.WaitGroup
+
+	lock sync.RWMutex
+	//traceID    string
+	ctx context.Context
+
+	genID      *randomIDGenerator
+	attributes Field
 }
 
 var Pool = sync.Pool{
 	New: func() interface{} {
-		return newSpan(nil, "")
+		return newSpan(nil, context.Background())
 	},
 }
 
 // NewSpan get span from sync.pool
-func NewSpanFromPool(own func(InternalSpan), traceID string) InternalSpan {
-	s := Pool.Get().(*internalSpanV1)
+func NewSpanFromPool(own func(LogSpan), ctx context.Context) LogSpan {
+	s := Pool.Get().(*LogSpanV1)
 	// s.reset()
 	s.transfer = own
-	s.time = time.Now()
-	s.id = GenSpanID()
-	s.traceID = traceID
+	s.ctx = ctx
 	return s
 }
 
-func newSpan(own func(InternalSpan), traceID string) InternalSpan {
-	s := &internalSpanV1{}
+func newSpan(own func(LogSpan), ctx context.Context) LogSpan {
+	s := &LogSpanV1{}
+	s.ctx = ctx
 	s.init()
-	s.id = GenSpanID()
 	s.transfer = own
-	s.traceID = traceID
 	return s
 }
 
-func (l *internalSpanV1) init() {
-	l.time = time.Now()
-
-	l.id = GenSpanID()
+func (l *LogSpanV1) init() {
 	l.wg = sync.WaitGroup{}
 	l.lock = sync.RWMutex{}
+	l.genID = defaultIDGenerator()
 	l.reset()
 }
 
-func (l *internalSpanV1) reset() {
-	l.httpSpan = l.httpSpan[:0]
-	l.Records = l.Records[:0]
-	l.Metrics = l.Metrics[:0]
-	l.children = l.children[:0]
+func (l *LogSpanV1) SetContext(ctx context.Context) {
+	l.ctx = ctx
+}
+
+func (l *LogSpanV1) GetContext() context.Context {
+	return l.ctx
+}
+
+func (l *LogSpanV1) getTraceSpan() trace.Span {
+	return trace.SpanFromContext(l.ctx)
+}
+
+func (l *LogSpanV1) reset() {
+	l.log = nil
 	l.transfer = nil
+	l.ctx = nil
 }
 
-func (l *internalSpanV1) SetAttributes(typ string, attrs Field) {
-	a := MallocStructField(2)
-	a.Set("type", StringField(typ))
-	a.Set(typ, attrs)
-	l.attributes = a
+func (l *LogSpanV1) SetAttributes(attribute *Attribute) {
+	record := MallocStructField(2)
+	record.Set(attribute.Type, attribute.Message)
+	record.Set("Type", StringField(attribute.Type))
+	l.attributes = record
 }
 
-func (l *internalSpanV1) GetAttributes() Field {
+func (l *LogSpanV1) GetAttributes() Field {
+	if l.attributes == nil {
+		return MallocStructField(0)
+	}
 	return l.attributes
 }
 
-func (l *internalSpanV1) Children() InternalSpan {
-	return l.newChildren()
-}
-
-func (l *internalSpanV1) newChildren() *internalSpanV1 {
-	l.wg.Add(1)
-	s := NewSpanFromPool(func(InternalSpan) {
-		l.wg.Done()
-	}, l.traceID).(*internalSpanV1)
-	s.SetParentID(l.id)
-	s.externalParentField = l.externalParentField
-	l.children = append(l.children, s)
-	s.attributes = l.attributes
-	return s
-}
-
-func (l *internalSpanV1) ListChildren() []InternalSpan {
-	return l.children[:]
-}
-
-func (l *internalSpanV1) Signal() {
+func (l *LogSpanV1) Signal() {
 	go func() {
 		l.wg.Wait()
 		if l.transfer != nil {
 			l.transfer(l)
 		}
 	}()
-	// l.wg.Wait()
-	// if l.transfer != nil {
-	// 	l.transfer(l)
-	// }
+
 }
 
-func (l *internalSpanV1) Free() {
-	for _, c := range l.children {
-		c.Free()
-	}
+func (l *LogSpanV1) Free() {
 	l.reset()
 	Pool.Put(l)
 }
 
-func (l *internalSpanV1) Time() time.Time {
-	return l.time
+func (l *LogSpanV1) SetRecord(r Field) {
+	l.log = r
 }
 
-func (l *internalSpanV1) ID() string {
-	return l.id
+func (l *LogSpanV1) GetRecord() Field {
+	return l.log
 }
 
-func (l *internalSpanV1) Record(r Field) {
-	l.Records = append(l.Records, r)
+func (l *LogSpanV1) GetLogLevel() Field {
+	return l.level
 }
 
-func (l *internalSpanV1) ListRecord() []Field {
-	return l.Records[:]
+func (l *LogSpanV1) SetLogLevel(level Field) {
+	l.level = level
 }
 
-func (l *internalSpanV1) Metric(m Mmetric) {
-	l.Metrics = append(l.Metrics, &m)
+// ctx is nil or not trace context,return true
+func (l *LogSpanV1) IsNilContext() bool {
+	spanCtx := l.getTraceSpan().SpanContext()
+	return l.ctx == nil || (spanCtx.TraceID() == trace.TraceID{} && spanCtx.SpanID() == trace.SpanID{})
 }
 
-func (l *internalSpanV1) ListMetric() []Field {
-	return l.Metrics[:]
-}
-
-func (l *internalSpanV1) TraceID() string {
-	return l.traceID
-
-}
-
-func (l *internalSpanV1) SetTraceID(ID string) {
-	l.traceID = ID
-}
-
-func (l *internalSpanV1) ParentID() string {
-	return l.parentID
-}
-
-func (l *internalSpanV1) SetParentID(ID string) {
-	l.parentID = ID
-	l.externalParentField = ID
-}
-
-// NewHttpSpan create a httpspan
-// user should write data to span before span.signal
-func (l *internalSpanV1) NewExternalSpan() *ExternalSpanField {
-	span := &ExternalSpanField{
-		traceID:          l.traceID,
-		id:               GenSpanID(),
-		parentID:         l.externalParentField,
-		internalParentID: l.id,
+func (l *LogSpanV1) TraceID() string {
+	if l.IsNilContext() {
+		return l.genID.NewTraceID()
 	}
-	l.httpSpan = append(l.httpSpan, span)
-	return span
+	return l.getTraceSpan().SpanContext().TraceID().String()
 }
 
-func (l *internalSpanV1) ListExternalSpan() []Field {
-	return l.httpSpan[:]
+func (l *LogSpanV1) SpanID() string {
+	if l.IsNilContext() {
+		return l.genID.NewSpanID()
+	}
+	return l.getTraceSpan().SpanContext().SpanID().String()
 }
 
+type randomIDGenerator struct {
+	sync.Mutex
+	randSource *rand.Rand
+}
+
+func (gen *randomIDGenerator) NewSpanID() string {
+	gen.Lock()
+	defer gen.Unlock()
+	sid := trace.SpanID{}
+	gen.randSource.Read(sid[:])
+	return sid.String()
+}
+
+// NewIDs returns a non-zero trace ID and a non-zero span ID from a
+// randomly-chosen sequence.
+func (gen *randomIDGenerator) NewTraceID() string {
+	gen.Lock()
+	defer gen.Unlock()
+	tid := trace.TraceID{}
+	gen.randSource.Read(tid[:])
+	return tid.String()
+}
+
+func defaultIDGenerator() *randomIDGenerator {
+	gen := &randomIDGenerator{}
+	var rngSeed int64
+	_ = binary.Read(crand.Reader, binary.LittleEndian, &rngSeed)
+	gen.randSource = rand.New(rand.NewSource(rngSeed))
+	return gen
+}

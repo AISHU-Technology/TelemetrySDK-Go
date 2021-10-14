@@ -4,14 +4,15 @@
 //
 // logger can use to log internal thread/task with InteranlSpan.
 //
-// A InternalSpan use to describe a thread job info or a task info. You can get a thread context info ever recorded.
+// A LogSpan use to describe a thread job info or a task info. You can get a thread context info ever recorded.
 // And then aggregation Span by TraceID or describe a Trace tree by SpanID and TraceID
 package log
 
 import (
-	"math/rand"
+	"github.com/hashicorp/go.net/context"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
+	"math/rand"
 	"time"
 )
 
@@ -24,17 +25,21 @@ type SamplerLogger struct {
 	// logger info
 	LogLevel int
 	runtime  *runtime.Runtime
+	ctx      context.Context
 }
 
-func NewdefaultSamplerLogger() *SamplerLogger {
+func NewDefaultSamplerLogger() *SamplerLogger {
 	return &SamplerLogger{
 		Sample:   1.0,
 		LogLevel: InfoLevel,
 	}
 }
 
-func newStructRecord() *field.StructField {
-	return field.MallocStructField(1)
+func newRecord(typ string, message field.Field) field.Field {
+	record := field.MallocStructField(2)
+	record.Set(typ, message)
+	record.Set("Type", field.StringField(typ))
+	return record
 }
 
 // close logger
@@ -53,9 +58,9 @@ func (s *SamplerLogger) SetRuntime(r *runtime.Runtime) {
 	s.runtime = r
 }
 
-func (s *SamplerLogger) getInternalSpan() field.InternalSpan {
+func (s *SamplerLogger) getLogSpan() field.LogSpan {
 	if s.runtime != nil {
-		return s.runtime.Children()
+		return s.runtime.Children(s.ctx)
 	}
 	return nil
 }
@@ -86,375 +91,207 @@ func (s *SamplerLogger) SetLevel(level int) {
 	s.LogLevel = level
 }
 
-// TraceField do a trace log a object into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) TraceField(message field.Field, typ string, l field.InternalSpan) {
+// set context,if use trace,logSpan will Inheritance trace context,else ctx is nil or background
+func (s *SamplerLogger) SetContext(ctx context.Context) {
+	s.ctx = ctx
+}
+
+func (s *SamplerLogger) writeLogField(typ string, message, level field.Field, attr *field.Attribute) {
+	l := s.getLogSpan()
+	if l == nil {
+		return
+	}
+	defer l.Signal()
+
+	l.SetLogLevel(level)
+	record := newRecord(typ, message)
+	l.SetRecord(record)
+	if attr != nil {
+		l.SetAttributes(attr)
+	}
+}
+
+func (s *SamplerLogger) writeLog(message string, level field.Field, attr *field.Attribute) {
+	l := s.getLogSpan()
+	if l == nil {
+		return
+	}
+	defer l.Signal()
+
+	l.SetLogLevel(level)
+	record := field.MallocStructField(1)
+	record.Set("Message", field.StringField(message))
+	l.SetRecord(record)
+	if attr != nil {
+		l.SetAttributes(attr)
+	}
+}
+
+// TraceField do a trace log a object into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) TraceField(message field.Field, typ string, attr *field.Attribute) {
 	if TraceLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
+	s.writeLogField(typ, message, TraceLevelString, attr)
 
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", TraceLevelString)
-
-	r.Set(typ, message)
-	r.Set("timestamp", field.TimeField(time.Now()))
-	r.Set("type", field.StringField(typ))
-
-	l.Record(r)
 }
 
-// DebugField do a debug log a object into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) DebugField(message field.Field, typ string, l field.InternalSpan) {
+// DebugField do a debug log a object into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) DebugField(message field.Field, typ string, attr *field.Attribute) {
 	if DebugLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", DebugLevelString)
-	r.Set(typ, message)
-	r.Set("timestamp", field.TimeField(time.Now()))
-	r.Set("type", field.StringField(typ))
-	l.Record(r)
+	s.writeLogField(typ, message, DebugLevelString, attr)
 }
 
-// InfoField do a Info log a object into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) InfoField(message field.Field, typ string, l field.InternalSpan) {
+// InfoField do a Info log a object into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) InfoField(message field.Field, typ string, attr *field.Attribute) {
 	if InfoLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", InfoLevelString)
-	r.Set(typ, message)
-	r.Set("timestamp", field.TimeField(time.Now()))
-	r.Set("type", field.StringField(typ))
-	l.Record(r)
+	s.writeLogField(typ, message, TraceLevelString, attr)
 }
 
-// WarnField do a Warn log a object into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) WarnField(message field.Field, typ string, l field.InternalSpan) {
+// WarnField do a Warn log a object into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) WarnField(message field.Field, typ string, attr *field.Attribute) {
 	if WarnLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", WarnLevelString)
-	r.Set(typ, message)
-	r.Set("timestamp", field.TimeField(time.Now()))
-	r.Set("type", field.StringField(typ))
-	l.Record(r)
+	s.writeLogField(typ, message, TraceLevelString, attr)
 }
 
-// ErrorField do a Error log a object into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) ErrorField(message field.Field, typ string, l field.InternalSpan) {
+// ErrorField do a Error log a object into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) ErrorField(message field.Field, typ string, attr *field.Attribute) {
 	if ErrorLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", ErrorLevelString)
-	r.Set(typ, message)
-	r.Set("timestamp", field.TimeField(time.Now()))
-	r.Set("type", field.StringField(typ))
-	l.Record(r)
+	s.writeLogField(typ, message, TraceLevelString, attr)
 }
 
-// FatalField do a Fatal log a object into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) FatalField(message field.Field, typ string, l field.InternalSpan) {
+// FatalField do a Fatal log a object into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) FatalField(message field.Field, typ string, attr *field.Attribute) {
 	if FatalLevel < s.LogLevel {
 		return
 	}
 
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", FatalLevelString)
-	r.Set(typ, message)
-	r.Set("timestamp", field.TimeField(time.Now()))
-	r.Set("type", field.StringField(typ))
-	l.Record(r)
+	s.writeLogField(typ, message, TraceLevelString, attr)
 }
 
-// Trace do a trace string log into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) Trace(message string, l field.InternalSpan) {
+// Trace do a trace string log into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) Trace(message string, attr *field.Attribute) {
 	if TraceLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", TraceLevelString)
-	r.Set("message", field.StringField(message))
-	r.Set("timestamp", field.TimeField(time.Now()))
-	l.Record(r)
+	s.writeLog(message, TraceLevelString, attr)
 }
 
-// Debug do a Debug string log into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) Debug(message string, l field.InternalSpan) {
+// Debug do a Debug string log into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) Debug(message string, attr *field.Attribute) {
 	if DebugLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", DebugLevelString)
-	r.Set("message", field.StringField(message))
-	r.Set("timestamp", field.TimeField(time.Now()))
-	l.Record(r)
+	s.writeLog(message, DebugLevelString, attr)
 }
 
-// Info do a Info string log into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) Info(message string, l field.InternalSpan) {
+// Info do a Info string log into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) Info(message string, attr *field.Attribute) {
 	if InfoLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", InfoLevelString)
-	r.Set("message", field.StringField(message))
-	r.Set("timestamp", field.TimeField(time.Now()))
-	l.Record(r)
+	s.writeLog(message, InfoLevelString, attr)
 }
 
-// Warn do a Warn string log into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) Warn(message string, l field.InternalSpan) {
+// Warn do a Warn string log into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) Warn(message string, attr *field.Attribute) {
 	if WarnLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", WarnLevelString)
-	r.Set("message", field.StringField(message))
-	r.Set("timestamp", field.TimeField(time.Now()))
-	l.Record(r)
+	s.writeLog(message, WarnLevelString, attr)
 }
 
-// Error do a Error string log into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) Error(message string, l field.InternalSpan) {
+// Error do a Error string log into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) Error(message string, attr *field.Attribute) {
 	if ErrorLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", ErrorLevelString)
-	r.Set("message", field.StringField(message))
-	r.Set("timestamp", field.TimeField(time.Now()))
-	l.Record(r)
+	s.writeLog(message, ErrorLevelString, attr)
 }
 
-// Fatal do a Fatal string log into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) Fatal(message string, l field.InternalSpan) {
+// Fatal do a Fatal string log into LogSpan,
+// if LogSpan is not nil, this interface will log the info,
+// but not signal the LogSpan
+// if LogSpan is nil, this interface will create a LogSpan
+// to log the info and signal the LogSpan.
+func (s *SamplerLogger) Fatal(message string, attr *field.Attribute) {
 	if FatalLevel < s.LogLevel {
 		return
 	}
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
-	r := newStructRecord()
-	r.Set("SeverityText", FatalLevelString)
-	r.Set("message", field.StringField(message))
-	r.Set("timestamp", field.TimeField(time.Now()))
-	l.Record(r)
+	s.writeLog(message, FatalLevelString, attr)
 }
 
-// RecordMetrics do a metric log into InternalSpan,
-// if InternalSpan is not nil, this interface will log the info,
-// but not signal the InternalSpan
-// if InternalSpan is nil, this interface will create a InternalSpan
-// to log the info and signal the InternalSpan.
-func (s *SamplerLogger) RecordMetrics(m field.Mmetric, l field.InternalSpan) {
-	if l == nil {
-		l = s.getInternalSpan()
-		if l == nil {
-			return
-		}
-		defer l.Signal()
-	}
+//// NewLogSpan return a root internal span
+//func (s *SamplerLogger) NewLogSpan(ctx context.Context) field.LogSpan {
+//	if s.runtime == nil {
+//		return nil
+//	}
+//	res := s.runtime.Children(ctx)
+//
+//	return res
+//}
 
-	l.Metric(m)
-}
-
-// NewInternalSpan return a root internal span
-func (s *SamplerLogger) NewInternalSpan() field.InternalSpan {
-	if s.runtime == nil {
-		return nil
-	}
-	res := s.runtime.Children()
-	// s.SetTraceID(field.GenTraceID(), res)
-	return res
-}
-
-// ChildrenInternalSpan return a child InternalSpan for given InternalSpan
-// If the InternalSpan is nil, will return nil
-func (s *SamplerLogger) ChildrenInternalSpan(span field.InternalSpan) field.InternalSpan {
-	if span == nil {
-		return nil
-	}
-	res := span.Children()
-	return res
-}
-
-// NewExternalSpan return a ExternalSpan for record exteranl call info.
-// The ExternalSpan will created from InternalSpan.
-// if InternalSpan is nil will return error
-func (s *SamplerLogger) NewExternalSpan(span field.InternalSpan) (*field.ExternalSpanField, error) {
-	if span == nil {
-		return nil, field.NilPointerError
-	}
-	return span.NewExternalSpan(), nil
-}
-
-// SetParentID Set ParentId for the root InternalSpan
-// If the InternalSpan is nil, will do nothing
-func (s *SamplerLogger) SetParentID(ID string, span field.InternalSpan) {
-	if span == nil {
-		return
-	}
-
-	span.SetParentID(ID)
-}
-
-// SetTraceID Set TraceId for the root InternalSpan
-// If the InternalSpan is nil, will do nothing
-func (s *SamplerLogger) SetTraceID(ID string, span field.InternalSpan) {
-	if span == nil {
-		return
-	}
-
-	span.SetTraceID(ID)
-}
-
-// SetAttributes Set attributes for a root internalSpan
-func (s *SamplerLogger) SetAttributes(t string, attrs field.Field, span field.InternalSpan) {
-	if span == nil {
-		return
-	}
-
-	span.SetAttributes(t, attrs)
-}
-
-// func (s *SamplerLogger) Signal(span field.InternalSpan) {
-// 	span.Signal()
-// }
-
+// SetAttributes Set attributes for a root LogSpan
+//func (s *SamplerLogger) SetAttributes(t string, attrs field.Field, span field.LogSpan) {
+//	if span == nil {
+//		return
+//	}
+//
+//	span.SetAttributes(t, attrs)
+//}

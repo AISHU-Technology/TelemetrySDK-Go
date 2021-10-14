@@ -4,31 +4,21 @@ import (
 	bytess "bytes"
 	"encoding/json"
 	"fmt"
-	"runtime"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"runtime"
 	"testing"
+	"time"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
-
-func getTestMetric() field.Mmetric {
-	m := field.Mmetric{}
-	m.AddLabel("test")
-	m.AddLabel("0")
-	m.AddLabel("Metric")
-	m.Set("testMetric0", 0.0)
-	m.AddAttribute("testAttr", "test")
-	return m
-}
 
 func getTestJson() field.Field {
 
 	type A struct {
 		Name string
-		Age int
+		Age  int
 	}
-	var a = &A{Name:"123",Age:12,}
-
+	var a = &A{Name: "123", Age: 12}
 
 	return field.MallocJsonField(a)
 }
@@ -41,7 +31,7 @@ func GetTestFieds() []field.Field {
 	r1.Set("eventNum", field.IntField(2))
 
 	r3 := getTestJson()
-	return []field.Field{r0, r1,r3}
+	return []field.Field{r0, r1, r3}
 
 	// m0 := getTestMetric()
 
@@ -60,6 +50,7 @@ func fakeTestStructField() field.Field {
 	res.Set("Model", field.StringField("test Eacape \\\"\b\f\\t\t{}\r\n"))
 	res.Set("Message", field.StringField(fmt.Sprintf("%s: %d", msg, line)))
 	res.Set("eventNum", field.IntField(1))
+	res.Set("float", field.Float64Field(1.3))
 
 	return res
 }
@@ -93,61 +84,6 @@ func TestJsonEncoder(t *testing.T) {
 	}
 	fmt.Print(b.String())
 
-	// test metric encoder
-	b.Reset()
-	metrics := []field.Mmetric{}
-	metrics = append(metrics, getTestMetric())
-	metrics = append(metrics, getTestMetric())
-	metrics = append(metrics, getTestMetric())
-
-	for _, i := range metrics {
-		enc.Write(&i)
-	}
-	enc.Close()
-
-	// fmt.Println("--------metric-------------:")
-	left = 0
-	i = 0
-	bytess = b.Bytes()
-	for ; i < len(bytess); i += 1 {
-		if bytess[i] == '\n' {
-			if err = json.Unmarshal(bytess[left:i], &check); err != nil {
-				t.Error(err)
-			}
-			left = i + 1
-		}
-	}
-	fmt.Println(b.String())
-
-	// test external Span encoder
-	b.Reset()
-	s := field.NewSpanFromPool(nil, "")
-	s.SetTraceID(field.GenTraceID())
-	s.SetParentID(field.GenSpanID())
-	es0 := s.NewExternalSpan()
-	es0.Attributes.Set("method", field.StringField("test"))
-	es1 := s.NewExternalSpan()
-	es1.Attributes.Set("host", field.StringField("test"))
-	s.Signal()
-
-	for _, i := range s.ListExternalSpan() {
-		enc.Write(i)
-	}
-
-	// fmt.Println("--------extrenalSpan-------------:")
-	left = 0
-	i = 0
-	bytess = b.Bytes()
-	for ; i < len(bytess); i += 1 {
-		if bytess[i] == '\n' {
-			// fmt.Println(string(bytess[left:i]))
-			if err = json.Unmarshal(bytess[left:i], &check); err != nil {
-				t.Error(err)
-			}
-			left = i + 1
-		}
-	}
-	fmt.Println(b.String())
 }
 
 func TestArrayField(t *testing.T) {
@@ -166,5 +102,20 @@ func TestArrayField(t *testing.T) {
 	b := bytess.NewBuffer(nil)
 	enc := NewJsonEncoder(b)
 	enc.Write(a)
+
+}
+
+func TestNewJsonEncoderBench(t *testing.T) {
+	b := bytess.NewBuffer(nil)
+	en := NewJsonEncoderBench(b)
+	err := en.Write(field.TimeField(time.Now()))
+	if err != nil {
+		panic(err)
+	}
+	en.Close()
+
+}
+
+func TestJsonEncoder_WriteString(t *testing.T) {
 
 }

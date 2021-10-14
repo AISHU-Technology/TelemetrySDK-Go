@@ -1,141 +1,82 @@
 package field
 
 import (
+	"context"
+	"github.com/stretchr/testify/assert"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+
 	"sync"
 	"testing"
 	"time"
-
-	"gotest.tools/assert"
 )
 
-func testFaterSonRelation(t *testing.T, f, c InternalSpan) {
-	assert.Equal(t, f.ID(), c.ParentID())
-	assert.Equal(t, f.TraceID(), c.TraceID())
-}
-
-func TestGenSpanID(t *testing.T) {
-	total := 1000000
-	store := map[string]int{}
-	for i := 0; i < total; i++ {
-		id := GenSpanID()
-		if _, ok := store[id]; ok {
-			t.Error("SpanID repeat")
-			t.FailNow()
-		} else {
-			store[id] = 0
-		}
-
-	}
-}
-
-func TestGenTraceID(t *testing.T) {
-	total := 1000000
-	store := map[string]int{}
-	for i := 0; i < total; i++ {
-		id := GenTraceID()
-		if _, ok := store[id]; ok {
-			t.Error("SpanID repeat")
-			t.FailNow()
-		} else {
-			store[id] = 0
-		}
-
-	}
-}
-
 func TestNewSpanFromPool(t *testing.T) {
-	s0 := NewSpanFromPool(func(InternalSpan) {}, "")
-	s1 := NewSpanFromPool(func(InternalSpan) {}, "")
+	s0 := NewSpanFromPool(func(LogSpan) {}, context.Background())
+	s1 := NewSpanFromPool(func(LogSpan) {}, context.Background())
 
-	assert.Assert(t, s0 != s1, "Should get the same span")
+	assert.NotEqual(t, s0, s1)
 
 	s0.Free()
-	s01 := NewSpanFromPool(func(InternalSpan) {}, "")
-	assert.Assert(t, s0 == s01, "should get same span")
+	s01 := NewSpanFromPool(func(LogSpan) {}, context.Background())
+	s01.Free()
+	assert.Equal(t, s0, s01)
+	assert.NotEqual(t, s1, s01)
 }
 
-func TestChildren(t *testing.T) {
-	traceID := "test trace"
-	s0 := NewSpanFromPool(func(InternalSpan) {}, traceID)
-	assert.Equal(t, traceID, s0.TraceID())
-	sc0 := s0.Children()
-	sc1 := s0.Children()
-	testFaterSonRelation(t, s0, sc0)
-	testFaterSonRelation(t, s0, sc1)
-	assert.Equal(t, 2, len(s0.ListChildren()))
+func TestGenID(t *testing.T) {
+	// 同一个上下文，trace中的 traceID，spanID 和 log span中的traceID spanID一致
+	tp1 := tracesdk.NewTracerProvider()
+	tr1 := tp1.Tracer("123")
+	ctx1, span := tr1.Start(context.Background(), "fdsaf")
+	defer tp1.Shutdown(nil)
+	defer span.End()
+	s0 := NewSpanFromPool(func(LogSpan) {}, ctx1)
+	assert.Equal(t, span.SpanContext().TraceID().String(), s0.TraceID())
+	assert.Equal(t, span.SpanContext().SpanID().String(), s0.SpanID())
+	// 不同上下文则不一致
+	s1 := NewSpanFromPool(func(LogSpan) {}, context.Background())
+	assert.NotEqual(t, span.SpanContext().TraceID().String(), s1.TraceID())
+	assert.NotEqual(t, span.SpanContext().SpanID().String(), s1.SpanID())
 }
 
 func TestSignal(t *testing.T) {
 	lock := &sync.Mutex{}
 	count := 0
-	s0 := NewSpanFromPool(func(s InternalSpan) {
+	s0 := NewSpanFromPool(func(s LogSpan) {
 		lock.Lock()
 		count += 1
 		lock.Unlock()
 		s.Free()
-	}, "")
+	}, context.Background())
 
 	s0.Signal()
 
-	s1 := NewSpanFromPool(func(s InternalSpan) {
+	s1 := NewSpanFromPool(func(s LogSpan) {
 		lock.Lock()
 		count += 1
 		lock.Unlock()
 		s.Free()
-	}, "")
+	}, context.Background())
 
 	s1.Signal()
 
 	start := time.Now()
 
-	s2 := NewSpanFromPool(func(InternalSpan) {
+	s2 := NewSpanFromPool(func(LogSpan) {
 		cost := time.Since(start)
-		assert.Assert(t, cost < 1*time.Microsecond, "parent span signal() complete before children span")
-	}, "")
-
-	sc20 := s2.Children()
-	s2.Signal()
+		assert.True(t, cost < 1*time.Microsecond, "parent span signal() complete before children span")
+	}, context.Background())
 
 	time.Sleep(1 * time.Millisecond)
 	assert.Equal(t, 2, count)
 
-	sc20.Signal()
 	s2.Free()
 
 }
 
-func TestSetTraceID(t *testing.T) {
-	s0 := NewSpanFromPool(func(InternalSpan) {}, "test trace")
-	id := GenTraceID()
-	s0.SetTraceID(id)
-	assert.Equal(t, id, s0.TraceID())
-}
+func TestLogSpanRecord(t *testing.T) {
 
-func TestNewExternalSpan(t *testing.T) {
-	exID := GenSpanID()
-	traceID := GenTraceID()
-	s0 := NewSpanFromPool(func(InternalSpan) {}, traceID)
-	s0.SetParentID(exID)
-	es0 := s0.NewExternalSpan()
-
-	assert.Equal(t, es0.traceID, traceID)
-	assert.Equal(t, es0.parentID, exID)
-	assert.Equal(t, es0.internalParentID, s0.ID())
-
-	sc0 := s0.Children()
-	es1 := sc0.NewExternalSpan()
-	assert.Equal(t, es1.traceID, traceID)
-	assert.Equal(t, es1.parentID, exID)
-	assert.Equal(t, es1.internalParentID, sc0.ID())
-
-	sc0.NewExternalSpan()
-	assert.Equal(t, 2, len(sc0.ListExternalSpan()))
-
-}
-
-func TestInternalSpanRecord(t *testing.T) {
-	traceID := GenTraceID()
-	s0 := NewSpanFromPool(func(InternalSpan) {}, traceID)
+	s0 := NewSpanFromPool(func(LogSpan) {}, context.Background())
 
 	now := time.Now()
 	arrayField := MallocArrayField(4)
@@ -160,31 +101,66 @@ func TestInternalSpanRecord(t *testing.T) {
 	}
 
 	for _, f := range records {
-		s0.Record(f)
-	}
-
-	dst := s0.ListRecord()
-	for i, v := range dst {
-		assert.Equal(t, records[i], v)
+		s0.SetRecord(f)
+		assert.Equal(t, f, s0.GetRecord())
 	}
 }
 
-func TestInternalSpanMetric(t *testing.T) {
-	traceID := GenTraceID()
-	s0 := NewSpanFromPool(func(InternalSpan) {}, traceID)
+func TestLogSpanV1Attributes(t *testing.T) {
+	s0 := NewSpanFromPool(func(LogSpan) {}, context.Background())
+	attr := NewAttribute("test", StringField("testattr"))
 
-	m := Mmetric{}
-	m.Set("test metric", 0.0)
-	m1 := Mmetric{}
-	m1.Set("test metric 1", 1.0)
-	s0.Metric(m)
-	s0.Metric(m1)
+	assert.Equal(t, s0.GetAttributes(), MallocStructField(0))
 
-	metrics := s0.ListMetric()
-	assert.Equal(t, len(metrics), 2)
-	assert.Equal(t, metrics[0].(*Mmetric).Name, m.Name)
-	assert.Equal(t, metrics[1].(*Mmetric).Name, m1.Name)
-	assert.Equal(t, metrics[0].(*Mmetric).Value, m.Value)
-	assert.Equal(t, metrics[1].(*Mmetric).Value, m1.Value)
+	s0.SetAttributes(attr)
 
+	record := MallocStructField(2)
+	record.Set(attr.Type, attr.Message)
+	record.Set("Type", StringField(attr.Type))
+
+	assert.Equal(t, s0.GetAttributes(), Field(record))
+
+	s0.Signal()
+
+}
+
+func TestLogSpanV1_Context(t *testing.T) {
+	ctx := context.Background()
+	s0 := NewSpanFromPool(func(LogSpan) {}, nil)
+	s0.SetContext(ctx)
+	assert.Equal(t, ctx, s0.GetContext())
+
+	tp1 := tracesdk.NewTracerProvider()
+	tr1 := tp1.Tracer("123")
+	ctx1, span := tr1.Start(context.Background(), "fdsaf")
+	defer tp1.Shutdown(nil)
+	defer span.End()
+
+	s1 := NewSpanFromPool(func(LogSpan) {}, nil)
+
+	s1.SetContext(ctx1)
+	assert.Equal(t, ctx1, s1.GetContext())
+	assert.NotEqual(t, ctx, s1.GetContext())
+}
+
+func TestLogSpanV1_IsNilContext(t *testing.T) {
+	s0 := &LogSpanV1{}
+	s0.init()
+	assert.True(t, s0.IsNilContext())
+	s0.SetContext(context.Background())
+	assert.True(t, s0.IsNilContext())
+
+	tp1 := tracesdk.NewTracerProvider()
+	tr1 := tp1.Tracer("123")
+	ctx1, span := tr1.Start(context.Background(), "fdsaf")
+	defer tp1.Shutdown(nil)
+	defer span.End()
+	s0.SetContext(ctx1)
+	assert.False(t, s0.IsNilContext())
+}
+
+func TestLogSpanV1_LogLevel(t *testing.T) {
+	s0 := NewSpanFromPool(func(LogSpan) {}, nil)
+	s0.SetLogLevel(StringField("Trace"))
+	assert.Equal(t, StringField("Trace"), s0.GetLogLevel())
 }

@@ -24,12 +24,12 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/open_standard"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
+	"io/ioutil"
+	"os"
 	"sync"
 	"testing"
 
@@ -192,8 +192,8 @@ func BenchmarkDiscardWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				r := fakeSpanStructField()
-				l := logger.Children()
-				l.Record(r)
+				l := logger.Children(nil)
+				l.SetRecord(r)
 				l.Signal()
 			}
 		})
@@ -210,8 +210,8 @@ func BenchmarkDiscardWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				r := fakeSpanStructField()
-				l := logger.Children()
-				l.Record(r)
+				l := logger.Children(nil)
+				l.SetRecord(r)
 				l.Signal()
 			}
 		})
@@ -280,8 +280,8 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				// r.Write(tmp)
-				l := logger.Children()
-				l.Record(r)
+				l := logger.Children(nil)
+				l.SetRecord(r)
 				l.Signal()
 			}
 		})
@@ -305,8 +305,8 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				// r.Write(w)
-				l := logger.Children()
-				l.Record(r)
+				l := logger.Children(nil)
+				l.SetRecord(r)
 				l.Signal()
 			}
 		})
@@ -383,8 +383,8 @@ func BenchmarkFileWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				r := fakeSpanStructField()
-				l := logger.Children()
-				l.Record(r)
+				l := logger.Children(nil)
+				l.SetRecord(r)
 				l.Signal()
 			}
 		})
@@ -460,24 +460,6 @@ func BenchmarkMmetrics(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				logger.Info(getMessage(0), fakeField...)
-			}
-		})
-	})
-
-	b.Run("metrics/self", func(b *testing.B) {
-		mm := &field.Mmetric{}
-		mm.Set("test", 0)
-		key := "test"
-		for i := 0; i < 100; i++ {
-			mm.AddAttribute(key, key)
-		}
-
-		buf := ioutil.Discard
-		enc := encoder.NewJsonEncoderBench(buf)
-		b.ResetTimer()
-		b.RunParallel(func(p *testing.PB) {
-			for p.Next() {
-				enc.Write(mm)
 			}
 		})
 	})
