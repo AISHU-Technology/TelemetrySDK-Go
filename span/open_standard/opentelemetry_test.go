@@ -98,17 +98,17 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	fmt.Print(b.String())
 }
 
-func TestOpenTelemetrySetDefultResources(t *testing.T) {
+func TestOpenTelemetrySetDefaultResources(t *testing.T) {
 	b := bytes.NewBuffer(nil)
 	enc := encoder.NewJsonEncoder(b)
 	open := NewOpenTelemetry(enc, nil)
 	os.Setenv("HOSTNAME", "test")
 	f := field.MallocStructField(10)
 	f.Set("HOSTNAME", field.StringField("test"))
-	f.Set("telemetry.sdk.name", field.StringField(SDKName))
-	f.Set("telemetry.sdk.version", field.StringField(SDKVersion))
-	f.Set("telemetry.sdk.language", field.StringField(SDKLanguage))
+	f.Set("Telemetry.SDK.Name", field.StringField(SDKName))
+	f.Set("Telemetry.SDK.Version", field.StringField(SDKVersion))
+	f.Set("Telemetry.SDK.Language", field.StringField(SDKLanguage))
 
-	open.SetDefultResources()
+	open.SetDefaultResources()
 	assert.Equal(t, open.Resource, f)
 }

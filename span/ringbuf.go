@@ -1,8 +1,9 @@
 package span
 
 import (
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"sync"
+
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 
 	"golang.org/x/sync/semaphore"
 )

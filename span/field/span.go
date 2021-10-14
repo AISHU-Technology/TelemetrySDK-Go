@@ -4,9 +4,10 @@ import (
 	"context"
 	crand "crypto/rand"
 	"encoding/binary"
-	"go.opentelemetry.io/otel/trace"
 	"math/rand"
 	"sync"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 type LogSpan interface {
@@ -105,6 +106,7 @@ func (l *LogSpanV1) getTraceSpan() trace.Span {
 
 func (l *LogSpanV1) reset() {
 	l.log = nil
+	l.attributes = nil
 	l.transfer = nil
 	l.ctx = nil
 }

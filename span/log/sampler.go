@@ -9,16 +9,14 @@
 package log
 
 import (
-	"github.com/hashicorp/go.net/context"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
+	"context"
 	"math/rand"
 	"time"
+
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/runtime"
 )
 
-// SamplerLogger implement the Logger interface
-// SamplerLogger provide log filter by sampling or log level
-//
 type SamplerLogger struct {
 	// logger sample
 	Sample float32
@@ -276,22 +274,3 @@ func (s *SamplerLogger) Fatal(message string, attr *field.Attribute) {
 	}
 	s.writeLog(message, FatalLevelString, attr)
 }
-
-//// NewLogSpan return a root internal span
-//func (s *SamplerLogger) NewLogSpan(ctx context.Context) field.LogSpan {
-//	if s.runtime == nil {
-//		return nil
-//	}
-//	res := s.runtime.Children(ctx)
-//
-//	return res
-//}
-
-// SetAttributes Set attributes for a root LogSpan
-//func (s *SamplerLogger) SetAttributes(t string, attrs field.Field, span field.LogSpan) {
-//	if span == nil {
-//		return
-//	}
-//
-//	span.SetAttributes(t, attrs)
-//}

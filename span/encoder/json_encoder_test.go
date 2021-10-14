@@ -4,10 +4,11 @@ import (
 	bytess "bytes"
 	"encoding/json"
 	"fmt"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"runtime"
 	"testing"
 	"time"
+
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -116,6 +117,4 @@ func TestNewJsonEncoderBench(t *testing.T) {
 
 }
 
-func TestJsonEncoder_WriteString(t *testing.T) {
 
-}

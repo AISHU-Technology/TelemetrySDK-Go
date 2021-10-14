@@ -2,12 +2,12 @@ package field
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestNewSpanFromPool(t *testing.T) {

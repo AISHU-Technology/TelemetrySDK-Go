@@ -1,11 +1,11 @@
 package open_standard
 
 import (
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
-
 	"os"
 	"time"
+
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 )
 
 const (
@@ -32,7 +32,7 @@ func NewOpenTelemetry(enc encoder.Encoder, resources field.Field) OpenTelemetry 
 		Resource: resources,
 	}
 	if res.Resource == nil {
-		res.SetDefultResources()
+		res.SetDefaultResources()
 	}
 
 	return res
@@ -42,7 +42,7 @@ func (o *OpenTelemetry) Write(t field.LogSpan) error {
 	return o.write(t, rootSpan)
 }
 
-func (o *OpenTelemetry) SetDefultResources() {
+func (o *OpenTelemetry) SetDefaultResources() {
 	f := field.MallocStructField(10)
 	targets := []string{"HOSTNAME"}
 	for _, k := range targets {
@@ -50,9 +50,9 @@ func (o *OpenTelemetry) SetDefultResources() {
 			f.Set(k, field.StringField(v))
 		}
 	}
-	f.Set("telemetry.sdk.name", field.StringField(SDKName))
-	f.Set("telemetry.sdk.version", field.StringField(SDKVersion))
-	f.Set("telemetry.sdk.language", field.StringField(SDKLanguage))
+	f.Set("Telemetry.SDK.Name", field.StringField(SDKName))
+	f.Set("Telemetry.SDK.Version", field.StringField(SDKVersion))
+	f.Set("Telemetry.SDK.Language", field.StringField(SDKLanguage))
 
 	o.Resource = f
 }
@@ -75,7 +75,7 @@ func (o *OpenTelemetry) write(t field.LogSpan, flag int) error {
 	telemetry.Set("Attributes", attrs)
 
 	if o.Resource == nil {
-		o.SetDefultResources()
+		o.SetDefaultResources()
 	}
 
 	telemetry.Set("Resource", o.Resource)

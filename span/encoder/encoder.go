@@ -3,13 +3,14 @@ package encoder
 import (
 	"bytes"
 	"encoding/json"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"io"
 	"io/ioutil"
 	"reflect"
 	"strconv"
 	"time"
 	"unsafe"
+
+	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 )
 
 var (

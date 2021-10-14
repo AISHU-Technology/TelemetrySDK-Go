@@ -2,9 +2,10 @@ package runtime
 
 import (
 	"context"
+	"sync"
+
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/open_standard"
-	"sync"
 )
 
 // Runtime read data from channel and write data in a single goroutine
