@@ -31,11 +31,12 @@ func TestNewDefaultSamplerLogger(t *testing.T) {
 	}()
 
 	l.Error("error", nil)
-	attr := &field.Attribute{Message: field.StringField("123"), Type: "tsaga"}
+	attr := field.NewAttribute("123", nil)
 
 	wg.Wait()
 
-	l.Info("this  is a tst", attr)
+	l.Info("this  is a tst", field.WithAttribute(attr))
+	l.Info("this  is a tst", field.WithAttribute(field.NewAttribute("123", field.StringField("fasfasfasf"))))
 	l.Close()
 
 }

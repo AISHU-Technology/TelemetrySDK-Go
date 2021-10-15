@@ -89,12 +89,7 @@ func (s *SamplerLogger) SetLevel(level int) {
 	s.LogLevel = level
 }
 
-// set context,if use trace,logSpan will Inheritance trace context,else ctx is nil or background
-func (s *SamplerLogger) SetContext(ctx context.Context) {
-	s.ctx = ctx
-}
-
-func (s *SamplerLogger) writeLogField(typ string, message, level field.Field, attr *field.Attribute) {
+func (s *SamplerLogger) writeLogField(typ string, message, level field.Field, options ...field.LogOptionFunc) {
 	l := s.getLogSpan()
 	if l == nil {
 		return
@@ -104,12 +99,11 @@ func (s *SamplerLogger) writeLogField(typ string, message, level field.Field, at
 	l.SetLogLevel(level)
 	record := newRecord(typ, message)
 	l.SetRecord(record)
-	if attr != nil {
-		l.SetAttributes(attr)
-	}
+	l.SetOption(options...)
+
 }
 
-func (s *SamplerLogger) writeLog(message string, level field.Field, attr *field.Attribute) {
+func (s *SamplerLogger) writeLog(message string, level field.Field, options ...field.LogOptionFunc) {
 	l := s.getLogSpan()
 	if l == nil {
 		return
@@ -120,135 +114,123 @@ func (s *SamplerLogger) writeLog(message string, level field.Field, attr *field.
 	record := field.MallocStructField(1)
 	record.Set("Message", field.StringField(message))
 	l.SetRecord(record)
-	if attr != nil {
-		l.SetAttributes(attr)
-	}
+	l.SetOption(options...)
 }
 
 // TraceField do a trace log a object into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) TraceField(message field.Field, typ string, attr *field.Attribute) {
+func (s *SamplerLogger) TraceField(message field.Field, typ string, options ...field.LogOptionFunc) {
 	if TraceLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	s.writeLogField(typ, message, TraceLevelString, attr)
+	s.writeLogField(typ, message, TraceLevelString, options...)
 
 }
 
 // DebugField do a debug log a object into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) DebugField(message field.Field, typ string, attr *field.Attribute) {
+func (s *SamplerLogger) DebugField(message field.Field, typ string, options ...field.LogOptionFunc) {
 	if DebugLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	s.writeLogField(typ, message, DebugLevelString, attr)
+	s.writeLogField(typ, message, DebugLevelString, options...)
 }
 
 // InfoField do a Info log a object into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) InfoField(message field.Field, typ string, attr *field.Attribute) {
+func (s *SamplerLogger) InfoField(message field.Field, typ string, options ...field.LogOptionFunc) {
 	if InfoLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	s.writeLogField(typ, message, TraceLevelString, attr)
+	s.writeLogField(typ, message, TraceLevelString, options...)
 }
 
 // WarnField do a Warn log a object into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) WarnField(message field.Field, typ string, attr *field.Attribute) {
+func (s *SamplerLogger) WarnField(message field.Field, typ string, options ...field.LogOptionFunc) {
 	if WarnLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	s.writeLogField(typ, message, TraceLevelString, attr)
+	s.writeLogField(typ, message, TraceLevelString, options...)
 }
 
 // ErrorField do a Error log a object into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) ErrorField(message field.Field, typ string, attr *field.Attribute) {
+func (s *SamplerLogger) ErrorField(message field.Field, typ string, options ...field.LogOptionFunc) {
 	if ErrorLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	s.writeLogField(typ, message, TraceLevelString, attr)
+	s.writeLogField(typ, message, TraceLevelString, options...)
 }
 
 // FatalField do a Fatal log a object into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) FatalField(message field.Field, typ string, attr *field.Attribute) {
+func (s *SamplerLogger) FatalField(message field.Field, typ string, options ...field.LogOptionFunc) {
 	if FatalLevel < s.LogLevel {
 		return
 	}
 
-	s.writeLogField(typ, message, TraceLevelString, attr)
+	s.writeLogField(typ, message, TraceLevelString, options...)
 }
 
 // Trace do a trace string log into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) Trace(message string, attr *field.Attribute) {
+func (s *SamplerLogger) Trace(message string, options ...field.LogOptionFunc) {
 	if TraceLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
 
-	s.writeLog(message, TraceLevelString, attr)
+	s.writeLog(message, TraceLevelString, options...)
 }
 
 // Debug do a Debug string log into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) Debug(message string, attr *field.Attribute) {
+func (s *SamplerLogger) Debug(message string, options ...field.LogOptionFunc) {
 	if DebugLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	s.writeLog(message, DebugLevelString, attr)
+	s.writeLog(message, DebugLevelString, options...)
 }
 
 // Info do a Info string log into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) Info(message string, attr *field.Attribute) {
+func (s *SamplerLogger) Info(message string, options ...field.LogOptionFunc) {
 	if InfoLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	s.writeLog(message, InfoLevelString, attr)
+	s.writeLog(message, InfoLevelString, options...)
 }
 
 // Warn do a Warn string log into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) Warn(message string, attr *field.Attribute) {
+func (s *SamplerLogger) Warn(message string, options ...field.LogOptionFunc) {
 	if WarnLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	s.writeLog(message, WarnLevelString, attr)
+	s.writeLog(message, WarnLevelString, options...)
 }
 
 // Error do a Error string log into LogSpan,
@@ -256,21 +238,20 @@ func (s *SamplerLogger) Warn(message string, attr *field.Attribute) {
 // but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) Error(message string, attr *field.Attribute) {
+func (s *SamplerLogger) Error(message string, options ...field.LogOptionFunc) {
 	if ErrorLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	s.writeLog(message, ErrorLevelString, attr)
+	s.writeLog(message, ErrorLevelString, options...)
 }
 
 // Fatal do a Fatal string log into LogSpan,
 // if LogSpan is not nil, this interface will log the info,
-// but not signal the LogSpan
 // if LogSpan is nil, this interface will create a LogSpan
 // to log the info and signal the LogSpan.
-func (s *SamplerLogger) Fatal(message string, attr *field.Attribute) {
+func (s *SamplerLogger) Fatal(message string, options ...field.LogOptionFunc) {
 	if FatalLevel < s.LogLevel {
 		return
 	}
-	s.writeLog(message, FatalLevelString, attr)
+	s.writeLog(message, FatalLevelString, options...)
 }

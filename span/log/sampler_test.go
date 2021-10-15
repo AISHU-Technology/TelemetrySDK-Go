@@ -18,7 +18,15 @@ import (
 )
 
 func testLogString(l *SamplerLogger) {
-	attr := field.NewAttribute("test", field.StringField("test attr"))
+	attr := field.NewAttribute("test", nil)
+
+	l.Trace(string(TraceLevelString))
+	l.Debug(string(DebugLevelString))
+	l.Info(string(InfoLevelString))
+	l.Warn(string(WarnLevelString))
+	l.Error(string(ErrorLevelString))
+	l.Fatal(string(FatalLevelString))
+
 	l.Trace(string(TraceLevelString), nil)
 	l.Debug(string(DebugLevelString), nil)
 	l.Info(string(InfoLevelString), nil)
@@ -26,29 +34,29 @@ func testLogString(l *SamplerLogger) {
 	l.Error(string(ErrorLevelString), nil)
 	l.Fatal(string(FatalLevelString), nil)
 
-	l.Trace(string(TraceLevelString), attr)
-	l.Debug(string(DebugLevelString), attr)
-	l.Info(string(InfoLevelString), attr)
-	l.Warn(string(WarnLevelString), attr)
-	l.Error(string(ErrorLevelString), attr)
-	l.Fatal(string(FatalLevelString), attr)
+	l.Trace(string(TraceLevelString), field.WithAttribute(attr))
+	l.Debug(string(DebugLevelString), field.WithAttribute(attr))
+	l.Info(string(InfoLevelString), field.WithAttribute(attr))
+	l.Warn(string(WarnLevelString), field.WithAttribute(attr))
+	l.Error(string(ErrorLevelString), field.WithAttribute(attr))
+	l.Fatal(string(FatalLevelString), field.WithAttribute(attr))
 }
 
 func testLogField(l *SamplerLogger) {
-	attr := field.NewAttribute("test", field.StringField("test attr"))
-	l.TraceField(TraceLevelString, "test", attr)
-	l.DebugField(DebugLevelString, "test", attr)
-	l.InfoField(InfoLevelString, "test", attr)
-	l.WarnField(WarnLevelString, "test", attr)
-	l.ErrorField(ErrorLevelString, "test", attr)
-	l.FatalField(FatalLevelString, "test", attr)
+	ctx := context.Background()
+	l.TraceField(TraceLevelString, "test", field.WithContext(ctx))
+	l.DebugField(DebugLevelString, "test", field.WithContext(ctx))
+	l.InfoField(InfoLevelString, "test", field.WithContext(ctx))
+	l.WarnField(WarnLevelString, "test", field.WithContext(ctx))
+	l.ErrorField(ErrorLevelString, "test", field.WithContext(ctx))
+	l.FatalField(FatalLevelString, "test", field.WithContext(ctx))
 
-	l.TraceField(TraceLevelString, "test", nil)
-	l.DebugField(DebugLevelString, "test", nil)
-	l.InfoField(InfoLevelString, "test", nil)
-	l.WarnField(WarnLevelString, "test", nil)
-	l.ErrorField(ErrorLevelString, "test", nil)
-	l.FatalField(FatalLevelString, "test", nil)
+	l.TraceField(TraceLevelString, "test")
+	l.DebugField(DebugLevelString, "test")
+	l.InfoField(InfoLevelString, "test")
+	l.WarnField(WarnLevelString, "test")
+	l.ErrorField(ErrorLevelString, "test")
+	l.FatalField(FatalLevelString, "test")
 }
 
 func testLogLevel(t *testing.T, l *SamplerLogger, level int) {
@@ -65,8 +73,6 @@ func TestSamplerLoggerSpan(t *testing.T) {
 	}, field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()
-
-	l.SetContext(context.Background())
 
 	testLogLevel(t, l, TraceLevel)
 	testLogLevel(t, l, DebugLevel)
@@ -199,7 +205,7 @@ func TestSamplerLogger(t *testing.T) {
 	// set attr
 
 	attr := field.NewAttribute("attr", attrs)
-	l.Info("infomessage", attr)
+	l.Info("infomessage", field.WithAttribute(attr))
 
 	// final close runtime and clean work space
 	l.Close()

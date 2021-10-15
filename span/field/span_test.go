@@ -106,13 +106,21 @@ func TestLogSpanRecord(t *testing.T) {
 	}
 }
 
-func TestLogSpanV1Attributes(t *testing.T) {
+func TestLogSpanV1_SetOption(t *testing.T) {
+	s0 := NewSpanFromPool(func(LogSpan) {}, context.Background())
+	s0.SetOption(nil)
+	s0.SetOption()
+	assert.Equal(t, s0.GetContext(), context.Background())
+	s0.Signal()
+}
+
+func TestLogSpanV1Attribute(t *testing.T) {
 	s0 := NewSpanFromPool(func(LogSpan) {}, context.Background())
 	attr := NewAttribute("test", StringField("testattr"))
 
 	assert.Equal(t, s0.GetAttributes(), MallocStructField(0))
 
-	s0.SetAttributes(attr)
+	s0.SetOption(WithAttribute(attr))
 
 	record := MallocStructField(2)
 	record.Set(attr.Type, attr.Message)
@@ -124,10 +132,10 @@ func TestLogSpanV1Attributes(t *testing.T) {
 
 }
 
-func TestLogSpanV1_Context(t *testing.T) {
+func TestLogSpanV1Context(t *testing.T) {
 	ctx := context.Background()
 	s0 := NewSpanFromPool(func(LogSpan) {}, nil)
-	s0.SetContext(ctx)
+	s0.SetOption(WithContext(ctx))
 	assert.Equal(t, ctx, s0.GetContext())
 
 	tp1 := tracesdk.NewTracerProvider()
@@ -138,16 +146,16 @@ func TestLogSpanV1_Context(t *testing.T) {
 
 	s1 := NewSpanFromPool(func(LogSpan) {}, nil)
 
-	s1.SetContext(ctx1)
+	s1.SetOption(WithContext(ctx1))
 	assert.Equal(t, ctx1, s1.GetContext())
 	assert.NotEqual(t, ctx, s1.GetContext())
 }
 
-func TestLogSpanV1_IsNilContext(t *testing.T) {
-	s0 := &LogSpanV1{}
+func TestLogSpanV1IsNilContext(t *testing.T) {
+	s0 := &logSpanV1{}
 	s0.init()
 	assert.True(t, s0.IsNilContext())
-	s0.SetContext(context.Background())
+	s0.SetOption(WithContext(context.Background()))
 	assert.True(t, s0.IsNilContext())
 
 	tp1 := tracesdk.NewTracerProvider()
@@ -155,11 +163,11 @@ func TestLogSpanV1_IsNilContext(t *testing.T) {
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
 	defer tp1.Shutdown(nil)
 	defer span.End()
-	s0.SetContext(ctx1)
+	s0.SetOption(WithContext(ctx1))
 	assert.False(t, s0.IsNilContext())
 }
 
-func TestLogSpanV1_LogLevel(t *testing.T) {
+func TestLogSpanV1LogLevel(t *testing.T) {
 	s0 := NewSpanFromPool(func(LogSpan) {}, nil)
 	s0.SetLogLevel(StringField("Trace"))
 	assert.Equal(t, StringField("Trace"), s0.GetLogLevel())

@@ -41,102 +41,76 @@ type Logger interface {
 
 	// SetRuntime for logger
 	SetRuntime(*runtime.Runtime)
-
-	// NewLogSpan return a root internal span
-	//NewLogSpan() field.LogSpan
-
-	//// SetParentID Set ParentId for the root LogSpan
-	//// If the LogSpan is nil, will do nothing
-	//SetParentID(ID string, span field.LogSpan)
-
-	//// SetTraceID Set TraceId for the root LogSpan
-	//// If the LogSpan is nil, will do nothing
-	//SetTraceID(ID string, span field.LogSpan)
-
-	// SetAttributes Set attributes for a root LogSpan
-	//SetAttributes(t string, attrs field.Field, span field.LogSpan)
-
 	// TraceField do a trace log a object into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	TraceField(message field.Field, typ string, attr *field.Attribute)
+	TraceField(message field.Field, typ string, options ...field.LogOptionFunc)
 
 	// DebugField do a debug log a object into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	DebugField(message field.Field, typ string, attr *field.Attribute)
+	DebugField(message field.Field, typ string, options ...field.LogOptionFunc)
 
 	// InfoField do a Info log a object into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	InfoField(message field.Field, typ string, attr *field.Attribute)
+	InfoField(message field.Field, typ string, options ...field.LogOptionFunc)
 
 	// WarnField do a Warn log a object into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	WarnField(message field.Field, typ string, attr *field.Attribute)
+	WarnField(message field.Field, typ string, options ...field.LogOptionFunc)
 
 	// ErrorField do a Error log a object into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	ErrorField(message field.Field, typ string, attr *field.Attribute)
+	ErrorField(message field.Field, typ string, options ...field.LogOptionFunc)
 
 	// FatalField do a Fatal log a object into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	FatalField(message field.Field, typ string, attr *field.Attribute)
+	FatalField(message field.Field, typ string, options ...field.LogOptionFunc)
 
 	// Trace do a trace string log into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	Trace(message string, attr *field.Attribute)
+	Trace(message string, options ...field.LogOptionFunc)
 
 	// Debug do a Debug string log into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
 	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	Debug(message string, attr *field.Attribute)
+	Debug(message string, options ...field.LogOptionFunc)
 
 	// Info do a Info string log into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	Info(message string, attr *field.Attribute)
+	Info(message string, options ...field.LogOptionFunc)
 
 	// Warn do a Warn string log into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	Warn(message string, attr *field.Attribute)
+	Warn(message string, options ...field.LogOptionFunc)
 
 	// Error do a Error string log into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	Error(message string, attr *field.Attribute)
+	Error(message string, options ...field.LogOptionFunc)
 
 	// Fatal do a Fatal string log into LogSpan,
 	// if LogSpan is not nil, this interface will log the info,
-	// but not signal the LogSpan
 	// if LogSpan is nil, this interface will create a LogSpan
 	// to log the info and signal the LogSpan.
-	Fatal(message string, attr *field.Attribute)
+	Fatal(message string, options ...field.LogOptionFunc)
 }
