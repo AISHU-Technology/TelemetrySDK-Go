@@ -37,6 +37,15 @@ func TestNewDefaultSamplerLogger(t *testing.T) {
 
 	l.Info("this  is a tst", field.WithAttribute(attr))
 	l.Info("this  is a tst", field.WithAttribute(field.NewAttribute("123", field.StringField("fasfasfasf"))))
+	type A struct {
+		Name string `json:"name"`
+		Age  string `json:"age"`
+	}
+	var a = A{
+		Name: "zhangsan",
+		Age:  "123",
+	}
+	l.InfoField(field.MallocJsonField(a), "test")
 	l.Close()
 
 }

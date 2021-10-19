@@ -149,7 +149,7 @@ func (s *SamplerLogger) InfoField(message field.Field, typ string, options ...fi
 	if InfoLevel < s.LogLevel || !s.sampleCheck() {
 		return
 	}
-	s.writeLogField(typ, message, TraceLevelString, options...)
+	s.writeLogField(typ, message, InfoLevelString, options...)
 }
 
 // WarnField do a Warn log a object into LogSpan,
@@ -161,7 +161,7 @@ func (s *SamplerLogger) WarnField(message field.Field, typ string, options ...fi
 		return
 	}
 
-	s.writeLogField(typ, message, TraceLevelString, options...)
+	s.writeLogField(typ, message, WarnLevelString, options...)
 }
 
 // ErrorField do a Error log a object into LogSpan,
@@ -173,7 +173,7 @@ func (s *SamplerLogger) ErrorField(message field.Field, typ string, options ...f
 		return
 	}
 
-	s.writeLogField(typ, message, TraceLevelString, options...)
+	s.writeLogField(typ, message, ErrorLevelString, options...)
 }
 
 // FatalField do a Fatal log a object into LogSpan,
@@ -185,7 +185,7 @@ func (s *SamplerLogger) FatalField(message field.Field, typ string, options ...f
 		return
 	}
 
-	s.writeLogField(typ, message, TraceLevelString, options...)
+	s.writeLogField(typ, message, FatalLevelString, options...)
 }
 
 // Trace do a trace string log into LogSpan,
