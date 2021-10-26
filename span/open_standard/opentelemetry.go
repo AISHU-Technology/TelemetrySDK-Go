@@ -68,6 +68,7 @@ func (o *OpenTelemetry) write(t field.LogSpan, flag int) error {
 	telemetry.Set("TraceId", field.StringField(t.TraceID()))
 	telemetry.Set("SpanId", field.StringField(t.SpanID()))
 	telemetry.Set("Timestamp", field.TimeField(time.Now()))
+	telemetry.Set("SeverityText", t.GetLogLevel())
 
 	telemetry.Set("Body", t.GetRecord())
 	attrs := t.GetAttributes()
