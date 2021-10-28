@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"runtime"
 	"testing"
 
 	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
@@ -14,35 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func fakeTestStructField() field.Field {
-	_, msg, line, _ := runtime.Caller(1)
-
-	res := field.MallocStructField(4)
-	res.Set("Level", field.IntField(0))
-	res.Set("Model", field.StringField("test Eacape \\\"\b\f\\t{}\r\n"))
-	res.Set("Message", field.StringField(fmt.Sprintf("%s: %d", msg, line)))
-	res.Set("eventNum", field.IntField(1))
-
-	return res
-}
 
 func setTestSpance(s field.LogSpan) {
-	r0 := fakeTestStructField()
-	s.SetRecord(r0)
-
 	r1 := field.MallocStructField(2)
 	r1.Set("Level", field.IntField(1))
 	r1.Set("eventNum", field.IntField(2))
 	s.SetRecord(r1)
-	record := field.MallocStructField(2)
-	record.Set("test", r1)
-	//attr := &field.Attribute{
-	//	Type:    "test",
-	//	Message: record,
-	//}
-	//
-	//s.SetAttributes(attr)
-
 }
 
 func TestOpenTelemetryWrite(t *testing.T) {
@@ -52,9 +28,6 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	setTestSpance(rootSpan)
 	b := bytes.NewBuffer(nil)
 
-	// 1.5. won't use root span, free it
-	rootSpan.Signal()
-
 	enc := encoder.NewJsonEncoder(b)
 	open := OpenTelemetry{
 		Encoder:  enc,
@@ -62,6 +35,7 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	}
 
 	defer open.Close()
+
 	err := open.Write(rootSpan)
 	if err != nil {
 		t.Error(err)

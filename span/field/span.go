@@ -87,6 +87,7 @@ func (l *logSpanV1) init() {
 	l.wg = sync.WaitGroup{}
 	l.lock = sync.RWMutex{}
 	l.genID = defaultIDGenerator()
+	l.level = StringField("Trace")
 	l.reset()
 }
 
