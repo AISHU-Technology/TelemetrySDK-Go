@@ -1,8 +1,8 @@
 package log
 
 import (
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/field"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/runtime"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/runtime"
 )
 
 // log level text format

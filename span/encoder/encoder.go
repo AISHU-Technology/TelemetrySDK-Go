@@ -10,7 +10,7 @@ import (
 	"time"
 	"unsafe"
 
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
 )
 
 var (

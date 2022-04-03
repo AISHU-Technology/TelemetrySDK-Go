@@ -29,10 +29,10 @@ import (
 	"sync"
 	"testing"
 
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/encoder"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/field"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/open_standard"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/runtime"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/encoder"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/open_standard"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/runtime"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

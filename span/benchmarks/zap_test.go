@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"time"
 
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/benchmarks/ztest"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/benchmarks/ztest"
 
 	"go.uber.org/multierr"
 	"go.uber.org/zap"

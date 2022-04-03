@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/encoder"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/encoder"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
 )
 
 // var (
