@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/field"
 )
 
 func TestNewDefaultSamplerLogger(t *testing.T) {

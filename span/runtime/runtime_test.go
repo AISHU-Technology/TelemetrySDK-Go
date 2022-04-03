@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/encoder"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/open_standard"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/encoder"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo/span/open_standard"
 
 	"github.com/stretchr/testify/assert"
 )
