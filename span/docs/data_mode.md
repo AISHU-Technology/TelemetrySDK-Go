@@ -2,8 +2,8 @@
 
 当前实现数据模型分层如下图
 
-![](./images/data_model_v1-layer.png)
-![](./images/data_model_v1-layer_map.png)
+![](./images/data_model_v1_layer.png)
+![](./images/data_model_v1_layer_map.png)
 
 # 数据模型结构定义
 
