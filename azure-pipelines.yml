@@ -1,3 +1,5 @@
+pool:
+  name: anyrobot-centos-7-x86_64 # 代理池
 steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
