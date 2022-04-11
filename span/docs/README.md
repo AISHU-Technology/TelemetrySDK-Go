@@ -25,7 +25,7 @@
 
 
 
-![img](./images/span-log life.png)
+![img](./images/span_log_life.png)
 
 
 
@@ -109,7 +109,7 @@
 
 分层结构如下图表示：
 
-![img](./images/span layer design-span layer.png)
+![img](./images/span_layer_design_span_layer.png)
 
 ### 3.1.3 缺陷
 
@@ -126,7 +126,7 @@
 
 ### 3.2.1 数据表示对象
 
-![img](./images/span-span log.png)
+![img](./images/span_span_log.png)
 
 #### 3.2.1.1 关键对象介绍
 
@@ -157,7 +157,7 @@
 
 ### 3.2.2 运行时与分层对象
 
-![img](./images/span-span runtime.png)
+![img](./images/span_span_runtime.png)
 
 #### 3.2.2.1 关键对象说明
 
@@ -185,7 +185,7 @@
 
 ### 3.3.1 用例图
 
-![img](./images/span layer design-span usecase.png)
+![img](./images/span_layer_design_span_usecase.png)
 
 ### 3.3.2 example
 
@@ -199,9 +199,9 @@
 
 # 四、代码库管理
 
-代码库统一在 GitLab Proton Runtime 项目管理。
+代码库统一在 Azure Repos 项目管理。
 
-![img](https://confluence.aishu.cn/download/attachments/103378197/image2021-4-29_10-58-12.png?version=1&modificationDate=1619665094000&api=v2)
+
 
 # 五、实现
 

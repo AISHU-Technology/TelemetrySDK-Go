@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.aishu.cn/anyrobot/observability/telemetrysdk/telemetry-go/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -116,5 +116,3 @@ func TestNewJsonEncoderBench(t *testing.T) {
 	en.Close()
 
 }
-
-
