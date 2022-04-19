@@ -126,13 +126,9 @@ func (l *logSpanV1) SetOption(options ...LogOptionFunc) {
 }
 
 func (l *logSpanV1) Signal() {
-	go func() {
-		l.wg.Wait()
-		if l.transfer != nil {
-			l.transfer(l)
-		}
-	}()
-
+	if l.transfer != nil {
+		l.transfer(l)
+	}
 }
 
 func (l *logSpanV1) Free() {

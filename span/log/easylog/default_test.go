@@ -35,6 +35,13 @@ func TestNewDefaultSamplerLogger(t *testing.T) {
 
 	wg.Wait()
 
+	l.Info("1")
+	l.Info("2")
+	l.Info("3")
+	l.Info("4")
+	l.Info("5")
+	l.Info("6")
+
 	l.Info("this  is a tst", field.WithAttribute(attr))
 	l.Info("this  is a tst", field.WithAttribute(field.NewAttribute("123", field.StringField("fasfasfasf"))))
 	type A struct {
