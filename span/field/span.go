@@ -50,7 +50,6 @@ type logSpanV1 struct {
 	log      Field
 	transfer func(LogSpan) // use to transfer span's ownership
 	level    Field
-	wg       sync.WaitGroup
 
 	lock sync.RWMutex
 	//traceID    string
@@ -84,7 +83,6 @@ func newSpan(own func(LogSpan), ctx context.Context) LogSpan {
 }
 
 func (l *logSpanV1) init() {
-	l.wg = sync.WaitGroup{}
 	l.lock = sync.RWMutex{}
 	l.genID = defaultIDGenerator()
 	l.level = StringField("Trace")
