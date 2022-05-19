@@ -13,8 +13,8 @@ import (
 	"math/rand"
 	"time"
 
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/runtime"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/span/runtime"
 )
 
 type SamplerLogger struct {
