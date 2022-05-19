@@ -3,7 +3,7 @@ package span
 import (
 	"sync"
 
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/span/field"
 
 	"golang.org/x/sync/semaphore"
 )

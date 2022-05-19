@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span/field"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/span/field"
 )
 
 func TestNewDefaultSamplerLogger(t *testing.T) {
@@ -34,6 +34,13 @@ func TestNewDefaultSamplerLogger(t *testing.T) {
 	attr := field.NewAttribute("123", nil)
 
 	wg.Wait()
+
+	l.Info("1")
+	l.Info("2")
+	l.Info("3")
+	l.Info("4")
+	l.Info("5")
+	l.Info("6")
 
 	l.Info("this  is a tst", field.WithAttribute(attr))
 	l.Info("this  is a tst", field.WithAttribute(field.NewAttribute("123", field.StringField("fasfasfasf"))))

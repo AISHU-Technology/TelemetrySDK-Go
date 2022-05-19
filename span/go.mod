@@ -1,4 +1,4 @@
-module devops.aishu.cn/AISHUDevOps/AnyRobot/_git/DE_TelemetryGo.git/span
+module devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/span
 
 go 1.15
 
