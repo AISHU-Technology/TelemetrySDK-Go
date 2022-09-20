@@ -9,9 +9,9 @@ Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](htt
 
 | Signal  | Status | Project                                                                                                             |
 |---------|--------|---------------------------------------------------------------------------------------------------------------------|
-| Traces  | Beta   | [trace](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go?path=%2Fexporters%2Ftrace%2Fhttp) |
+| Traces  | Beta   | [trace](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=%2Fexporters%2Ftrace%2Fhttp) |
 | Metrics | Alpha  | N/A                                                                                                                 |
-| Logs    | Alpha  | [log](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go?path=%2Fspan)                       |
+| Logs    | Alpha  | [log](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=%2Fspan)                       |
 
 
 ### Compatibility
@@ -20,13 +20,13 @@ Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](htt
 
 ## Getting Started
 
-> 引入SDK：go get devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/trace/http@feature-arp-205194
+> 引入SDK：go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/trace/http@feature-arp-205194
 
 > 添加依赖：
 
 `import (
 "context"
-ar "devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/anyrobottrace/tracehttp"
+ar "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/examples"
 "log")`
 
 > 修改入口main.go：
