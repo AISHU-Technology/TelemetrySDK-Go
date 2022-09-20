@@ -8,6 +8,11 @@ trigger:
       - "release-*"
       - "release/*"
 
+variables:
+  - group: anyrobot-global-config
+  - name: IMAGE_REGISTRY
+    value: "acr.aishu.cn"
+    
 stages:
   - stage: Test
     displayName: 测试
