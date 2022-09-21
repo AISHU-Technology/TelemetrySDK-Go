@@ -83,7 +83,7 @@ stages:
 
           - task: PublishBuildArtifacts@1  # 将相应目录publish到artifact
             inputs:
-              PathtoPublish: '$(Build.SourcesDirectory)/report'
+              PathtoPublish: '$(Build.SourcesDirectory)/exporters/artrace/report'
               ArtifactName: CodeCheckReportFiles
 
           - task: Post-Bash@3
@@ -212,7 +212,7 @@ stages:
                         $(SONARQUBE_IMAGE) bash -c "
                     set -ex
 
-                    cd /exporter/exporters/artrace
+                    cd /exporter
                     mv CodeCheckReportFiles report
                     sonar-scanner \
                       -D sonar.host.url=$(SONARQUBE_SERVER) \
