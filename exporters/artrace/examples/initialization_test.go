@@ -24,7 +24,7 @@ func TestInstallExportPipeline(t *testing.T) {
 			func(ctx context.Context) error {
 				return nil
 			},
-			false,
+			true,
 		},
 	}
 	for _, tt := range tests {

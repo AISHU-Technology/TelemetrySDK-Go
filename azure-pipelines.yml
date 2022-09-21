@@ -77,7 +77,7 @@ stages:
                   go test -gcflags=all=-l -v -coverprofile=report/ut_coverage.out ./... 2>&1 | go-junit-report > report/$(UTReportName)
                   gocov convert report/ut_coverage.out | gocov-xml > report/$(CoverageReportName)
                   go tool cover --html=report/ut_coverage.out -o report/ut_coverage.html
-                  #golangci-lint run --out-format junit-xml ./... > report/$(LintReportName)
+                  golangci-lint run --out-format junit-xml ./... > report/$(LintReportName)
 
                   "
 
