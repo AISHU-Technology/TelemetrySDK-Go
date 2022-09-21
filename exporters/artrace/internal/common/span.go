@@ -56,7 +56,7 @@ func AnyRobotSpanFromReadOnlySpan(ros sdktrace.ReadOnlySpan) *AnyRobotSpan {
 // AnyRobotSpansFromReadOnlySpans 批量span转换为[]*AnyRobotSpan。
 func AnyRobotSpansFromReadOnlySpans(ross []sdktrace.ReadOnlySpan) []*AnyRobotSpan {
 	if ross == nil {
-		return make([]*AnyRobotSpan, 0, 0)
+		return make([]*AnyRobotSpan, 0)
 	}
 	spans := make([]*AnyRobotSpan, 0, len(ross))
 	for i := 0; i < len(ross); i++ {

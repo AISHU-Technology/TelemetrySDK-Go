@@ -24,7 +24,7 @@ func AnyRobotLinkFromLink(link sdktrace.Link) *Link {
 // AnyRobotLinksFromLinks 批量sdktrace.Link转换为[]*Link。
 func AnyRobotLinksFromLinks(sdkLinks []sdktrace.Link) []*Link {
 	if sdkLinks == nil {
-		return make([]*Link, 0, 0)
+		return make([]*Link, 0)
 	}
 	links := make([]*Link, 0, len(sdkLinks))
 	for i := 0; i < len(sdkLinks); i++ {

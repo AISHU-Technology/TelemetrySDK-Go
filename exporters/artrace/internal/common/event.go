@@ -26,7 +26,7 @@ func AnyRobotEventFromEvent(event sdktrace.Event) *Event {
 // AnyRobotEventsFromEvents 批量sdktrace.Event转换为[]*Event。
 func AnyRobotEventsFromEvents(sdkEvent []sdktrace.Event) []*Event {
 	if sdkEvent == nil {
-		return make([]*Event, 0, 0)
+		return make([]*Event, 0)
 	}
 	events := make([]*Event, 0, len(sdkEvent))
 	for i := 0; i < len(sdkEvent); i++ {

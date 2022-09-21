@@ -28,7 +28,7 @@ func AnyRobotAttributeFromKeyValue(kv attribute.KeyValue) *Attribute {
 // AnyRobotAttributesFromKeyValues 批量KeyValue转换为[]*Attribute。
 func AnyRobotAttributesFromKeyValues(kvs []attribute.KeyValue) []*Attribute {
 	if kvs == nil {
-		return make([]*Attribute, 0, 0)
+		return make([]*Attribute, 0)
 	}
 	attributes := make([]*Attribute, 0, len(kvs))
 	for i := 0; i < len(kvs); i++ {
