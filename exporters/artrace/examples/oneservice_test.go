@@ -48,7 +48,7 @@ func TestHTTPSExample(t *testing.T) {
 		})
 	}
 }
-func Test_add(t *testing.T) {
+func Test_Add(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		x   int64
@@ -84,7 +84,7 @@ func Test_add(t *testing.T) {
 	}
 }
 
-func Test_multiply(t *testing.T) {
+func Test_Multiply(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		x   int64

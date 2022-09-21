@@ -3,8 +3,8 @@ package examples
 import (
 	"context"
 	"crypto/tls"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/client"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/config"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/client"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 )
+
+const result = "the answer is"
 
 // add 计算两数之和。
 func add(ctx context.Context, x, y int64) (context.Context, int64) {
@@ -55,7 +57,7 @@ func StdoutExample() {
 	ctx, num := multiply(ctx, 2, 2)
 	ctx, num = multiply(ctx, num, 10)
 	ctx, num = add(ctx, num, 2)
-	log.Println("the answer is", num)
+	log.Println(result, num)
 }
 
 // HTTPExample 通过HTTP发送器输出到Trace接收器。
@@ -76,7 +78,7 @@ func HTTPExample() {
 	ctx, num := multiply(ctx, 2, 2)
 	ctx, num = multiply(ctx, num, 10)
 	ctx, num = add(ctx, num, 2)
-	log.Println("the answer is", num)
+	log.Println(result, num)
 }
 
 // HTTPSExample 通过HTTPS发送器输出到Trace接收器。
@@ -98,5 +100,5 @@ func HTTPSExample() {
 	ctx, num := multiply(ctx, 2, 2)
 	ctx, num = multiply(ctx, num, 10)
 	ctx, num = add(ctx, num, 2)
-	log.Println("the answer is", num)
+	log.Println(result, num)
 }

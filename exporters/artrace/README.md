@@ -1,6 +1,6 @@
 # Akashic_TelemetrySDK-Go
 
-[仓库地址](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=%2F&version=GBfeature-arp-205194)
+[仓库地址](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go)
 
 Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](https://golang.org/)
 语言版本实现。它提供了一系列接口帮助开发者完成代码埋点过程，旨在提高用户业务的可观测性能力。
@@ -9,9 +9,9 @@ Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](htt
 
 | Signal  | Status | Project                                                                                                             |
 |---------|--------|---------------------------------------------------------------------------------------------------------------------|
-| Traces  | Beta   | [trace](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=%2Fexporters%2Ftrace%2Fhttp) |
+| Traces  | Beta   | [trace](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go?path=%2Fexporters%2Ftrace%2Fhttp) |
 | Metrics | Alpha  | N/A                                                                                                                 |
-| Logs    | Alpha  | [log](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=%2Fspan)                       |
+| Logs    | Alpha  | [log](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go?path=%2Fspan)                       |
 
 
 ### Compatibility
@@ -20,13 +20,13 @@ Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](htt
 
 ## Getting Started
 
-> 引入SDK：go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/trace/http@feature-arp-205194
+> 引入SDK：go get devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/trace/http@feature-arp-205194
 
 > 添加依赖：
 
 `import (
 "context"
-ar "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/examples"
+ar "devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/anyrobottrace/tracehttp"
 "log")`
 
 > 修改入口main.go：

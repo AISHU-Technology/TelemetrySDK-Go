@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/common"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/config"
-	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/errors"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/common"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
+	customErrors "devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/errors"
 	"encoding/json"
 	"errors"
 	"io"
@@ -38,6 +38,8 @@ func (d *httpClient) Stop(ctx context.Context) error {
 	}
 	return nil
 }
+
+const remind = "发送到 %s 失败，错误提示: %s"
 
 // UploadTraces 批量发送Trace数据。
 func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.AnyRobotSpan) error {
@@ -73,15 +75,15 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 		// 格式校验不通过，不重发。
 		case http.StatusBadRequest:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_InvalidFormat)
-			log.Printf("发送到 %s 失败，错误提示: %s", request.URL, customErrors.AnyRobotTraceExporter_InvalidFormat)
+			log.Printf(remind, request.URL, customErrors.AnyRobotTraceExporter_InvalidFormat)
 		// 接收器地址不正确，不重发。
 		case http.StatusNotFound:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_JobIdNotFound)
-			log.Printf("发送到 %s 失败，错误提示: %s", request.URL, customErrors.AnyRobotTraceExporter_JobIdNotFound)
+			log.Printf(remind, request.URL, customErrors.AnyRobotTraceExporter_JobIdNotFound)
 		// Trace太长超过5MB，不重发。
 		case http.StatusRequestEntityTooLarge:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_PayloadTooLarge)
-			log.Printf("发送到 %s 失败，错误提示: %s", request.URL, customErrors.AnyRobotTraceExporter_PayloadTooLarge)
+			log.Printf(remind, request.URL, customErrors.AnyRobotTraceExporter_PayloadTooLarge)
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
@@ -91,7 +93,7 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 			}
 		default:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_Unsent)
-			log.Printf("发送到 %s 失败，错误提示: %s", request.URL, resp.Status)
+			log.Printf(remind, request.URL, resp.Status)
 		}
 		if err := resp.Body.Close(); err != nil {
 			return err
