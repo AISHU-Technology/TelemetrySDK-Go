@@ -42,9 +42,9 @@ func newHTTPOption(fn func(cfg Config) Config) HTTPOption {
 // WithScheme 选择http/https。
 func WithScheme(scheme string) HTTPOption {
 	if scheme == "http" {
-		return withInsecure()
+		return insecure()
 	}
-	return withSecure()
+	return secure()
 }
 
 // WithEndpoint 设置ip:port。
@@ -71,34 +71,10 @@ func WithCompression(compression Compression) HTTPOption {
 	})
 }
 
-// WithRetry 设置重发。
-func WithRetry(rc RetryConfig) HTTPOption {
+// WithTimeout 设置连接超时时间。
+func WithTimeout(duration time.Duration) HTTPOption {
 	return newHTTPOption(func(cfg Config) Config {
-		cfg.RetryConfig = rc
-		return cfg
-	})
-}
-
-// WithTLSClientConfig 设置TLS连接。
-func WithTLSClientConfig(tlsCfg *tls.Config) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.TLSCfg = tlsCfg.Clone()
-		return cfg
-	})
-}
-
-// withInsecure 设置为http。
-func withInsecure() HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.Insecure = true
-		return cfg
-	})
-}
-
-// withSecure 设置为https。
-func withSecure() HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.Insecure = false
+		cfg.HTTPConfig.Timeout = duration
 		return cfg
 	})
 }
@@ -111,10 +87,26 @@ func WithHeader(headers map[string]string) HTTPOption {
 	})
 }
 
-// WithTimeout 设置连接超时时间。
-func WithTimeout(duration time.Duration) HTTPOption {
+// WithTLSClientConfig 设置TLS连接。
+func WithTLSClientConfig(tlsCfg *tls.Config) HTTPOption {
 	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.Timeout = duration
+		cfg.HTTPConfig.TLSCfg = tlsCfg.Clone()
+		return cfg
+	})
+}
+
+// insecure 设置为http。
+func insecure() HTTPOption {
+	return newHTTPOption(func(cfg Config) Config {
+		cfg.HTTPConfig.Insecure = true
+		return cfg
+	})
+}
+
+// secure 设置为https。
+func secure() HTTPOption {
+	return newHTTPOption(func(cfg Config) Config {
+		cfg.HTTPConfig.Insecure = false
 		return cfg
 	})
 }

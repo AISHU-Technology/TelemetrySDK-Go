@@ -123,3 +123,11 @@ func wait(ctx context.Context, delay time.Duration) error {
 
 	return nil
 }
+
+// WithRetry 设置重发。
+func WithRetry(rc RetryConfig) HTTPOption {
+	return newHTTPOption(func(cfg Config) Config {
+		cfg.RetryConfig = rc
+		return cfg
+	})
+}
