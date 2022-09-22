@@ -47,7 +47,7 @@ stages:
         workspace:
           clean: all
         pool:
-          name: anyrobot-pools
+          name: ONE-Architecture-centos7.8-x86_64
           demands:
             - Agent.OSArchitecture -equals X64
             - Agent.OS -equals Linux
