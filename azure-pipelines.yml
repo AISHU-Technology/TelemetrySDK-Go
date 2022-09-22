@@ -47,7 +47,7 @@ stages:
         workspace:
           clean: all
         pool:
-          name: Console_ARM
+          name: ONE-Architecture-centos7.8-x86_64
           demands:
             - docker
         steps:
@@ -95,7 +95,7 @@ stages:
         container: dotnet
         dependsOn: CodeCheck
         pool:
-          name: Console_ARM
+          name: ONE-Architecture-centos7.8-x86_64
           demands:
             - docker
         steps:
@@ -176,7 +176,7 @@ stages:
         workspace:
           clean: all
         pool:
-          name: Console_ARM
+          name: ONE-Architecture-centos7.8-x86_64
           demands:
             - docker
         steps:
