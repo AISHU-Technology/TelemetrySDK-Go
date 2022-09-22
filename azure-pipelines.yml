@@ -47,10 +47,8 @@ stages:
         workspace:
           clean: all
         pool:
-          name: ONE-Architecture-centos7.8-x86_64
+          name: Console_ARM
           demands:
-            - Agent.OSArchitecture -equals X64
-            - Agent.OS -equals Linux
             - docker
         steps:
           - checkout: self
@@ -97,10 +95,8 @@ stages:
         container: dotnet
         dependsOn: CodeCheck
         pool:
-          name: ONE-Architecture-centos7.8-x86_64
+          name: Console_ARM
           demands:
-            - Agent.OSArchitecture -equals X64
-            - Agent.OS -equals Linux
             - docker
         steps:
           - task: DownloadBuildArtifacts@0
@@ -180,10 +176,8 @@ stages:
         workspace:
           clean: all
         pool:
-          name: ONE-Architecture-centos7.8-x86_64
+          name: Console_ARM
           demands:
-            - Agent.OSArchitecture -equals X64
-            - Agent.OS -equals Linux
             - docker
         steps:
           - checkout: self
