@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/common"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
-	customErrors "devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/errors"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io"
@@ -18,6 +16,10 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/common"
+	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
+	customErrors "devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/errors"
 )
 
 // httpClient 客户端结构体。
@@ -181,6 +183,7 @@ var ourTransport = &http.Transport{
 	MaxIdleConns:          100,
 	IdleConnTimeout:       90 * time.Second,
 	TLSHandshakeTimeout:   10 * time.Second,
+	TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 	ExpectContinueTimeout: 1 * time.Second,
 }
 
