@@ -65,3 +65,5 @@ return ctx, x * y
 `
 c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
 `
+
+> 代码埋点可以参考devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/examples
