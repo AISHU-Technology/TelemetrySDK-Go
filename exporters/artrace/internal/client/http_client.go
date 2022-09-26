@@ -236,12 +236,6 @@ func NewHTTPClient(opts ...config.HTTPOption) Client {
 		Timeout:   cfg.HTTPConfig.Timeout,
 	}
 
-	if cfg.HTTPConfig.TLSCfg != nil {
-		customTransport := ourTransport.Clone()
-		customTransport.TLSClientConfig = cfg.HTTPConfig.TLSCfg
-		client.Transport = customTransport
-	}
-
 	return &httpClient{
 		cfg:       cfg.HTTPConfig,
 		retryFunc: cfg.RetryConfig.RetryFunc(),

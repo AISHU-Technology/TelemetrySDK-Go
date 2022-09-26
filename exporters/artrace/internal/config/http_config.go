@@ -2,6 +2,7 @@ package config
 
 import (
 	"crypto/tls"
+	"net/url"
 	"time"
 )
 
@@ -39,29 +40,48 @@ func newHTTPOption(fn func(cfg Config) Config) HTTPOption {
 
 // 发送器配置项目。
 
-// WithScheme 选择http/https。
-func WithScheme(scheme string) HTTPOption {
-	if scheme == "http" {
-		return insecure()
+// WithAnyRobotURL 设置上报地址。
+func WithAnyRobotURL(URL string) HTTPOption {
+	AnyRobotURL, _ := url.Parse(URL)
+	if AnyRobotURL.Scheme == "http" {
+		return newHTTPOption(func(cfg Config) Config {
+			cfg.HTTPConfig.Insecure = true
+			cfg.HTTPConfig.Endpoint = AnyRobotURL.Host
+			cfg.HTTPConfig.Path = AnyRobotURL.Path
+			return cfg
+		})
 	}
-	return secure()
+	return newHTTPOption(func(cfg Config) Config {
+		cfg.HTTPConfig.Insecure = false
+		cfg.HTTPConfig.Endpoint = AnyRobotURL.Host
+		cfg.HTTPConfig.Path = AnyRobotURL.Path
+		return cfg
+	})
 }
+
+// WithScheme 选择http/https。
+//func WithScheme(scheme string) HTTPOption {
+//	if scheme == "http" {
+//		return insecure()
+//	}
+//	return secure()
+//}
 
 // WithEndpoint 设置ip:port。
-func WithEndpoint(endpoint string) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.Endpoint = endpoint
-		return cfg
-	})
-}
+//func WithEndpoint(endpoint string) HTTPOption {
+//	return newHTTPOption(func(cfg Config) Config {
+//		cfg.HTTPConfig.Endpoint = endpoint
+//		return cfg
+//	})
+//}
 
 // WithPath 设置/path。
-func WithPath(urlPath string) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.Path = urlPath
-		return cfg
-	})
-}
+//func WithPath(urlPath string) HTTPOption {
+//	return newHTTPOption(func(cfg Config) Config {
+//		cfg.HTTPConfig.Path = urlPath
+//		return cfg
+//	})
+//}
 
 // WithCompression 设置压缩方式。
 func WithCompression(compression Compression) HTTPOption {
@@ -87,26 +107,18 @@ func WithHeader(headers map[string]string) HTTPOption {
 	})
 }
 
-// WithTLSClientConfig 设置TLS连接。
-func WithTLSClientConfig(tlsCfg *tls.Config) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.TLSCfg = tlsCfg.Clone()
-		return cfg
-	})
-}
-
 // insecure 设置为http。
-func insecure() HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.Insecure = true
-		return cfg
-	})
-}
+//func insecure() HTTPOption {
+//	return newHTTPOption(func(cfg Config) Config {
+//		cfg.HTTPConfig.Insecure = true
+//		return cfg
+//	})
+//}
 
 // secure 设置为https。
-func secure() HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
-		cfg.HTTPConfig.Insecure = false
-		return cfg
-	})
-}
+//func secure() HTTPOption {
+//	return newHTTPOption(func(cfg Config) Config {
+//		cfg.HTTPConfig.Insecure = false
+//		return cfg
+//	})
+//}

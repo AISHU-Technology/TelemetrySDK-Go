@@ -34,6 +34,7 @@ func TestHTTPExample(t *testing.T) {
 		})
 	}
 }
+
 func TestHTTPSExample(t *testing.T) {
 	tests := []struct {
 		name string
@@ -48,6 +49,22 @@ func TestHTTPSExample(t *testing.T) {
 		})
 	}
 }
+
+func TestWithAllExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"TestWithAllExample",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			WithAllExample()
+		})
+	}
+}
+
 func Test_Add(t *testing.T) {
 	type args struct {
 		ctx context.Context

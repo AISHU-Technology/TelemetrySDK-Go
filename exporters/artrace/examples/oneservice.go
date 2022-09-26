@@ -2,16 +2,14 @@ package examples
 
 import (
 	"context"
-	"crypto/tls"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 	"log"
-	"net/url"
-	"strings"
 	"time"
 )
 
@@ -46,7 +44,11 @@ func StdoutExample() {
 	ctx := context.Background()
 	c := artrace.NewStdoutClient()
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.ServiceResource))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.NewWithAttributes(
+		"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
+		semconv.ServiceNameKey.String("AnyRobotTrace-example"),
+		semconv.ServiceVersionKey.String("2.2.0"),
+	)))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -63,11 +65,9 @@ func StdoutExample() {
 // HTTPExample 通过HTTP发送器输出到Trace接收器。
 func HTTPExample() {
 	ctx := context.Background()
-	u, _ := url.Parse(strings.TrimSpace("http://10.4.130.68:880/api/feed_ingester/v1/jobs/traceTest/events"))
-	c := artrace.NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
-		config.WithPath(u.Path), config.WithCompression(config.GzipCompression))
+	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://10.4.130.68:880/api/feed_ingester/v1/jobs/traceTest/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.ServiceResource))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Environment()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -84,12 +84,32 @@ func HTTPExample() {
 // HTTPSExample 通过HTTPS发送器输出到Trace接收器。
 func HTTPSExample() {
 	ctx := context.Background()
-	u, _ := url.Parse(strings.TrimSpace("https://10.4.107.107/api/feed_ingester/v1/jobs/job-a6d44f634e80d530/events"))
-	c := artrace.NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
-		config.WithPath(u.Path), config.WithCompression(config.GzipCompression), config.WithTimeout(10*time.Second),
-		config.WithHeader(nil), config.WithTLSClientConfig(&tls.Config{InsecureSkipVerify: true}))
+	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://10.4.107.107/api/feed_ingester/v1/jobs/job-a6d44f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.ServiceResource))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
+	otel.SetTracerProvider(tracerProvider)
+	defer func() {
+		if err := tracerProvider.Shutdown(ctx); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	ctx, num := multiply(ctx, 2, 2)
+	ctx, num = multiply(ctx, num, 10)
+	ctx, num = add(ctx, num, 2)
+	log.Println(result, num)
+}
+
+// WithAllExample 修改client所有入参。
+func WithAllExample() {
+	ctx := context.Background()
+	header := make(map[string]string)
+	header["self-defined"] = "some_header"
+	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://10.4.107.107/api/feed_ingester/v1/jobs/job-a6d44f634e80d530/events"),
+		artrace.WithCompression(1), artrace.WithTimeout(10*time.Second), artrace.WithHeader(header),
+		artrace.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
+	exporter := artrace.NewExporter(c)
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {

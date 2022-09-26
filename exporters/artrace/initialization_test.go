@@ -1,197 +1,167 @@
 package artrace
 
 import (
-	"context"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/client"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/config"
+	"reflect"
 	"testing"
 	"time"
 )
 
-func TestInstallExportPipeline(t *testing.T) {
+func TestNewExporter(t *testing.T) {
 	type args struct {
-		ctx context.Context
+		c client.Client
 	}
 	tests := []struct {
-		name    string
-		args    args
-		want    func(context.Context) error
-		wantErr bool
+		name string
+		args args
+		want *client.Exporter
 	}{
 		{
-			"TestInstallExportPipeline",
-			args{
-				context.Background(),
-			},
-			func(ctx context.Context) error {
-				return nil
-			},
-			true,
+			name: "TestNewExporter_1",
+			args: args{c: NewStdoutClient()},
+			want: NewExporter(NewStdoutClient()),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := InstallExportPipeline()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("InstallExportPipeline() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			if got := NewExporter(tt.args.c); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewExporter() = %v, want %v", got, tt.want)
 			}
-			//if !reflect.DeepEqual(got, tt.want) {
-			//	t.Errorf("InstallExportPipeline() got = %v, want %v", got, tt.want)
-			//}
 		})
 	}
 }
 
-func TestSetAnyRobotURL(t *testing.T) {
+func TestNewStdoutClient(t *testing.T) {
+	tests := []struct {
+		name string
+		want client.Client
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewStdoutClient(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewStdoutClient() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func TestNewHTTPClient(t *testing.T) {
+	type args struct {
+		opts []config.HTTPOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want client.Client
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewHTTPClient(tt.args.opts...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewHTTPClient() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func TestWithAnyRobotURL(t *testing.T) {
 	type args struct {
 		URL string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name string
+		args args
+		want config.HTTPOption
 	}{
-		{
-			"TestSetAnyRobotURL",
-			args{
-				"http://10.4.130.68:880/api/feed_ingester/v1/jobs/traceTest/events",
-			},
-			false,
-		},
-		{
-			"TestSetAnyRobotURL",
-			args{
-				"://10.",
-			},
-			true,
-		},
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetAnyRobotURL(tt.args.URL); (err != nil) != tt.wantErr {
-				t.Errorf("SetAnyRobotURL() error = %v, wantErr %v", err, tt.wantErr)
+			if got := WithAnyRobotURL(tt.args.URL); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithAnyRobotURL() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestSetCompression(t *testing.T) {
+func TestWithCompression(t *testing.T) {
 	type args struct {
-		Compression int
+		compression int
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name string
+		args args
+		want config.HTTPOption
 	}{
-		{
-			"TestSetCompression",
-			args{
-				0,
-			},
-			false,
-		},
-		{
-			"TestSetCompression",
-			args{
-				4,
-			},
-			true,
-		},
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetCompression(tt.args.Compression); (err != nil) != tt.wantErr {
-				t.Errorf("SetCompression() error = %v, wantErr %v", err, tt.wantErr)
+			if got := WithCompression(tt.args.compression); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithCompression() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
-
-func TestSetInstrumentation(t *testing.T) {
+func TestWithTimeout(t *testing.T) {
 	type args struct {
-		InstrumentationName    string
-		InstrumentationVersion string
-		InstrumentationURL     string
+		duration time.Duration
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name string
+		args args
+		want config.HTTPOption
 	}{
-		{
-			"TestSetInstrumentation",
-			args{
-				"go.opentelemetry.io/otel",
-				"v1.9.0",
-				"https://pkg.go.dev/go.opentelemetry.io/otel/trace@v1.9.0",
-			},
-			false,
-		},
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetInstrumentation(tt.args.InstrumentationName, tt.args.InstrumentationVersion, tt.args.InstrumentationURL); (err != nil) != tt.wantErr {
-				t.Errorf("SetInstrumentation() error = %v, wantErr %v", err, tt.wantErr)
+			if got := WithTimeout(tt.args.duration); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithTimeout() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func TestWithHeader(t *testing.T) {
+	type args struct {
+		headers map[string]string
+	}
+	tests := []struct {
+		name string
+		args args
+		want config.HTTPOption
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := WithHeader(tt.args.headers); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithHeader() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestSetRetry(t *testing.T) {
+func TestWithRetry(t *testing.T) {
 	type args struct {
+		enabled        bool
 		internal       time.Duration
 		maxInterval    time.Duration
 		maxElapsedTime time.Duration
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
+		name string
+		args args
+		want config.HTTPOption
 	}{
-		{
-			"TestSetRetry",
-			args{
-				time.Second,
-				time.Second,
-				time.Second,
-			},
-			false,
-		},
+		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := SetRetry(tt.args.internal, tt.args.maxInterval, tt.args.maxElapsedTime); (err != nil) != tt.wantErr {
-				t.Errorf("SetRetry() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
-func TestSetServiceResource(t *testing.T) {
-	type args struct {
-		url     string
-		name    string
-		version string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			"TestSetServiceResource",
-			args{
-				"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
-				"AnyRobotTrace-example",
-				"2.2.0",
-			},
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := SetServiceResource(tt.args.url, tt.args.name, tt.args.version); (err != nil) != tt.wantErr {
-				t.Errorf("SetServiceResource() error = %v, wantErr %v", err, tt.wantErr)
+			if got := WithRetry(tt.args.enabled, tt.args.internal, tt.args.maxInterval, tt.args.maxElapsedTime); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("WithRetry() = %v, want %v", got, tt.want)
 			}
 		})
 	}
