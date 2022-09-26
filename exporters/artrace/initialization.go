@@ -34,7 +34,7 @@ var (
 
 // ServiceResource 用来标记当前服务的信息。
 var ServiceResource = resource.NewWithAttributes(
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go/exporters",
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
 	semconv.ServiceNameKey.String("AnyRobotTrace-example"),
 	semconv.ServiceVersionKey.String("2.2.0"),
 )

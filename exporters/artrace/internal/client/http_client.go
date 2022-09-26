@@ -235,10 +235,11 @@ func NewHTTPClient(opts ...config.HTTPOption) Client {
 		Transport: ourTransport,
 		Timeout:   cfg.HTTPConfig.Timeout,
 	}
+
 	if cfg.HTTPConfig.TLSCfg != nil {
-		transport := ourTransport.Clone()
-		transport.TLSClientConfig = cfg.HTTPConfig.TLSCfg
-		client.Transport = transport
+		customTransport := ourTransport.Clone()
+		customTransport.TLSClientConfig = cfg.HTTPConfig.TLSCfg
+		client.Transport = customTransport
 	}
 
 	return &httpClient{

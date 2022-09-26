@@ -181,7 +181,7 @@ func TestSetServiceResource(t *testing.T) {
 		{
 			"TestSetServiceResource",
 			args{
-				"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go/exporters",
+				"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
 				"AnyRobotTrace-example",
 				"2.2.0",
 			},
