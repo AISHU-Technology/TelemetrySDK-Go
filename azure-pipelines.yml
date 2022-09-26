@@ -3,6 +3,7 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+# 触发管道
 trigger:
   batch: true
   branches:
