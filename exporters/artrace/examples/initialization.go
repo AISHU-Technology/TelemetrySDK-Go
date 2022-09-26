@@ -2,9 +2,9 @@ package examples
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/client"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
-	customErrors "devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/errors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/client"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
+	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/errors"
 	"errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/sdk/resource"

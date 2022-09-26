@@ -3,8 +3,8 @@ package examples
 import (
 	"context"
 	"crypto/tls"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/client"
-	"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/client"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -85,7 +85,7 @@ func HTTPExample() {
 func HTTPSExample() {
 	ctx := context.Background()
 	u, _ := url.Parse(strings.TrimSpace("https://10.4.107.107/api/feed_ingester/v1/jobs/job-a6d44f634e80d530/events"))
-	c := NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
+	c := client.NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
 		config.WithPath(u.Path), config.WithCompression(config.GzipCompression), config.WithTimeout(10*time.Second),
 		config.WithHeader(nil), config.WithTLSClientConfig(&tls.Config{InsecureSkipVerify: true}))
 	exporter := client.NewExporter(c)

@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	customErrors "devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/errors"
+	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace/internal/errors"
 	"errors"
 	"github.com/cenkalti/backoff/v4"
 	"log"

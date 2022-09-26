@@ -1,4 +1,4 @@
-module devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace
+module devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/Akashic_TelemetrySDK-Go.git/exporters/artrace
 
 go 1.17
 
