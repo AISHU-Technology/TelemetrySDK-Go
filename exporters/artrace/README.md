@@ -25,37 +25,43 @@ Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](htt
 
 > 添加依赖：`import (
 "context"
-"devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go.git/exporters/anyrobottrace/tracehttp"
+"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace"
 "log")`
 
 > 修改入口main.go：
 
-`func main() {
+`
+func main() {
 ctx := context.Background()
-_ = ar.SetTraceEnvironment()
-shutdown, _ := ar.InstallExportPipeline(ctx)
+c := artrace.NewStdoutClient()
+//c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
+exporter := artrace.NewExporter(c)
+tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
+otel.SetTracerProvider(tracerProvider)
 defer func() {
-if err := shutdown(ctx); err != nil {
-log.Fatal(err)
+if err := tracerProvider.Shutdown(ctx); err != nil {
+log.Println(err)
 }
 }()
-//your code here }`
+//your code here }
+`
 
 > 修改业务代码例如logics.go
 
-`func add(ctx context.Context, x, y int64) (context.Context, int64) {
-_, span := ar.Tracer.Start(ctx, "加法", trace.WithSpanKind(1))
-span.SetAttributes(attribute.KeyValue{Key: "add", Value: attribute.StringValue("计算两数之和")})
+`
+func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
+ctx, span := artrace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(2), trace.WithLinks(trace.Link{}))
+span.SetStatus(2, "成功计算乘积")
+span.AddEvent("multiplyEvent")
+span.SetAttributes(attribute.KeyValue{Key: "succeeded", Value: attribute.BoolValue(true)})
 defer span.End()
 //your code here
-return ctx, x + y }`
+return ctx, x * y
+}
+`
 
-> 修改settings.go的全部参数，Trace上报地址从前端获取
+> 修改NewXXXXClient的入参，Trace上报地址从前端获取
 
-`func SetTraceEnvironment() {
-	_ = setAnyRobotURL("http://10.4.130.68:880/api/feed_ingester/v1/jobs/traceTest/events")
-	_ = setInstrumentation("go.opentelemetry.io/otel", "v1.9.0", "https://pkg.go.dev/go.opentelemetry.io/otel/trace@v1.9.0")
-	_ = setServiceResource("devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go/exporters", "AnyRobotTrace-example", "2.2.0")
-	_ = setRetry(5*time.Second, 1*time.Minute, 5*time.Minute)
-	_ = setCompression(0)
-}`
+`
+c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
+`

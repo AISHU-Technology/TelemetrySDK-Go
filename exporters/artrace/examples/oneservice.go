@@ -7,7 +7,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"time"
@@ -32,7 +31,6 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	span.SetStatus(2, "成功计算乘积")
 	span.AddEvent("multiplyEvent")
 	span.SetAttributes(attribute.KeyValue{Key: "succeeded", Value: attribute.BoolValue(true)})
-	span.SetAttributes(attribute.KeyValue{Key: "succeeded", Value: attribute.BoolSliceValue([]bool{})})
 	defer span.End()
 
 	time.Sleep(300 * time.Millisecond)
@@ -44,11 +42,14 @@ func StdoutExample() {
 	ctx := context.Background()
 	c := artrace.NewStdoutClient()
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.NewWithAttributes(
-		"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
-		semconv.ServiceNameKey.String("AnyRobotTrace-example"),
-		semconv.ServiceVersionKey.String("2.2.0"),
-	)))
+	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.NewWithAttributes(
+	//	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
+	//	semconv.ServiceNameKey.String("AnyRobotTrace-example"),
+	//	semconv.ServiceVersionKey.String("2.2.0"),
+	//	semconv.ServiceInstanceIDKey.String("abcde12345"),
+	//	semconv.ServiceNamespaceKey.String("Stdout"),
+	//)))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -67,7 +68,7 @@ func HTTPExample() {
 	ctx := context.Background()
 	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://10.4.130.68:880/api/feed_ingester/v1/jobs/traceTest/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Environment()))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
