@@ -15,31 +15,33 @@ type Value struct {
 }
 
 // AnyRobotAttributeFromKeyValue 单条KeyValue转换为*Attribute。
-func AnyRobotAttributeFromKeyValue(kv attribute.KeyValue) *Attribute {
+func AnyRobotAttributeFromKeyValue(attribute attribute.KeyValue) *Attribute {
 	return &Attribute{
-		Key: string(kv.Key),
+		Key: string(attribute.Key),
 		Value: Value{
-			Type:  standardizeValueType(kv.Value.Type().String()),
-			Value: kv.Value.AsInterface(),
+			Type:  standardizeValueType(attribute.Value.Type().String()),
+			Value: attribute.Value.AsInterface(),
 		},
 	}
 }
 
 // AnyRobotAttributesFromKeyValues 批量KeyValue转换为[]*Attribute。
-func AnyRobotAttributesFromKeyValues(kvs []attribute.KeyValue) []*Attribute {
-	if kvs == nil {
+func AnyRobotAttributesFromKeyValues(attributes []attribute.KeyValue) []*Attribute {
+	if attributes == nil {
 		return make([]*Attribute, 0)
 	}
-	attributes := make([]*Attribute, 0, len(kvs))
-	for i := 0; i < len(kvs); i++ {
-		attributes = append(attributes, AnyRobotAttributeFromKeyValue(kvs[i]))
+	arattributes := make([]*Attribute, 0, len(attributes))
+	for i := 0; i < len(attributes); i++ {
+		arattributes = append(arattributes, AnyRobotAttributeFromKeyValue(attributes[i]))
 	}
-	return attributes
+	return arattributes
 }
 
 // standardizeValueType 标准化统一 ValueType 为各语言统一格式。
 func standardizeValueType(valueType string) string {
 	switch valueType {
+	//case "BOOL":
+	//	return "BOOL"
 	case "BOOLSLICE":
 		return "BOOLARRAY"
 	case "INT64":
@@ -50,6 +52,8 @@ func standardizeValueType(valueType string) string {
 		return "FLOAT"
 	case "FLOAT64SLICE":
 		return "FLOATARRAY"
+	//case "STRING":
+	//	return "STRING"
 	case "STRINGSLICE":
 		return "STRINGARRAY"
 	default:

@@ -36,9 +36,7 @@ func (d *httpClient) Stop(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	default:
 	}
-	return nil
 }
 
 const remind = "发送到 %s 失败，错误提示: %s"
@@ -117,7 +115,6 @@ func (d *httpClient) newRequest(body []byte) (request, error) {
 		r.Header.Set(k, v)
 	}
 	//设置来源记录。
-	r.Header.Set("Content-Type", "application/x-AnyRobotBuffer")
 	r.Header.Set("Service-Language", "Golang")
 
 	req := request{Request: r}
@@ -139,9 +136,11 @@ func (d *httpClient) newRequest(body []byte) (request, error) {
 		gz.Reset(&b)
 
 		if _, err := gz.Write(body); err != nil {
+			r.Header.Set("Content-Encoding", "json")
 			return req, err
 		}
 		if err := gz.Close(); err != nil {
+			r.Header.Set("Content-Encoding", "json")
 			return req, err
 		}
 

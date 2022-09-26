@@ -24,13 +24,13 @@ func AnyRobotEventFromEvent(event sdktrace.Event) *Event {
 }
 
 // AnyRobotEventsFromEvents 批量sdktrace.Event转换为[]*Event。
-func AnyRobotEventsFromEvents(sdkEvent []sdktrace.Event) []*Event {
-	if sdkEvent == nil {
+func AnyRobotEventsFromEvents(events []sdktrace.Event) []*Event {
+	if events == nil {
 		return make([]*Event, 0)
 	}
-	events := make([]*Event, 0, len(sdkEvent))
-	for i := 0; i < len(sdkEvent); i++ {
-		events = append(events, AnyRobotEventFromEvent(sdkEvent[i]))
+	arevents := make([]*Event, 0, len(events))
+	for i := 0; i < len(events); i++ {
+		arevents = append(arevents, AnyRobotEventFromEvent(events[i]))
 	}
-	return events
+	return arevents
 }

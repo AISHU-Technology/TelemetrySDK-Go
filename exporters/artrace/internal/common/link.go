@@ -22,13 +22,13 @@ func AnyRobotLinkFromLink(link sdktrace.Link) *Link {
 }
 
 // AnyRobotLinksFromLinks 批量sdktrace.Link转换为[]*Link。
-func AnyRobotLinksFromLinks(sdkLinks []sdktrace.Link) []*Link {
-	if sdkLinks == nil {
+func AnyRobotLinksFromLinks(links []sdktrace.Link) []*Link {
+	if links == nil {
 		return make([]*Link, 0)
 	}
-	links := make([]*Link, 0, len(sdkLinks))
-	for i := 0; i < len(sdkLinks); i++ {
-		links = append(links, AnyRobotLinkFromLink(sdkLinks[i]))
+	arlinks := make([]*Link, 0, len(links))
+	for i := 0; i < len(links); i++ {
+		arlinks = append(arlinks, AnyRobotLinkFromLink(links[i]))
 	}
-	return links
+	return arlinks
 }

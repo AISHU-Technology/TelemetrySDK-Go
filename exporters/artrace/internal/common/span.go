@@ -29,38 +29,38 @@ type AnyRobotSpan struct {
 }
 
 // AnyRobotSpanFromReadOnlySpan 单条span转换为*AnyRobotSpan。
-func AnyRobotSpanFromReadOnlySpan(ros sdktrace.ReadOnlySpan) *AnyRobotSpan {
-	if ros == nil {
+func AnyRobotSpanFromReadOnlySpan(span sdktrace.ReadOnlySpan) *AnyRobotSpan {
+	if span == nil {
 		return &AnyRobotSpan{}
 	}
 	return &AnyRobotSpan{
-		Name:                 ros.Name(),
-		SpanContext:          ros.SpanContext(),
-		Parent:               ros.Parent(),
-		SpanKind:             ros.SpanKind(),
-		StartTime:            ros.StartTime(),
-		EndTime:              ros.EndTime(),
-		Attributes:           AnyRobotAttributesFromKeyValues(ros.Attributes()),
-		Links:                AnyRobotLinksFromLinks(ros.Links()),
-		Events:               AnyRobotEventsFromEvents(ros.Events()),
-		Status:               ros.Status(),
-		InstrumentationScope: ros.InstrumentationScope(),
-		Resource:             ros.Resource(),
-		DroppedAttributes:    ros.DroppedAttributes(),
-		DroppedEvents:        ros.DroppedEvents(),
-		DroppedLinks:         ros.DroppedLinks(),
-		ChildSpanCount:       ros.ChildSpanCount(),
+		Name:                 span.Name(),
+		SpanContext:          span.SpanContext(),
+		Parent:               span.Parent(),
+		SpanKind:             span.SpanKind(),
+		StartTime:            span.StartTime(),
+		EndTime:              span.EndTime(),
+		Attributes:           AnyRobotAttributesFromKeyValues(span.Attributes()),
+		Links:                AnyRobotLinksFromLinks(span.Links()),
+		Events:               AnyRobotEventsFromEvents(span.Events()),
+		Status:               span.Status(),
+		InstrumentationScope: span.InstrumentationScope(),
+		Resource:             span.Resource(),
+		DroppedAttributes:    span.DroppedAttributes(),
+		DroppedEvents:        span.DroppedEvents(),
+		DroppedLinks:         span.DroppedLinks(),
+		ChildSpanCount:       span.ChildSpanCount(),
 	}
 }
 
 // AnyRobotSpansFromReadOnlySpans 批量span转换为[]*AnyRobotSpan。
-func AnyRobotSpansFromReadOnlySpans(ross []sdktrace.ReadOnlySpan) []*AnyRobotSpan {
-	if ross == nil {
+func AnyRobotSpansFromReadOnlySpans(spans []sdktrace.ReadOnlySpan) []*AnyRobotSpan {
+	if spans == nil {
 		return make([]*AnyRobotSpan, 0)
 	}
-	spans := make([]*AnyRobotSpan, 0, len(ross))
-	for i := 0; i < len(ross); i++ {
-		spans = append(spans, AnyRobotSpanFromReadOnlySpan(ross[i]))
+	arspans := make([]*AnyRobotSpan, 0, len(spans))
+	for i := 0; i < len(spans); i++ {
+		arspans = append(arspans, AnyRobotSpanFromReadOnlySpan(spans[i]))
 	}
-	return spans
+	return arspans
 }
