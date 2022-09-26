@@ -130,3 +130,15 @@ func SetCompression(Compression int) error {
 	compression = Compression
 	return nil
 }
+
+func NewExporter(c client.Client) *client.Exporter {
+	return client.NewExporter(c)
+}
+
+func NewStdoutClient() client.Client {
+	return client.NewStdoutClient()
+}
+
+func NewHTTPClient(opts ...config.HTTPOption) client.Client {
+	return client.NewHTTPClient(opts...)
+}

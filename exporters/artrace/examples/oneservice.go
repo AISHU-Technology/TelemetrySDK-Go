@@ -44,8 +44,8 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	c := client.NewStdoutClient()
-	exporter := client.NewExporter(c)
+	c := NewStdoutClient()
+	exporter := NewExporter(c)
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(ServiceResource))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
@@ -64,7 +64,7 @@ func StdoutExample() {
 func HTTPExample() {
 	ctx := context.Background()
 	u, _ := url.Parse(strings.TrimSpace("http://10.4.130.68:880/api/feed_ingester/v1/jobs/traceTest/events"))
-	c := client.NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
+	c := NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
 		config.WithPath(u.Path), config.WithCompression(config.GzipCompression))
 	exporter := client.NewExporter(c)
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(ServiceResource))
@@ -85,7 +85,7 @@ func HTTPExample() {
 func HTTPSExample() {
 	ctx := context.Background()
 	u, _ := url.Parse(strings.TrimSpace("https://10.4.107.107/api/feed_ingester/v1/jobs/job-a6d44f634e80d530/events"))
-	c := client.NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
+	c := NewHTTPClient(config.WithScheme(u.Scheme), config.WithEndpoint(u.Host),
 		config.WithPath(u.Path), config.WithCompression(config.GzipCompression), config.WithTimeout(10*time.Second),
 		config.WithHeader(nil), config.WithTLSClientConfig(&tls.Config{InsecureSkipVerify: true}))
 	exporter := client.NewExporter(c)
