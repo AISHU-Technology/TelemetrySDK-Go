@@ -23,18 +23,26 @@ Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](htt
 
 > 更新SDK：步骤等同于引入SDK
 
-> 添加依赖：`import (
+> 添加依赖：
+`import (
 "context"
 "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace"
-"log")`
+"go.opentelemetry.io/otel"
+"go.opentelemetry.io/otel/attribute"
+"go.opentelemetry.io/otel/sdk/resource"
+sdktrace "go.opentelemetry.io/otel/sdk/trace"
+semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
+"go.opentelemetry.io/otel/trace"
+"log")
+> `
 
 > 修改入口main.go：
 
 `
 func main() {
 ctx := context.Background()
-c := artrace.NewStdoutClient()
-//c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
+//c := artrace.NewStdoutClient()
+c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
 exporter := artrace.NewExporter(c)
 tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
 otel.SetTracerProvider(tracerProvider)
