@@ -5,6 +5,9 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/config"
 	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/errors"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/sdk/resource"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"net/url"
@@ -90,4 +93,14 @@ func WithRetry(enabled bool, internal time.Duration, maxInterval time.Duration, 
 		MaxElapsedTime:  maxElapsedTime,
 	}
 	return config.WithRetry(retry)
+}
+
+// GetResource 获取内置资源信息，记录客户服务名。
+func GetResource(serviceName string) *resource.Resource {
+	return resource.NewWithAttributes("devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
+		semconv.ServiceNameKey.String(serviceName),
+		attribute.String("telemetry.sdk.language", "go"),
+		attribute.String("telemetry.sdk.name", "ONE-Architecture"),
+		attribute.String("telemetry.sdk.version", "2.2.0"),
+	)
 }

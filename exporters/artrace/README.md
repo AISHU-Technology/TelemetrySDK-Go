@@ -19,7 +19,8 @@ TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](https://gol
 
 ## Getting Started
 
-> 引入SDK：go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace@feature-arp-205194
+> 引入SDK：go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_
+> git/TelemetrySDK-Go.git/exporters/artrace@feature-arp-205194
 
 > 更新SDK：步骤等同于引入SDK
 
@@ -41,11 +42,10 @@ semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 `
 func main() {
 ctx := context.Background()
-_ = os.Setenv("OTEL_SERVICE_NAME", "YourServiceName")
 //c := artrace.NewStdoutClient()
 c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
 exporter := artrace.NewExporter(c)
-tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
+tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
 otel.SetTracerProvider(tracerProvider)
 defer func() {
 if err := tracerProvider.Shutdown(ctx); err != nil {

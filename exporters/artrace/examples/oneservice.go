@@ -10,7 +10,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 	"log"
-	"os"
 	"time"
 )
 
@@ -46,10 +45,9 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	_ = os.Setenv("OTEL_SERVICE_NAME", "YourServiceName")
 	c := artrace.NewStdoutClient()
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -87,13 +85,7 @@ func HTTPSExample() {
 	ctx := context.Background()
 	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.NewWithAttributes(
-		"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
-		semconv.ServiceNameKey.String("AnyRobotTrace-example"),
-		semconv.ServiceVersionKey.String("2.2.0"),
-		semconv.ServiceInstanceIDKey.String("abcde12345"),
-		semconv.ServiceNamespaceKey.String("Stdout"),
-	)))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -116,7 +108,13 @@ func WithAllExample() {
 		artrace.WithCompression(1), artrace.WithTimeout(10*time.Second), artrace.WithHeader(header),
 		artrace.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.NewWithAttributes(
+		"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
+		semconv.ServiceNameKey.String("AnyRobotTrace-example"),
+		semconv.ServiceVersionKey.String("2.2.0"),
+		semconv.ServiceInstanceIDKey.String("abcde12345"),
+		semconv.ServiceNamespaceKey.String("Stdout"),
+	)))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
