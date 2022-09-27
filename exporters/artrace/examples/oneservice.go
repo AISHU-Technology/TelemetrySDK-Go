@@ -5,9 +5,7 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"time"
@@ -66,7 +64,7 @@ func HTTPExample() {
 	ctx := context.Background()
 	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/abcd4f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -85,7 +83,7 @@ func HTTPSExample() {
 	ctx := context.Background()
 	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -108,13 +106,7 @@ func WithAllExample() {
 		artrace.WithCompression(1), artrace.WithTimeout(10*time.Second), artrace.WithHeader(header),
 		artrace.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.NewWithAttributes(
-		"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
-		semconv.ServiceNameKey.String("AnyRobotTrace-example"),
-		semconv.ServiceVersionKey.String("2.2.0"),
-		semconv.ServiceInstanceIDKey.String("abcde12345"),
-		semconv.ServiceNamespaceKey.String("Stdout"),
-	)))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
