@@ -1,21 +1,21 @@
-# Akashic_TelemetrySDK-Go
+# TelemetrySDK-Go
 
-[仓库地址](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go?path=%2F&version=GBfeature-arp-205194&_a=contents)
+[仓库地址](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194)
 
-Akashic_TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](https://golang.org/)
+TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](https://golang.org/)
 语言版本实现。它提供了一系列接口帮助开发者完成代码埋点过程，旨在提高用户业务的可观测性能力。
 
 ## Project Status
 
-| Signal  | Status | Project                                                                                                                                                 |
-|---------|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Traces  | Beta   | [trace](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go?version=GBfeature-arp-205194&_a=contents&path=%2Fexporters%2Fartrace) |
-| Metrics | Alpha  | N/A                                                                                                                                                     |
-| Logs    | Alpha  | [log](https://devops.aishu.cn/AISHUDevOps/AnyRobot/_git/Akashic_TelemetrySDK-Go?version=GBfeature-arp-205194&_a=contents&path=%2Fspan)                  |
+| Signal  | Status | Project                                                                                                                                     |
+|---------|--------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| Traces  | Beta   | [trace](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=%2Fexporters%2Fartrace) |
+| Metrics | Alpha  | N/A                                                                                                                                         |
+| Logs    | Alpha  | [log](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=%2Fspan)                  |
 
 ## Compatibility
 
-> Akashic_TelemetrySDK-Go 要求Go版本不低于1.17。
+> TelemetrySDK-Go 要求Go版本不低于1.17。
 
 ## Getting Started
 
@@ -41,6 +41,7 @@ semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 `
 func main() {
 ctx := context.Background()
+_ = os.Setenv("OTEL_SERVICE_NAME", "YourServiceName")
 //c := artrace.NewStdoutClient()
 c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
 exporter := artrace.NewExporter(c)
