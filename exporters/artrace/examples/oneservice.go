@@ -66,7 +66,7 @@ func StdoutExample() {
 // HTTPExample 通过HTTP发送器输出到Trace接收器。
 func HTTPExample() {
 	ctx := context.Background()
-	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://10.4.130.68:880/api/feed_ingester/v1/jobs/traceTest/events"))
+	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/abcd4f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.Default()))
 	otel.SetTracerProvider(tracerProvider)
@@ -85,7 +85,7 @@ func HTTPExample() {
 // HTTPSExample 通过HTTPS发送器输出到Trace接收器。
 func HTTPSExample() {
 	ctx := context.Background()
-	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://10.4.107.107/api/feed_ingester/v1/jobs/job-a6d44f634e80d530/events"))
+	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource.NewWithAttributes(
 		"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
@@ -112,7 +112,7 @@ func WithAllExample() {
 	ctx := context.Background()
 	header := make(map[string]string)
 	header["self-defined"] = "some_header"
-	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://10.4.107.107/api/feed_ingester/v1/jobs/job-a6d44f634e80d530/events"),
+	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
 		artrace.WithCompression(1), artrace.WithTimeout(10*time.Second), artrace.WithHeader(header),
 		artrace.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := artrace.NewExporter(c)
