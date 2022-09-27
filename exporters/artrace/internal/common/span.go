@@ -2,7 +2,6 @@ package common
 
 import (
 	"go.opentelemetry.io/otel/sdk/instrumentation"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"time"
@@ -21,7 +20,7 @@ type AnyRobotSpan struct {
 	Events               []*Event              `json:"Events"`
 	Status               sdktrace.Status       `json:"Status"`
 	InstrumentationScope instrumentation.Scope `json:"InstrumentationScope"`
-	Resource             *resource.Resource    `json:"Resource"`
+	Resource             *Resource             `json:"Resource"`
 	DroppedAttributes    int                   `json:"DroppedAttributes"`
 	DroppedEvents        int                   `json:"DroppedEvents"`
 	DroppedLinks         int                   `json:"DroppedLinks"`
@@ -45,7 +44,7 @@ func AnyRobotSpanFromReadOnlySpan(span sdktrace.ReadOnlySpan) *AnyRobotSpan {
 		Events:               AnyRobotEventsFromEvents(span.Events()),
 		Status:               span.Status(),
 		InstrumentationScope: span.InstrumentationScope(),
-		Resource:             span.Resource(),
+		Resource:             AnyRobotResourceFromResource(span.Resource()),
 		DroppedAttributes:    span.DroppedAttributes(),
 		DroppedEvents:        span.DroppedEvents(),
 		DroppedLinks:         span.DroppedLinks(),

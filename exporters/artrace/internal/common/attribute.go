@@ -4,14 +4,14 @@ import "go.opentelemetry.io/otel/attribute"
 
 // Attribute 自定义Attribute统一Type。
 type Attribute struct {
-	Key   string
-	Value Value
+	Key   string `json:"Key"`
+	Value Value  `json:"Value"`
 }
 
 // Value 自定义Value统一Type。
 type Value struct {
-	Type  string
-	Value interface{}
+	Type  string      `json:"Type"`
+	Value interface{} `json:"Value"`
 }
 
 // AnyRobotAttributeFromKeyValue 单条KeyValue转换为*Attribute。

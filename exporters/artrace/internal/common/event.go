@@ -7,10 +7,10 @@ import (
 
 // Event 自定义 Event 统一Attribute。
 type Event struct {
-	Name                  string
-	Attributes            []*Attribute
-	DroppedAttributeCount int
-	Time                  time.Time
+	Name                  string       `json:"Name"`
+	Attributes            []*Attribute `json:"Attributes"`
+	DroppedAttributeCount int          `json:"DroppedAttributeCount"`
+	Time                  time.Time    `json:"Time"`
 }
 
 // AnyRobotEventFromEvent 单条sdktrace.Event转换为*Event。

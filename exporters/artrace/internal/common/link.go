@@ -7,9 +7,9 @@ import (
 
 // Link 自定义 Link 统一Attribute。
 type Link struct {
-	SpanContext           trace.SpanContext
-	Attributes            []*Attribute
-	DroppedAttributeCount int
+	SpanContext           trace.SpanContext `json:"SpanContext"`
+	Attributes            []*Attribute      `json:"Attributes"`
+	DroppedAttributeCount int               `json:"DroppedAttributeCount"`
 }
 
 // AnyRobotLinkFromLink 单条sdktrace.Link转换为*Link。
