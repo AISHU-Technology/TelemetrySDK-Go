@@ -45,7 +45,7 @@ ctx := context.Background()
 //c := artrace.NewStdoutClient()
 c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
 exporter := artrace.NewExporter(c)
-tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
+tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
 otel.SetTracerProvider(tracerProvider)
 defer func() {
 if err := tracerProvider.Shutdown(ctx); err != nil {

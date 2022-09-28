@@ -19,8 +19,8 @@ func TestNewExporter(t *testing.T) {
 	}{
 		{
 			name: "TestNewExporter_1",
-			args: args{c: NewStdoutClient()},
-			want: NewExporter(NewStdoutClient()),
+			args: args{c: NewStdoutClient("")},
+			want: NewExporter(NewStdoutClient("")),
 		},
 	}
 	for _, tt := range tests {
@@ -41,7 +41,7 @@ func TestNewStdoutClient(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewStdoutClient(); !reflect.DeepEqual(got, tt.want) {
+			if got := NewStdoutClient(""); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewStdoutClient() = %v, want %v", got, tt.want)
 			}
 		})

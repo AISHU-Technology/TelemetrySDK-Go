@@ -5,11 +5,14 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/common"
 	"encoding/json"
 	"os"
+	"strings"
 )
 
 // stdoutClient 客户端结构体。
 type stdoutClient struct {
-	stopCh chan struct{}
+	filepath string
+	stopCh   chan struct {
+	}
 }
 
 // Stop 关闭发送器。
@@ -33,7 +36,7 @@ func (d *stdoutClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common
 	_ = encoder1.Encode(AnyRobotSpans)
 
 	//写入本地文件，每次覆盖
-	file2, err := os.Create("./AnyRobotTrace.txt")
+	file2, err := os.Create(d.filepath)
 	encoder2 := json.NewEncoder(file2)
 	encoder2.SetIndent("", "\t")
 	_ = encoder2.Encode(AnyRobotSpans)
@@ -41,6 +44,9 @@ func (d *stdoutClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common
 }
 
 // NewStdoutClient 创建Exporter的Local客户端。
-func NewStdoutClient() Client {
-	return &stdoutClient{stopCh: make(chan struct{})}
+func NewStdoutClient(stdoutPath string) Client {
+	if strings.TrimSpace(stdoutPath) == "" {
+		return &stdoutClient{filepath: "./AnyRobotTrace.txt", stopCh: make(chan struct{})}
+	}
+	return &stdoutClient{filepath: stdoutPath, stopCh: make(chan struct{})}
 }

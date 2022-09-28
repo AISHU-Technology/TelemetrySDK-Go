@@ -46,8 +46,8 @@ func NewExporter(c client.Client) *client.Exporter {
 }
 
 // NewStdoutClient 创建Exporter的Local客户端。
-func NewStdoutClient() client.Client {
-	return client.NewStdoutClient()
+func NewStdoutClient(stdoutPath string) client.Client {
+	return client.NewStdoutClient(stdoutPath)
 }
 
 // NewHTTPClient 创建Exporter的HTTP客户端。
@@ -96,9 +96,10 @@ func WithRetry(enabled bool, internal time.Duration, maxInterval time.Duration, 
 }
 
 // GetResource 获取内置资源信息，记录客户服务名。
-func GetResource(serviceName string) *resource.Resource {
+func GetResource(serviceName string, serviceVersion string) *resource.Resource {
 	return resource.NewWithAttributes("devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace",
 		semconv.ServiceNameKey.String(serviceName),
+		semconv.ServiceVersionKey.String(serviceVersion),
 		attribute.String("telemetry.sdk.language", "go"),
 		attribute.String("telemetry.sdk.name", "ONE-Architecture"),
 		attribute.String("telemetry.sdk.version", "2.2.0"),

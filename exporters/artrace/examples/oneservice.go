@@ -43,9 +43,9 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	c := artrace.NewStdoutClient()
+	c := artrace.NewStdoutClient("./Trace.txt")
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -64,7 +64,7 @@ func HTTPExample() {
 	ctx := context.Background()
 	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/abcd4f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -83,7 +83,7 @@ func HTTPSExample() {
 	ctx := context.Background()
 	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -106,7 +106,7 @@ func WithAllExample() {
 		artrace.WithCompression(1), artrace.WithTimeout(10*time.Second), artrace.WithHeader(header),
 		artrace.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := artrace.NewExporter(c)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName")))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
