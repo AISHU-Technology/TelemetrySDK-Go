@@ -35,13 +35,20 @@ func (d *httpClient) Stop(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
+	default:
 	}
+	return nil
 }
 
 // UploadTraces 批量发送Trace数据。
 func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.AnyRobotSpan) error {
-	//如果是HTTP/GRPC stdoutClient：
+	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
 	defer cancel()
 
 	//编码Trace数据。

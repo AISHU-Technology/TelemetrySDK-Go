@@ -58,7 +58,7 @@ func NewHTTPClient(opts ...config.HTTPOption) client.Client {
 // WithAnyRobotURL 设置Trace数据上报地址。
 func WithAnyRobotURL(URL string) config.HTTPOption {
 	if _, err := url.Parse(URL); err != nil {
-		log.Println(customErrors.AnyRobotTraceExporter_InvalidURL)
+		log.Fatalln(customErrors.AnyRobotTraceExporter_InvalidURL)
 	}
 	return config.WithAnyRobotURL(URL)
 }

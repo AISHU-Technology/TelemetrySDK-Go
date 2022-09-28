@@ -43,7 +43,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	c := artrace.NewStdoutClient("./Trace.txt")
+	c := artrace.NewStdoutClient("./AnyRobotTrace.txt")
 	exporter := artrace.NewExporter(c)
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
 	otel.SetTracerProvider(tracerProvider)

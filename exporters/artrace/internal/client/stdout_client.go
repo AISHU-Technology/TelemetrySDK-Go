@@ -28,7 +28,15 @@ func (d *stdoutClient) Stop(ctx context.Context) error {
 
 // UploadTraces 批量发送Trace数据。
 func (d *stdoutClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.AnyRobotSpan) error {
-	ctx.Done()
+	//退出逻辑：
+	ctx, cancel := d.contextWithStop(ctx)
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+	defer cancel()
+
 	//控制台输出
 	file1 := os.Stdout
 	encoder1 := json.NewEncoder(file1)
@@ -41,6 +49,19 @@ func (d *stdoutClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common
 	encoder2.SetIndent("", "\t")
 	_ = encoder2.Encode(AnyRobotSpans)
 	return err
+}
+
+// contextWithStop 把上下文停止信号传递给客户端，驱动Exporter停止。
+func (d *stdoutClient) contextWithStop(ctx context.Context) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(ctx)
+	go func(ctx context.Context, cancel context.CancelFunc) {
+		select {
+		case <-ctx.Done():
+		case <-d.stopCh:
+			cancel()
+		}
+	}(ctx, cancel)
+	return ctx, cancel
 }
 
 // NewStdoutClient 创建Exporter的Local客户端。

@@ -19,8 +19,7 @@ TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](https://gol
 
 ## Getting Started
 
-> 引入SDK：go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_
-> git/TelemetrySDK-Go.git/exporters/artrace@feature-arp-205194
+> 引入SDK：go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace@feature-arp-205194
 
 > 更新SDK：步骤等同于引入SDK
 
