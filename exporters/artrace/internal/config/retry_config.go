@@ -99,6 +99,7 @@ func (c RetryConfig) RetryFunc() RetryFunc {
 			}
 
 			if err := wait(ctx, delay); err != nil {
+				log.Println(err)
 				return err
 			}
 		}

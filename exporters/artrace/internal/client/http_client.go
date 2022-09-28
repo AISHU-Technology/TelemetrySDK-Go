@@ -9,7 +9,6 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -39,8 +38,6 @@ func (d *httpClient) Stop(ctx context.Context) error {
 	}
 }
 
-const remind = "发送到 %s 失败，错误提示: %s"
-
 // UploadTraces 批量发送Trace数据。
 func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.AnyRobotSpan) error {
 	//如果是HTTP/GRPC stdoutClient：
@@ -48,14 +45,15 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 	defer cancel()
 
 	//编码Trace数据。
-	rawRequest, _ := json.MarshalIndent(AnyRobotSpans, "", "\t")
-	request, err := d.newRequest(rawRequest)
+	rawSpans, _ := json.MarshalIndent(AnyRobotSpans, "", "\t")
+	request, err := d.newRequest(rawSpans)
 	if err != nil {
 		return err
 	}
 
 	//发送HTTP请求。
 	requestFunc := d.retryFunc(ctx, func(ctx context.Context) error {
+		// 外部驱动终止时，此处退出发送数据。
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -63,6 +61,7 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 		}
 
 		request.reset(ctx)
+		//真正发送http.Request的地方
 		resp, err := d.client.Do(request.Request)
 		if err != nil {
 			return err
@@ -75,15 +74,12 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 		// 格式校验不通过，不重发。
 		case http.StatusBadRequest:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_InvalidFormat)
-			log.Printf(remind, request.URL, customErrors.AnyRobotTraceExporter_InvalidFormat)
 		// 接收器地址不正确，不重发。
 		case http.StatusNotFound:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_JobIdNotFound)
-			log.Printf(remind, request.URL, customErrors.AnyRobotTraceExporter_JobIdNotFound)
 		// Trace太长超过5MB，不重发。
 		case http.StatusRequestEntityTooLarge:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_PayloadTooLarge)
-			log.Printf(remind, request.URL, customErrors.AnyRobotTraceExporter_PayloadTooLarge)
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
@@ -93,7 +89,6 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 			}
 		default:
 			rErr = errors.New(customErrors.AnyRobotTraceExporter_Unsent)
-			log.Printf(remind, request.URL, resp.Status)
 		}
 		if err := resp.Body.Close(); err != nil {
 			return err
@@ -104,11 +99,11 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 }
 
 // newRequest POST /api/feed_ingester/v1/jobs/{job_id}/events。
-func (d *httpClient) newRequest(body []byte) (request, error) {
+func (d *httpClient) newRequest(body []byte) (arRequest, error) {
 	u := url.URL{Scheme: d.getScheme(), Host: d.cfg.Endpoint, Path: d.cfg.Path}
 	r, err := http.NewRequest(http.MethodPost, u.String(), nil)
 	if err != nil {
-		return request{Request: r}, err
+		return arRequest{Request: r}, err
 	}
 
 	for k, v := range d.cfg.Headers {
@@ -117,7 +112,7 @@ func (d *httpClient) newRequest(body []byte) (request, error) {
 	//设置来源记录。
 	r.Header.Set("Service-Language", "Golang")
 
-	req := request{Request: r}
+	req := arRequest{Request: r}
 	//是否使用压缩。
 	switch d.cfg.Compression {
 	case config.NoCompression:
@@ -194,8 +189,8 @@ func (d *httpClient) getScheme() string {
 	return "https"
 }
 
-// request 包了一层可重置的body reader。
-type request struct {
+// arRequest 包了一层可重置的body reader。
+type arRequest struct {
 	*http.Request
 
 	// bodyReader 发送同一请求，用于重发机制。
@@ -203,7 +198,7 @@ type request struct {
 }
 
 // reset 重置请求参数。
-func (r *request) reset(ctx context.Context) {
+func (r *arRequest) reset(ctx context.Context) {
 	r.Body = r.bodyReader()
 	r.Request = r.Request.WithContext(ctx)
 }
