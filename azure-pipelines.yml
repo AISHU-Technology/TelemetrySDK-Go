@@ -161,7 +161,7 @@ stages:
               coverageType: 'lines'              # 代表行覆盖率
               coverageFailOption: 'fixed'
               checkCoverage: true                # 此行保持一致
-              coverageThreshold: '50.0'
+              coverageThreshold: '30.0'
 
           - task: Post-Bash@3
             inputs:
