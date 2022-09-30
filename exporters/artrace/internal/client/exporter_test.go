@@ -32,7 +32,7 @@ func TestExporter_ExportSpans(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"StdoutClient发送空trace",
+			"StdoutClient_Exporter发送空trace",
 			&fields{
 				client:   NewStdoutClient(""),
 				stopCh:   make(chan struct{}),
@@ -44,7 +44,7 @@ func TestExporter_ExportSpans(t *testing.T) {
 			},
 			false,
 		}, {
-			"StdoutClient发送非空trace",
+			"StdoutClient_Exporter发送非空trace",
 			&fields{
 				client:   NewStdoutClient(""),
 				stopCh:   make(chan struct{}),
@@ -56,7 +56,7 @@ func TestExporter_ExportSpans(t *testing.T) {
 			},
 			false,
 		}, {
-			"StdoutClient被停止",
+			"StdoutClient_Exporter被停止",
 			&fields{
 				client:   NewStdoutClient(""),
 				stopCh:   make(chan struct{}),
@@ -68,7 +68,7 @@ func TestExporter_ExportSpans(t *testing.T) {
 			},
 			true,
 		}, {
-			"HTTPClient发送空trace",
+			"HTTPClient_Exporter发送空trace",
 			&fields{
 				client:   NewHTTPClient(),
 				stopCh:   make(chan struct{}),
@@ -80,7 +80,7 @@ func TestExporter_ExportSpans(t *testing.T) {
 			},
 			false,
 		}, {
-			"HTTPClient发送非空trace",
+			"HTTPClient_Exporter发送非空trace",
 			&fields{
 				client:   NewHTTPClient(),
 				stopCh:   make(chan struct{}),
@@ -92,7 +92,7 @@ func TestExporter_ExportSpans(t *testing.T) {
 			},
 			false,
 		}, {
-			"HTTPClient被停止",
+			"HTTPClient_Exporter被停止",
 			&fields{
 				client:   NewHTTPClient(),
 				stopCh:   make(chan struct{}),
@@ -135,7 +135,7 @@ func TestExporter_Shutdown(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"关闭运行中的StdoutClient",
+			"关闭运行中的StdoutClient_Exporter",
 			&fields{
 				client:   NewStdoutClient(""),
 				stopCh:   make(chan struct{}),
@@ -144,7 +144,7 @@ func TestExporter_Shutdown(t *testing.T) {
 			args{ctx: context.Background()},
 			false,
 		}, {
-			"关闭已经停止的StdoutClient",
+			"关闭已经停止的StdoutClient_Exporter",
 			&fields{
 				client:   NewStdoutClient(""),
 				stopCh:   make(chan struct{}),
@@ -153,7 +153,7 @@ func TestExporter_Shutdown(t *testing.T) {
 			args{ctx: contextWithDone()},
 			true,
 		}, {
-			"关闭运行中的HTTPClient",
+			"关闭运行中的HTTPClient_Exporter",
 			&fields{
 				client:   NewHTTPClient(),
 				stopCh:   make(chan struct{}),
@@ -162,7 +162,7 @@ func TestExporter_Shutdown(t *testing.T) {
 			args{ctx: context.Background()},
 			false,
 		}, {
-			"关闭已经停止的HTTPClient",
+			"关闭已经停止的HTTPClient_Exporter",
 			&fields{
 				client:   NewHTTPClient(),
 				stopCh:   make(chan struct{}),
@@ -201,11 +201,11 @@ func TestNewExporter(t *testing.T) {
 		want *Exporter
 	}{
 		{
-			"创建StdoutClient",
+			"创建StdoutClient_Exporter",
 			args{sClient},
 			sExporter,
 		}, {
-			"创建HTTPClient",
+			"创建HTTPClient_Exporter",
 			args{sClient},
 			hExporter,
 		},
