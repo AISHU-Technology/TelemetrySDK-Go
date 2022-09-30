@@ -17,7 +17,7 @@ func TestNewHTTPClient(t *testing.T) {
 	}{
 		{
 			"创建HTTPClient",
-			args{},
+			args{opts: nil},
 			hClient,
 		},
 	}
