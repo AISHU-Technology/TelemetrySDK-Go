@@ -16,12 +16,12 @@ func TestAnyRobotSpanFromReadOnlySpan(t *testing.T) {
 		want *AnyRobotSpan
 	}{
 		{
-			"TestAnyRobotSpanFromReadOnlySpan",
+			"转换空ReadOnlySpan",
 			args{},
 			&AnyRobotSpan{},
 		},
 		{
-			"TestAnyRobotSpanFromReadOnlySpan",
+			"转换非空ReadOnlySpan",
 			args{nil},
 			&AnyRobotSpan{},
 		},
@@ -45,12 +45,12 @@ func TestAnyRobotSpansFromReadOnlySpans(t *testing.T) {
 		want []*AnyRobotSpan
 	}{
 		{
-			"TestAnyRobotSpansFromReadOnlySpans",
+			"转换空ReadOnlySpan",
 			args{},
 			[]*AnyRobotSpan{},
 		},
 		{
-			"TestAnyRobotSpansFromReadOnlySpans",
+			"转换非空ReadOnlySpans",
 			args{nil},
 			[]*AnyRobotSpan{},
 		},

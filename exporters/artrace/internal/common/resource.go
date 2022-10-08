@@ -13,6 +13,9 @@ type Resource struct {
 
 // AnyRobotResourceFromResource resource.Resource转换为 Resource。
 func AnyRobotResourceFromResource(resource *resource.Resource) *Resource {
+	if resource == nil {
+		return &Resource{}
+	}
 	return &Resource{
 		Attributes: AnyRobotAttributesFromKeyValues(resource.Set().ToSlice()),
 		SchemaURL:  resource.SchemaURL(),
