@@ -18,12 +18,12 @@ func TestAnyRobotSpanFromReadOnlySpan(t *testing.T) {
 		{
 			"转换空ReadOnlySpan",
 			args{},
-			&AnyRobotSpan{},
+			AnyRobotSpanFromReadOnlySpan(nil),
 		},
 		{
 			"转换非空ReadOnlySpan",
 			args{nil},
-			&AnyRobotSpan{},
+			AnyRobotSpanFromReadOnlySpan(nil),
 		},
 	}
 	for _, tt := range tests {

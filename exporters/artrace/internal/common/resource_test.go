@@ -19,7 +19,7 @@ func TestAnyRobotResourceFromResource(t *testing.T) {
 		{
 			"转换空资源信息",
 			args{},
-			Resource{},
+			*AnyRobotResourceFromResource(nil),
 		},
 		{
 			"转换非空资源信息",
