@@ -20,50 +20,50 @@ func TestStdoutExample(t *testing.T) {
 	}
 }
 
-//func TestHTTPExample(t *testing.T) {
-//	tests := []struct {
-//		name string
-//	}{
-//		{
-//			"HTTPExample",
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			HTTPExample()
-//		})
-//	}
-//}
-//
-//func TestHTTPSExample(t *testing.T) {
-//	tests := []struct {
-//		name string
-//	}{
-//		{
-//			"HTTPSExample",
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			HTTPSExample()
-//		})
-//	}
-//}
-//
-//func TestWithAllExample(t *testing.T) {
-//	tests := []struct {
-//		name string
-//	}{
-//		{
-//			"TestWithAllExample",
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			WithAllExample()
-//		})
-//	}
-//}
+func TestHTTPExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"HTTPExample",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			HTTPExample()
+		})
+	}
+}
+
+func TestHTTPSExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"HTTPSExample",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			HTTPSExample()
+		})
+	}
+}
+
+func TestWithAllExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"TestWithAllExample",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			WithAllExample()
+		})
+	}
+}
 
 func Test_Add(t *testing.T) {
 	type args struct {
