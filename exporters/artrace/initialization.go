@@ -40,7 +40,7 @@ var (
 //	return nil
 //}
 
-// NewExporter 创建已启动的Exporter。
+// NewExporter 新建Exporter。
 func NewExporter(c client.Client) *client.Exporter {
 	return client.NewExporter(c)
 }
