@@ -196,9 +196,9 @@ stages:
                 #!/usr/bin/env bash
                 set -ex
 
-                APP_NAME="exporter"
-                INCLUSION_DIR="server/**"
-                EXCLUSION_DIR="**/main.go,**/errors/**,**/mock/**,**/common/**,**/*_test.go,**/interfaces/**"
+                APP_NAME="TelemetrySDK-Go"
+#                INCLUSION_DIR="server/**"
+                EXCLUSION_DIR="**/main.go,**/errors/**,**/mock/**,**/*_test.go,**/interfaces/**,**/examples/**"
                 GLOBAL_EXCLUSION_DIR="**/report/**"
 
                 docker run --rm \
@@ -214,7 +214,7 @@ stages:
                       -D sonar.projectKey=${APP_NAME} \
                       -D sonar.branch.name=$(Build.SourceBranchName) \
                       -D sonar.sources=. \
-                      -D sonar.sonar.inclusions=${INCLUSION_DIR} \
+#                      -D sonar.sonar.inclusions=${INCLUSION_DIR} \
                       -D sonar.coverage.exclusions=${EXCLUSION_DIR} \
                       -D sonar.cpd.exclusions=${EXCLUSION_DIR} \
                       -D sonar.global.exclusions=${GLOBAL_EXCLUSION_DIR} \

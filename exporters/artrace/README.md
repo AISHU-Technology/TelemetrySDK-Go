@@ -1,30 +1,25 @@
 # TelemetrySDK-Go
 
-[仓库地址](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194)
+[仓库地址](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=/exporters/artrace/README.md&_a=preview)
 
-TelemetrySDK-Go 是[OpenTelemetry](https://opentelemetry.io/)的[Go](https://golang.org/)
-语言版本实现。它提供了一系列接口帮助开发者完成代码埋点过程，旨在提高用户业务的可观测性能力。
+`TelemetrySDK-Go`是[OpenTelemetry](https://opentelemetry.io/)的[Go](https://golang.org/)
+语言版本实现。本项目提供了一系列接口帮助开发者完成代码埋点过程，旨在提高用户业务的可观测性能力。
 
-## Project Status
+## 兼容性
 
-| Signal  | Status | Project                                                                                                                                     |
-|---------|--------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| Traces  | Beta   | [trace](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=%2Fexporters%2Fartrace) |
-| Metrics | Alpha  | N/A                                                                                                                                         |
-| Logs    | Alpha  | [log](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=%2Fspan)                  |
+TelemetrySDK-Go 要求Go版本不低于`1.18`。
 
-## Compatibility
+## 开发指南
 
-> TelemetrySDK-Go 要求Go版本不低于1.17。
+1.引入SDK：
+```go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace@feature-arp-205194```
 
-## Getting Started
+1.更新SDK：步骤等同于引入SDK。
 
-> 引入SDK：go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace@feature-arp-205194
+2.新增依赖：以下为新增汇总，以实际使用为准。
 
-> 更新SDK：步骤等同于引入SDK
-
-> 添加依赖：
-`import (
+```
+import (
 "context"
 "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace"
 "go.opentelemetry.io/otel"
@@ -34,44 +29,45 @@ sdktrace "go.opentelemetry.io/otel/sdk/trace"
 semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 "go.opentelemetry.io/otel/trace"
 "log")
-> `
+```
 
-> 修改入口main.go：
+3.修改入口：`main.go`
 
-`
+```
 func main() {
-ctx := context.Background()
-//c := artrace.NewStdoutClient()
-c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
-exporter := artrace.NewExporter(c)
-tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
-otel.SetTracerProvider(tracerProvider)
-defer func() {
-if err := tracerProvider.Shutdown(ctx); err != nil {
-log.Println(err)
+	ctx := context.Background()
+	//c := artrace.NewStdoutClient()
+	c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/abcd4f634e80d530/events"))
+	exporter := artrace.NewExporter(c)
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0")))
+	otel.SetTracerProvider(tracerProvider)
+	defer func() {
+		if err := tracerProvider.Shutdown(ctx); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	//your code here
 }
-}()
-//your code here }
-`
+```
 
-> 修改业务代码例如logics.go
+4.修改业务:`logics.go`
 
-`
+```
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
-ctx, span := artrace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(2), trace.WithLinks(trace.Link{}))
-span.SetStatus(2, "成功计算乘积")
-span.AddEvent("multiplyEvent")
-span.SetAttributes(attribute.KeyValue{Key: "succeeded", Value: attribute.BoolValue(true)})
-defer span.End()
-//your code here
-return ctx, x * y
+	ctx, span := artrace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(2))
+	span.SetStatus(2, "成功计算乘积")
+	span.AddEvent("multiplyEvent", trace.WithAttributes(attribute.String("succeeded", "true"), attribute.String("tag2", "something")))
+	defer span.End()
+
+	//your code here
+	return ctx, x * y
 }
-`
+```
 
-> 修改NewXXXXClient的入参，Trace上报地址从前端获取
+5.填写上报地址:`NewHTTPClient("http://a.b.c.d/")`
 
-`
-c := artrace.NewHTTPClient(artrace.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/traceTest/events"))
-`
+## 接口文档
 
-> 代码埋点可以参考devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/examples
+## 改造示例
+不同场景的代码埋点示例可以参考:[devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporters/artrace/examples](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporters/artrace/examples&version=GBfeature-arp-205194)
