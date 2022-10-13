@@ -66,6 +66,10 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 8. 正确填写上报地址：`NewHTTPClient("http://a.b.c.d/")`
    参数从AnyRobot网页端获取。
 
+9. (可选)注册trace provider来生产链路数据：
+
+10. (可选)解绑trace provider来停止生产链路数据：
+
 ## 接口文档
 
 // Tracer 全局变量用于在业务代码中调用生产Trace数据。
