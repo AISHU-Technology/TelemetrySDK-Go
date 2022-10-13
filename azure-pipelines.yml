@@ -214,7 +214,7 @@ stages:
                       -D sonar.projectKey=${APP_NAME} \
                       -D sonar.branch.name=$(Build.SourceBranchName) \
                       -D sonar.sources=. \
-#                      -D sonar.sonar.inclusions=${INCLUSION_DIR} \
+                      -D sonar.sonar.inclusions=${INCLUSION_DIR} \
                       -D sonar.coverage.exclusions=${EXCLUSION_DIR} \
                       -D sonar.cpd.exclusions=${EXCLUSION_DIR} \
                       -D sonar.global.exclusions=${GLOBAL_EXCLUSION_DIR} \
