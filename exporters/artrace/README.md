@@ -133,3 +133,4 @@ func WithTimeout(duration time.Duration) config.HTTPOption
 1. 多个服务的改造参考：
    [改造示例](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporters/artrace/examples&version=GBfeature-arp-205194)
 2. 最佳实践文档：[下载链接暂无]()
+3. 
