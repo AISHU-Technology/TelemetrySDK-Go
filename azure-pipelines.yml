@@ -63,16 +63,16 @@ stages:
                 set -ex
 
                 docker run --rm \
-                      -v $(pwd):/exporter \
+                      -v $(pwd):/TelemetrySDK-Go \
                       -v /root/.ssh/id_rsa:/root/.ssh/id_rsa \
                       $(BUILD_IMAGE) bash -c "
                   set -ex
 
                   echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
 
-                  cd /exporter/exporters/artrace
+                  cd /TelemetrySDK-Go/exporters/artrace
                   go mod download
-                  mkdir -p /exporter/exporters/artrace/report
+                  mkdir -p /TelemetrySDK-Go/exporters/artrace/report
                   go test -gcflags=all=-l -v -coverprofile=report/ut_coverage.out ./... 2>&1 | go-junit-report > report/$(UTReportName)
                   gocov convert report/ut_coverage.out | gocov-xml > report/$(CoverageReportName)
                   go tool cover --html=report/ut_coverage.out -o report/ut_coverage.html
@@ -197,17 +197,17 @@ stages:
                 set -ex
 
                 APP_NAME="TelemetrySDK-Go"
-#                INCLUSION_DIR="server/**"
-                EXCLUSION_DIR="**/main.go,**/errors/**,**/mock/**,**/*_test.go,**/interfaces/**,**/examples/**"
+                INCLUSION_DIR="internal/**"
+                EXCLUSION_DIR="**/errors/**,**/*_test.go,**/examples/**"
                 GLOBAL_EXCLUSION_DIR="**/report/**"
 
                 docker run --rm \
                         -u root:root \
-                        -v $(pwd):/exporter \
+                        -v $(pwd):/TelemetrySDK-Go \
                         $(SONARQUBE_IMAGE) bash -c "
                     set -ex
 
-                    cd /exporter
+                    cd /TelemetrySDK-Go
                     mv CodeCheckReportFiles report
                     sonar-scanner \
                       -D sonar.host.url=$(SONARQUBE_SERVER) \
