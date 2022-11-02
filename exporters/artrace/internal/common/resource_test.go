@@ -39,7 +39,7 @@ func TestAnyRobotResourceFromResource(t *testing.T) {
 
 var resourceByte, _ = json.Marshal(Resource{}.Attributes)
 
-func TestResource_MarshalJSON(t *testing.T) {
+func TestResourceMarshalJSON(t *testing.T) {
 	type fields struct {
 		Attributes []*Attribute
 		SchemaURL  string

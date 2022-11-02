@@ -2,7 +2,7 @@ package errors
 
 // errors 定义错误码和错误描述。
 const (
-	ModuleName = "AnyRobotTraceExporter"
+	ModuleName = "TelemetrySDK-Go-TraceExporter.Error: "
 
 	AnyRobotTraceExporter_JobIdNotFound          = ModuleName + "接收器上报地址不正确"
 	AnyRobotTraceExporter_PayloadTooLarge        = ModuleName + "Trace数据太大超过了5MB限制"
@@ -12,5 +12,6 @@ const (
 	AnyRobotTraceExporter_RetryTooLong           = ModuleName + "重发持续时间太长"
 	AnyRobotTraceExporter_Unsent                 = ModuleName + "发送数据失败，检查日志"
 	AnyRobotTraceExporter_ExceedRetryElapsedTime = ModuleName + "超过最大重发时间限制"
+	AnyRobotTraceExporter_DurationTooLong        = ModuleName + "超过最长连接时间限制"
 	AnyRobotTraceExporter_RetryFailure           = ModuleName + "Trace正在重发"
 )

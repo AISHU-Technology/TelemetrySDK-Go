@@ -77,7 +77,6 @@ stages:
                   gocov convert report/ut_coverage.out | gocov-xml > report/$(CoverageReportName)
                   go tool cover --html=report/ut_coverage.out -o report/ut_coverage.html
                   golangci-lint run --out-format junit-xml ./... > report/$(LintReportName)
-
                   "
 
           - task: PublishBuildArtifacts@1  # 将相应目录publish到artifact
@@ -197,7 +196,7 @@ stages:
                 set -ex
 
                 APP_NAME="TelemetrySDK-Go"
-                INCLUSION_DIR="internal/**"
+                INCLUSION_DIR=""
                 EXCLUSION_DIR="**/errors/**,**/*_test.go,**/examples/**"
                 GLOBAL_EXCLUSION_DIR="**/report/**"
 

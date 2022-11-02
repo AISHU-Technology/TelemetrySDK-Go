@@ -26,32 +26,20 @@ type HTTPConfig struct {
 	TLSCfg      *tls.Config
 }
 
-// HTTPOption HTTP client专用的配置项结构体。
-type HTTPOption struct {
-	fn func(Config) Config
-}
-
-func (h *HTTPOption) ApplyHTTPOption(cfg Config) Config {
-	return h.fn(cfg)
-}
-func newHTTPOption(fn func(cfg Config) Config) HTTPOption {
-	return HTTPOption{fn: fn}
-}
-
-// 发送器配置项目。
+// 以下各项为发送器配置项目。
 
 // WithAnyRobotURL 设置上报地址。
-func WithAnyRobotURL(URL string) HTTPOption {
+func WithAnyRobotURL(URL string) Option {
 	AnyRobotURL, _ := url.Parse(URL)
 	if AnyRobotURL.Scheme == "http" {
-		return newHTTPOption(func(cfg Config) Config {
+		return newOption(func(cfg Config) Config {
 			cfg.HTTPConfig.Insecure = true
 			cfg.HTTPConfig.Endpoint = AnyRobotURL.Host
 			cfg.HTTPConfig.Path = AnyRobotURL.Path
 			return cfg
 		})
 	}
-	return newHTTPOption(func(cfg Config) Config {
+	return newOption(func(cfg Config) Config {
 		cfg.HTTPConfig.Insecure = false
 		cfg.HTTPConfig.Endpoint = AnyRobotURL.Host
 		cfg.HTTPConfig.Path = AnyRobotURL.Path
@@ -59,66 +47,26 @@ func WithAnyRobotURL(URL string) HTTPOption {
 	})
 }
 
-// WithScheme 选择http/https。
-//func WithScheme(scheme string) HTTPOption {
-//	if scheme == "http" {
-//		return insecure()
-//	}
-//	return secure()
-//}
-
-// WithEndpoint 设置ip:port。
-//func WithEndpoint(endpoint string) HTTPOption {
-//	return newHTTPOption(func(cfg Config) Config {
-//		cfg.HTTPConfig.Endpoint = endpoint
-//		return cfg
-//	})
-//}
-
-// WithPath 设置/path。
-//func WithPath(urlPath string) HTTPOption {
-//	return newHTTPOption(func(cfg Config) Config {
-//		cfg.HTTPConfig.Path = urlPath
-//		return cfg
-//	})
-//}
-
 // WithCompression 设置压缩方式。
-func WithCompression(compression Compression) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
+func WithCompression(compression Compression) Option {
+	return newOption(func(cfg Config) Config {
 		cfg.HTTPConfig.Compression = compression
 		return cfg
 	})
 }
 
 // WithTimeout 设置连接超时时间。
-func WithTimeout(duration time.Duration) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
+func WithTimeout(duration time.Duration) Option {
+	return newOption(func(cfg Config) Config {
 		cfg.HTTPConfig.Timeout = duration
 		return cfg
 	})
 }
 
 // WithHeader 设置请求头。
-func WithHeader(headers map[string]string) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
+func WithHeader(headers map[string]string) Option {
+	return newOption(func(cfg Config) Config {
 		cfg.HTTPConfig.Headers = headers
 		return cfg
 	})
 }
-
-// insecure 设置为http。
-//func insecure() HTTPOption {
-//	return newHTTPOption(func(cfg Config) Config {
-//		cfg.HTTPConfig.Insecure = true
-//		return cfg
-//	})
-//}
-
-// secure 设置为https。
-//func secure() HTTPOption {
-//	return newHTTPOption(func(cfg Config) Config {
-//		cfg.HTTPConfig.Insecure = false
-//		return cfg
-//	})
-//}

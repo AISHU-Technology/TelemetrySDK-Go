@@ -6,6 +6,18 @@ import (
 	"testing"
 )
 
+type MySpan struct {
+	ros sdktrace.ReadOnlySpan
+}
+
+func MockReadOnlySpan() sdktrace.ReadOnlySpan {
+	var mySpan = MySpan{}
+	return mySpan.ros
+}
+func MockReadOnlySpans() []sdktrace.ReadOnlySpan {
+	return []sdktrace.ReadOnlySpan{MockReadOnlySpan(), MockReadOnlySpan()}
+}
+
 func TestAnyRobotSpanFromReadOnlySpan(t *testing.T) {
 	type args struct {
 		ros sdktrace.ReadOnlySpan
@@ -17,13 +29,13 @@ func TestAnyRobotSpanFromReadOnlySpan(t *testing.T) {
 	}{
 		{
 			"转换空ReadOnlySpan",
-			args{},
+			args{nil},
 			AnyRobotSpanFromReadOnlySpan(nil),
 		},
 		{
 			"转换非空ReadOnlySpan",
-			args{nil},
-			AnyRobotSpanFromReadOnlySpan(nil),
+			args{MockReadOnlySpan()},
+			AnyRobotSpanFromReadOnlySpan(MockReadOnlySpan()),
 		},
 	}
 	for _, tt := range tests {
@@ -46,13 +58,13 @@ func TestAnyRobotSpansFromReadOnlySpans(t *testing.T) {
 	}{
 		{
 			"转换空ReadOnlySpan",
-			args{},
-			[]*AnyRobotSpan{},
+			args{nil},
+			AnyRobotSpansFromReadOnlySpans(nil),
 		},
 		{
 			"转换非空ReadOnlySpans",
-			args{nil},
-			[]*AnyRobotSpan{},
+			args{MockReadOnlySpans()},
+			AnyRobotSpansFromReadOnlySpans(MockReadOnlySpans()),
 		},
 	}
 	for _, tt := range tests {

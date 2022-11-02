@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"context"
 	"testing"
 )
 
@@ -10,7 +9,7 @@ func TestStdoutExample(t *testing.T) {
 		name string
 	}{
 		{
-			"StdoutExample",
+			"Stdout",
 		},
 	}
 	for _, tt := range tests {
@@ -25,7 +24,7 @@ func TestHTTPExample(t *testing.T) {
 		name string
 	}{
 		{
-			"HTTPExample",
+			"Test发送到AnyRobot Trace数据接收器",
 		},
 	}
 	for _, tt := range tests {
@@ -40,7 +39,7 @@ func TestHTTPSExample(t *testing.T) {
 		name string
 	}{
 		{
-			"HTTPSExample",
+			"Test发送到AnyRobot Trace数据接收器",
 		},
 	}
 	for _, tt := range tests {
@@ -55,7 +54,7 @@ func TestWithAllExample(t *testing.T) {
 		name string
 	}{
 		{
-			"TestWithAllExample",
+			"Test调用全部接口的示例",
 		},
 	}
 	for _, tt := range tests {
@@ -65,74 +64,17 @@ func TestWithAllExample(t *testing.T) {
 	}
 }
 
-func Test_Add(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		x   int64
-		y   int64
-	}
+func TestExample(t *testing.T) {
 	tests := []struct {
-		name  string
-		args  args
-		want  context.Context
-		want1 int64
+		name string
 	}{
 		{
-			name: "add",
-			args: args{
-				context.Background(),
-				3,
-				4,
-			},
-			want:  context.Background(),
-			want1: 7,
+			"Test原始的业务系统",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, got1 := add(tt.args.ctx, tt.args.x, tt.args.y)
-			//if !reflect.DeepEqual(got, tt.want) {
-			//	t.Errorf("add() got = %v, want %v", got, tt.want)
-			//}
-			if got1 != tt.want1 {
-				t.Errorf("add() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
-}
-
-func Test_Multiply(t *testing.T) {
-	type args struct {
-		ctx context.Context
-		x   int64
-		y   int64
-	}
-	tests := []struct {
-		name  string
-		args  args
-		want  context.Context
-		want1 int64
-	}{
-		{
-			name: "multiply",
-			args: args{
-				context.Background(),
-				8,
-				2,
-			},
-			want:  context.Background(),
-			want1: 16,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, got1 := multiply(tt.args.ctx, tt.args.x, tt.args.y)
-			//if !reflect.DeepEqual(got, tt.want) {
-			//	t.Errorf("multiply() got = %v, want %v", got, tt.want)
-			//}
-			if got1 != tt.want1 {
-				t.Errorf("multiply() got1 = %v, want %v", got1, tt.want1)
-			}
+			Example()
 		})
 	}
 }

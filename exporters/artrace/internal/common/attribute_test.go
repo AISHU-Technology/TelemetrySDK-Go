@@ -66,7 +66,7 @@ func TestAnyRobotAttributesFromKeyValues(t *testing.T) {
 	}
 }
 
-func Test_standardizeValueType(t *testing.T) {
+func TestStandardizeValueType(t *testing.T) {
 	type args struct {
 		valueType string
 	}

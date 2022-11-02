@@ -2,11 +2,24 @@ package client
 
 import (
 	"context"
+	"fmt"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"reflect"
 	"sync"
 	"testing"
 )
+
+type MySpan struct {
+	ros sdktrace.ReadOnlySpan
+}
+
+func MockReadOnlySpan() sdktrace.ReadOnlySpan {
+	var mySpan = MySpan{}
+	return mySpan.ros
+}
+func MockReadOnlySpans() []sdktrace.ReadOnlySpan {
+	return []sdktrace.ReadOnlySpan{MockReadOnlySpan(), MockReadOnlySpan()}
+}
 
 func contextWithDone() context.Context {
 	ctx := context.Background()
@@ -15,7 +28,23 @@ func contextWithDone() context.Context {
 	return done
 }
 
-func TestExporter_ExportSpans(t *testing.T) {
+func channelWithClosed() chan struct{} {
+	stopCh := make(chan struct{})
+	close(stopCh)
+	return stopCh
+}
+
+func cancelFuncWithContext() context.CancelFunc {
+	_, cancel := context.WithCancel(context.Background())
+	return cancel
+}
+func contextWithCancelFunc() context.Context {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer fmt.Println(&cancel)
+	return ctx
+}
+
+func TestExporterExportSpans(t *testing.T) {
 	type fields struct {
 		client   Client
 		stopCh   chan struct{}
@@ -52,11 +81,11 @@ func TestExporter_ExportSpans(t *testing.T) {
 			},
 			args{
 				ctx:  context.Background(),
-				ross: nil,
+				ross: MockReadOnlySpans(),
 			},
 			false,
 		}, {
-			"StdoutClient_Exporter被停止",
+			"StdoutClient_Exporter被context停止",
 			&fields{
 				client:   NewStdoutClient(""),
 				stopCh:   make(chan struct{}),
@@ -67,6 +96,18 @@ func TestExporter_ExportSpans(t *testing.T) {
 				ross: nil,
 			},
 			true,
+		}, {
+			"StdoutClient_Exporter被stopCh停止",
+			&fields{
+				client:   NewStdoutClient(""),
+				stopCh:   channelWithClosed(),
+				stopOnce: sync.Once{},
+			},
+			args{
+				ctx:  context.Background(),
+				ross: nil,
+			},
+			false,
 		}, {
 			"HTTPClient_Exporter发送空trace",
 			&fields{
@@ -88,11 +129,11 @@ func TestExporter_ExportSpans(t *testing.T) {
 			},
 			args{
 				ctx:  context.Background(),
-				ross: nil,
+				ross: MockReadOnlySpans(),
 			},
-			false,
+			true,
 		}, {
-			"HTTPClient_Exporter被停止",
+			"HTTPClient_Exporter被context停止",
 			&fields{
 				client:   NewHTTPClient(),
 				stopCh:   make(chan struct{}),
@@ -103,6 +144,18 @@ func TestExporter_ExportSpans(t *testing.T) {
 				ross: nil,
 			},
 			true,
+		}, {
+			"HTTPClient_Exporter被stopCh停止",
+			&fields{
+				client:   NewHTTPClient(),
+				stopCh:   channelWithClosed(),
+				stopOnce: sync.Once{},
+			},
+			args{
+				ctx:  context.Background(),
+				ross: nil,
+			},
+			false,
 		},
 	}
 	for _, tt := range tests {
@@ -119,7 +172,7 @@ func TestExporter_ExportSpans(t *testing.T) {
 	}
 }
 
-func TestExporter_Shutdown(t *testing.T) {
+func TestExporterShutdown(t *testing.T) {
 	type fields struct {
 		client   Client
 		stopCh   chan struct{}
@@ -186,11 +239,6 @@ func TestExporter_Shutdown(t *testing.T) {
 	}
 }
 
-var sClient = NewStdoutClient("")
-var hClient = NewHTTPClient()
-var sExporter = NewExporter(sClient)
-var hExporter = NewExporter(hClient)
-
 func TestNewExporter(t *testing.T) {
 	type args struct {
 		client Client
@@ -202,18 +250,18 @@ func TestNewExporter(t *testing.T) {
 	}{
 		{
 			"创建StdoutClient_Exporter",
-			args{sClient},
-			sExporter,
+			args{NewStdoutClient("")},
+			NewExporter(NewStdoutClient("")),
 		}, {
 			"创建HTTPClient_Exporter",
-			args{sClient},
-			hExporter,
+			args{NewHTTPClient()},
+			NewExporter(NewHTTPClient()),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got1, got2 := sExporter, hExporter; !reflect.DeepEqual(got1, tt.want) && !reflect.DeepEqual(got2, tt.want) {
-				t.Errorf("NewExporter() = %v, want %v", got1, tt.want)
+			if got := NewExporter(tt.args.client); !reflect.DeepEqual(got.client.Stop(context.Background()), tt.want.client.Stop(context.Background())) {
+				t.Errorf("NewExporter() = %v, want %v", got, tt.want)
 			}
 		})
 	}

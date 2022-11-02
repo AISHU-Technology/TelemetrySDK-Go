@@ -21,8 +21,8 @@ import (
 	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/errors"
 )
 
-// httpClient 客户端结构体。
-type httpClient struct {
+// HttpClient 客户端结构体。
+type HttpClient struct {
 	cfg       config.HTTPConfig
 	retryFunc config.RetryFunc
 	client    *http.Client
@@ -30,7 +30,7 @@ type httpClient struct {
 }
 
 // Stop 关闭发送器。
-func (d *httpClient) Stop(ctx context.Context) error {
+func (d *HttpClient) Stop(ctx context.Context) error {
 	close(d.stopCh)
 	select {
 	case <-ctx.Done():
@@ -41,7 +41,7 @@ func (d *httpClient) Stop(ctx context.Context) error {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.AnyRobotSpan) error {
+func (d *HttpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.AnyRobotSpan) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {
@@ -52,8 +52,12 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 	defer cancel()
 
 	//编码Trace数据。
-	rawSpans, _ := json.MarshalIndent(AnyRobotSpans, "", "\t")
-	request, err := d.newRequest(rawSpans)
+	file := bytes.NewBuffer([]byte{})
+	encoder := json.NewEncoder(file)
+	encoder.SetEscapeHTML(false)
+	encoder.SetIndent("", "\t")
+	_ = encoder.Encode(AnyRobotSpans)
+	request, err := d.newRequest(file.Bytes())
 	if err != nil {
 		return err
 	}
@@ -69,7 +73,8 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 
 		request.reset(ctx)
 		//真正发送http.Request的地方
-		resp, err := d.client.Do(request.Request)
+		resp, err := send(d, request.Request)
+		//resp, err := d.client.Do(request.Request)
 		if err != nil {
 			return err
 		}
@@ -105,8 +110,10 @@ func (d *httpClient) UploadTraces(ctx context.Context, AnyRobotSpans []*common.A
 	return requestFunc
 }
 
+const ENCODING = "Content-Encoding"
+
 // newRequest POST /api/feed_ingester/v1/jobs/{job_id}/events。
-func (d *httpClient) newRequest(body []byte) (arRequest, error) {
+func (d *HttpClient) newRequest(body []byte) (arRequest, error) {
 	u := url.URL{Scheme: d.getScheme(), Host: d.cfg.Endpoint, Path: d.cfg.Path}
 	r, err := http.NewRequest(http.MethodPost, u.String(), nil)
 	if err != nil {
@@ -123,13 +130,13 @@ func (d *httpClient) newRequest(body []byte) (arRequest, error) {
 	//是否使用压缩。
 	switch d.cfg.Compression {
 	case config.NoCompression:
-		r.Header.Set("Content-Encoding", "json")
+		r.Header.Set(ENCODING, "json")
 		r.ContentLength = (int64)(len(body))
 		req.bodyReader = bodyReader(body)
 	case config.GzipCompression:
 		// 使用Gzip压缩关闭ContentLength。
 		r.ContentLength = -1
-		r.Header.Set("Content-Encoding", "gzip")
+		r.Header.Set(ENCODING, "gzip")
 
 		gz := gzPool.Get().(*gzip.Writer)
 		defer gzPool.Put(gz)
@@ -138,11 +145,11 @@ func (d *httpClient) newRequest(body []byte) (arRequest, error) {
 		gz.Reset(&b)
 
 		if _, err := gz.Write(body); err != nil {
-			r.Header.Set("Content-Encoding", "json")
+			r.Header.Set(ENCODING, "json")
 			return req, err
 		}
 		if err := gz.Close(); err != nil {
-			r.Header.Set("Content-Encoding", "json")
+			r.Header.Set(ENCODING, "json")
 			return req, err
 		}
 
@@ -150,6 +157,11 @@ func (d *httpClient) newRequest(body []byte) (arRequest, error) {
 	}
 
 	return req, nil
+}
+
+func send(d *HttpClient, req *http.Request) (*http.Response, error) {
+	//resp, err := d.client.Do(request.Request)
+	return d.client.Do(req)
 }
 
 // gzPool Gzip压缩流。
@@ -161,7 +173,7 @@ var gzPool = sync.Pool{
 }
 
 // contextWithStop 把上下文停止信号传递给客户端，驱动Exporter停止。
-func (d *httpClient) contextWithStop(ctx context.Context) (context.Context, context.CancelFunc) {
+func (d *HttpClient) contextWithStop(ctx context.Context) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(ctx)
 	go func(ctx context.Context, cancel context.CancelFunc) {
 		select {
@@ -189,7 +201,7 @@ var ourTransport = &http.Transport{
 }
 
 // getScheme 决定通过http或者https发送。
-func (d *httpClient) getScheme() string {
+func (d *HttpClient) getScheme() string {
 	if d.cfg.Insecure {
 		return "http"
 	}
@@ -229,7 +241,7 @@ func bodyReader(buf []byte) func() io.ReadCloser {
 }
 
 // NewHTTPClient 创建Exporter的HTTP客户端。
-func NewHTTPClient(opts ...config.HTTPOption) Client {
+func NewHTTPClient(opts ...config.Option) Client {
 	cfg := config.NewConfig(opts...)
 
 	client := &http.Client{
@@ -237,7 +249,7 @@ func NewHTTPClient(opts ...config.HTTPOption) Client {
 		Timeout:   cfg.HTTPConfig.Timeout,
 	}
 
-	return &httpClient{
+	return &HttpClient{
 		cfg:       cfg.HTTPConfig,
 		retryFunc: cfg.RetryConfig.RetryFunc(),
 		stopCh:    make(chan struct{}),

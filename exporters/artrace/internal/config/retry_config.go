@@ -49,25 +49,18 @@ func evaluate(err error) (bool, time.Duration) {
 }
 
 // RetryFunc 带有重发机制的HTTP请求，如果错误为可重发错误则重发AnyRobotSpans，否则丢弃数据。
-func (c RetryConfig) RetryFunc() RetryFunc {
-	if !c.Enabled {
+func (r RetryConfig) RetryFunc() RetryFunc {
+	//不开启重发，则直接执行内部发送逻辑。内部的fn function(context),error是真正的http请求逻辑，在client处实现。
+	if !r.Enabled {
 		return func(ctx context.Context, fn func(context.Context) error) error {
 			return fn(ctx)
 		}
 	}
+	//计算重发时间间隔
+	offset := getBackoff(r)
+	offset.Reset()
 
-	b := &backoff.ExponentialBackOff{
-		InitialInterval:     c.InitialInterval,
-		RandomizationFactor: backoff.DefaultRandomizationFactor,
-		Multiplier:          backoff.DefaultMultiplier,
-		MaxInterval:         c.MaxInterval,
-		MaxElapsedTime:      c.MaxElapsedTime,
-		Stop:                backoff.Stop,
-		Clock:               backoff.SystemClock,
-	}
-	b.Reset()
-
-	//返回一个嵌套的函数是为了重发时复用HTTP连接，外部的 retryFunc(context,function)error 是包装了retry的逻辑，内部的function(context),error是真正的http请求逻辑，在client处实现。
+	//启用了重发，则返回一个嵌套的函数是为了重发时复用HTTP连接，外部的 retryFunc(context,function)error 是包装了retry的逻辑，内部的fn function(context),error是真正的http请求逻辑，在client处实现。
 	retryFunc := func(ctx context.Context, fn func(context.Context) error) error {
 		for {
 			err := fn(ctx)
@@ -80,7 +73,7 @@ func (c RetryConfig) RetryFunc() RetryFunc {
 				return err
 			}
 
-			backOff := b.NextBackOff()
+			backOff := offset.NextBackOff()
 			if backOff == backoff.Stop {
 				log.Println(customErrors.AnyRobotTraceExporter_ExceedRetryElapsedTime)
 				return errors.New(customErrors.AnyRobotTraceExporter_ExceedRetryElapsedTime)
@@ -90,8 +83,8 @@ func (c RetryConfig) RetryFunc() RetryFunc {
 			if backOff > throttle {
 				delay = backOff
 			} else {
-				elapsed := b.GetElapsedTime()
-				if b.MaxElapsedTime != 0 && elapsed+throttle > b.MaxElapsedTime {
+				elapsed := offset.GetElapsedTime()
+				if offset.MaxElapsedTime != 0 && elapsed+throttle > offset.MaxElapsedTime {
 					log.Println(customErrors.AnyRobotTraceExporter_ExceedRetryElapsedTime)
 					return errors.New(customErrors.AnyRobotTraceExporter_ExceedRetryElapsedTime)
 				}
@@ -107,7 +100,20 @@ func (c RetryConfig) RetryFunc() RetryFunc {
 	return retryFunc
 }
 
-// wait 等待一段时间。
+// getBackoff 返回计算重发时间的结构体，每次发送间隔指数增加。
+func getBackoff(r RetryConfig) *backoff.ExponentialBackOff {
+	return &backoff.ExponentialBackOff{
+		InitialInterval:     r.InitialInterval,
+		RandomizationFactor: backoff.DefaultRandomizationFactor,
+		Multiplier:          backoff.DefaultMultiplier,
+		MaxInterval:         r.MaxInterval,
+		MaxElapsedTime:      r.MaxElapsedTime,
+		Stop:                backoff.Stop,
+		Clock:               backoff.SystemClock,
+	}
+}
+
+// wait 等待间隔时间。
 func wait(ctx context.Context, delay time.Duration) error {
 	timer := time.NewTimer(delay)
 	defer timer.Stop()
@@ -126,8 +132,8 @@ func wait(ctx context.Context, delay time.Duration) error {
 }
 
 // WithRetry 设置重发。
-func WithRetry(rc RetryConfig) HTTPOption {
-	return newHTTPOption(func(cfg Config) Config {
+func WithRetry(rc RetryConfig) Option {
+	return newOption(func(cfg Config) Config {
 		cfg.RetryConfig = rc
 		return cfg
 	})
