@@ -1,13 +1,228 @@
-pool:
-  name: anyrobot-centos-7-x86_64 # 代理池
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
-- script: |
-    docker run --rm -v $(Pipeline.Workspace)/span:/root/go/span docker.io/golang:1.15 sh -c  "cd /root/go/span && bash -x ./test_cover.sh"
-  displayName: 'docker test'
+# 触发管道
+trigger:
+  batch: true
+  branches:
+    include:
+      - "feature-*"
+      - "feature/*"
+      - "develop"
+      - "release-*"
+      - "release/*"
+
+variables:
+  - group: anyrobot-global-config
+  - name: IS_RELEASE
+    value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release')]
+  - name: BUILD_IMAGE
+    value: "acr.aishu.cn/ar/go.build:1.17.13"
+  - name: YQ_IMAGE
+    value: "acr.aishu.cn/public/mikefarah/yq:4.26.1"
+  - name: SONARQUBE_IMAGE
+    value: "acr.aishu.cn/public/sonarsource/sonar-scanner-cli:4.7"
+  - name: SONARQUBE_SERVER
+    value: "http://sonarqube.ar.aishu.cn:9000"
+  - name: LintReportName # 此行保持一致
+    value: lint_report.xml
+  - name: UTReportName # 此行保持一致
+    value: ut_report.xml
+  - name: CoverageReportName # 此行保持一致
+    value: coverage_report.xml
+
+resources:
+  containers:
+    - container: dotnet
+      endpoint: acr-registry
+      image: dotnet/runtime:3.1-bullseye-slim
+
+stages:
+  - stage: CodeCheck
+    displayName: 代码检查
+    jobs:
+      - job: CodeCheck
+        displayName: 代码检查
+        workspace:
+          clean: all
+        pool:
+          name: ONE-Architecture-centos7.8-x86_64
+          demands:
+            - docker
+        steps:
+          - checkout: self
+
+          - task: Bash@3
+            displayName: 单元测试
+            inputs:
+              targetType: 'inline'
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                docker run --rm \
+                      -v $(pwd):/TelemetrySDK-Go \
+                      -v /root/.ssh/id_rsa:/root/.ssh/id_rsa \
+                      $(BUILD_IMAGE) bash -c "
+                  set -ex
+
+                  echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
+
+                  cd /TelemetrySDK-Go/exporters/artrace
+                  go mod download
+                  mkdir -p /TelemetrySDK-Go/exporters/artrace/report
+                  go test -gcflags=all=-l -v -coverprofile=report/ut_coverage.out ./... 2>&1 | go-junit-report > report/$(UTReportName)
+                  gocov convert report/ut_coverage.out | gocov-xml > report/$(CoverageReportName)
+                  go tool cover --html=report/ut_coverage.out -o report/ut_coverage.html
+                  golangci-lint run --out-format junit-xml ./... > report/$(LintReportName)
+                  "
+
+          - task: PublishBuildArtifacts@1  # 将相应目录publish到artifact
+            inputs:
+              PathtoPublish: '$(Build.SourcesDirectory)/exporters/artrace/report'
+              ArtifactName: CodeCheckReportFiles
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+
+      - job: UploadReport
+        displayName: 上传检查报告
+        container: dotnet
+        dependsOn: CodeCheck
+        pool:
+          name: ONE-Architecture-centos7.8-x86_64
+          demands:
+            - docker
+        steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: CodeCheckReportFiles
+              downloadPath: $(Build.BinariesDirectory)
+
+          - task: PublishTestResults@2
+            displayName: 发布Lint测试报告
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(Build.BinariesDirectory)/CodeCheckReportFiles/$(LintReportName)'
+              testRunTitle: 'Lint Result'
+              failTaskOnFailedTests: false
+
+          - task: BuildQualityChecks@8         # 此行保持一致  Lint卡点
+            displayName: Quality Gate Lint     # 此行保持一致
+            inputs:
+              checkWarnings: true              # 此行保持一致
+              warningFailOption: 'fixed'
+              warningThreshold: '0'
+              showStatistics: false
+              evaluateTaskWarnings: false
+              evaluateFileWarnings: true
+              warningFilesFolder: '$(Build.BinariesDirectory)/CodeCheckReportFiles'
+              warningFiles: '**/$(LintReportName)'    # 此行保持一致
+              warningFileFilters: '/^.+<\/failure>.*?$/'
+              warningFilesArtifact: 'CodeCheckReportFiles'
+
+          - task: PublishTestResults@2
+            displayName: 发布UT测试报告
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(Build.BinariesDirectory)/CodeCheckReportFiles/$(UTReportName)'
+              testRunTitle: 'UT Result'
+              failTaskOnFailedTests: false
+
+          - task: BuildQualityChecks@8           # 此行保持一致     # UT卡点
+            displayName: Quality Gate UT         # 此行保持一致
+            inputs:
+              checkWarnings: true                # 此行保持一致
+              warningFailOption: 'fixed'
+              warningThreshold: '0'
+              showStatistics: false
+              evaluateTaskWarnings: false
+              evaluateFileWarnings: true
+              warningFilesFolder: '$(Build.BinariesDirectory)/CodeCheckReportFiles'
+              warningFiles: '**/$(UTReportName)'    # 此行保持一致
+              warningFileFilters: '/^.+<\/failure>.*?$/'
+              warningFilesArtifact: 'CodeCheckReportFiles'
+
+          - task: PublishCodeCoverageResults@1
+            displayName: 发布UT测试覆盖率报告
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: '$(Build.BinariesDirectory)/CodeCheckReportFiles/$(CoverageReportName)'
+
+          - task: BuildQualityChecks@8           # 此行保持一致 代码覆盖率卡点
+            displayName: Quality Gate Coverage   # 此行保持一致
+            inputs:
+              coverageType: 'lines'              # 代表行覆盖率
+              coverageFailOption: 'fixed'
+              checkCoverage: true                # 此行保持一致
+              coverageThreshold: '30.0'
+
+          - task: Post-Bash@3
+            inputs:
+              targetType: inline
+              script: |
+                rm -rf $(Build.SourcesDirectory)
+
+      # 代码覆盖率卡点阈值
+
+      - job: UploadSonarQube
+        displayName: 上传SonarQube
+        dependsOn: UploadReport
+        workspace:
+          clean: all
+        pool:
+          name: ONE-Architecture-centos7.8-x86_64
+          demands:
+            - docker
+        steps:
+          - checkout: self
+
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              artifactName: CodeCheckReportFiles
+              downloadPath: $(Build.SourcesDirectory)
+
+          - task: Bash@3
+            displayName: 上传SonarQube
+            inputs:
+              targetType: 'inline'
+              script: |
+                #!/usr/bin/env bash
+                set -ex
+
+                APP_NAME="TelemetrySDK-Go"
+                INCLUSION_DIR=""
+                EXCLUSION_DIR="**/errors/**,**/*_test.go,**/examples/**"
+                GLOBAL_EXCLUSION_DIR="**/report/**"
+
+                docker run --rm \
+                        -u root:root \
+                        -v $(pwd):/TelemetrySDK-Go \
+                        $(SONARQUBE_IMAGE) bash -c "
+                    set -ex
+
+                    cd /TelemetrySDK-Go
+                    mv CodeCheckReportFiles report
+                    sonar-scanner \
+                      -D sonar.host.url=$(SONARQUBE_SERVER) \
+                      -D sonar.projectKey=${APP_NAME} \
+                      -D sonar.branch.name=$(Build.SourceBranchName) \
+                      -D sonar.sources=. \
+                      -D sonar.sonar.inclusions=${INCLUSION_DIR} \
+                      -D sonar.coverage.exclusions=${EXCLUSION_DIR} \
+                      -D sonar.cpd.exclusions=${EXCLUSION_DIR} \
+                      -D sonar.global.exclusions=${GLOBAL_EXCLUSION_DIR} \
+                      -D sonar.language=go \
+                      -D sonar.go.coverage.reportPaths=report/ut_coverage.out \
+                      -D sonar.login=0012f1bd6a57230227cb9ea57217461fdeb96552
+                    "
+          - task: Post-Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                rm -rf $(Build.SourcesDirectory)
