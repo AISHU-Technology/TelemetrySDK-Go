@@ -24,7 +24,7 @@ var Tracer = otel.GetTracerProvider().Tracer(
 var (
 	instrumentationName    = "TelemetrySDK-Go/exporters/artrace"
 	instrumentationVersion = "v2.2.0"
-	instrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=/exporters/artrace/README.md&_a=preview"
+	instrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GB2.2.0&path=/exporters/artrace/README.md&_a=preview"
 )
 
 // SetInstrumentation 设置调用链依赖的工具库。

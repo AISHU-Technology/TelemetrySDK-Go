@@ -3,7 +3,7 @@
 1. 检查go版本：`go version`
 2. 升级go版本到：[go1.18](https://gomirrors.org/)
 3. 引入SDK：
-   ```go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace@feature-arp-205194```
+   ```go get devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace@2.2.0```
 4. 更新SDK：步骤等同于引入SDK。
 5. 新增依赖：以下为新增汇总，以实际使用为准。
 

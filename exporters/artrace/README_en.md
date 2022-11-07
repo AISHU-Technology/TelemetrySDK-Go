@@ -2,7 +2,7 @@
 
 # ![LOGO](docs/images/TelemetrySDK.png)
 
-# [TelemetrySDK-Go Trace](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=/exporters/artrace/README.md&_a=preview)
+# [TelemetrySDK-Go Trace](https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GB2.2.0&path=/exporters/artrace/README.md&_a=preview)
 
 `TelemetrySDK-Go` is the [Go](https://golang.org/) version implementation of [OpenTelemetry](https://opentelemetry.io/).
 This project provides a series of interfaces to help developers complete the code embedding process,
