@@ -16,12 +16,8 @@ trigger:
 
 variables:
   - group: anyrobot-global-config
-  - name: IS_RELEASE
-    value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release')]
   - name: BUILD_IMAGE
     value: "acr.aishu.cn/ar/go.build:1.17.13"
-  - name: YQ_IMAGE
-    value: "acr.aishu.cn/public/mikefarah/yq:4.26.1"
   - name: SONARQUBE_IMAGE
     value: "acr.aishu.cn/public/sonarsource/sonar-scanner-cli:4.7"
   - name: SONARQUBE_SERVER
@@ -88,6 +84,8 @@ stages:
             inputs:
               targetType: inline
               script: |
+                docker ps -a -q -f status=exited | xargs -I {} docker rm {}
+                docker images -q -f dangling=true | xargs -I {} docker rmi {}
                 rm -rf $(Build.SourcesDirectory)
 
       - job: UploadReport
@@ -166,6 +164,8 @@ stages:
             inputs:
               targetType: inline
               script: |
+                docker ps -a -q -f status=exited | xargs -I {} docker rm {}
+                docker images -q -f dangling=true | xargs -I {} docker rmi {}
                 rm -rf $(Build.SourcesDirectory)
 
       # 代码覆盖率卡点阈值
@@ -225,4 +225,6 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
+                docker ps -a -q -f status=exited | xargs -I {} docker rm {}
+                docker images -q -f dangling=true | xargs -I {} docker rmi {}
                 rm -rf $(Build.SourcesDirectory)
