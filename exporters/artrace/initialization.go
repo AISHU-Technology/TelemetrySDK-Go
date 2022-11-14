@@ -108,7 +108,7 @@ func WithRetry(enabled bool, internal time.Duration, maxInterval time.Duration, 
 // GetResource 获取内置资源信息，记录客户服务名，需要传入服务名 serviceName ，服务版本 serviceVersion ，服务实例ID。
 func GetResource(serviceName string, serviceVersion string, serviceInstanceID string) *resource.Resource {
 	//获取主机IP
-	connection, _ := net.Dial("udp", "127.0.0.1:80")
+	connection, _ := net.Dial("udp", "255.255.255.255:33")
 	ipPort := connection.LocalAddr().(*net.UDPAddr)
 	hostIP := strings.Split(ipPort.String(), ":")[0]
 	//获取主机信息
@@ -121,7 +121,7 @@ func GetResource(serviceName string, serviceVersion string, serviceInstanceID st
 		semconv.HostArchKey.String(infoState.KernelArch),
 		attribute.String("host.ip", hostIP),
 		//操作系统信息
-		semconv.OSNameKey.String(infoState.OS),
+		semconv.OSTypeKey.String(infoState.OS),
 		semconv.OSDescriptionKey.String(infoState.Platform),
 		semconv.OSVersionKey.String(infoState.PlatformVersion),
 		//服务信息
