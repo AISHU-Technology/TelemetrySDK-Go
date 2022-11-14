@@ -116,7 +116,6 @@ func GetResource(serviceName string, serviceVersion string, serviceInstanceID st
 
 	return resource.NewWithAttributes(instrumentationURL,
 		//主机信息
-		semconv.HostIDKey.String(infoState.HostID),
 		semconv.HostNameKey.String(infoState.Hostname),
 		semconv.HostArchKey.String(infoState.KernelArch),
 		attribute.String("host.ip", hostIP),
