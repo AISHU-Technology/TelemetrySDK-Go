@@ -84,8 +84,6 @@ stages:
             inputs:
               targetType: inline
               script: |
-                docker ps -a -q -f status=exited | xargs -I {} docker rm {}
-                docker images -q -f dangling=true | xargs -I {} docker rmi {}
                 rm -rf $(Build.SourcesDirectory)
 
       - job: UploadReport
@@ -164,8 +162,6 @@ stages:
             inputs:
               targetType: inline
               script: |
-                docker ps -a -q -f status=exited | xargs -I {} docker rm {}
-                docker images -q -f dangling=true | xargs -I {} docker rmi {}
                 rm -rf $(Build.SourcesDirectory)
 
       # 代码覆盖率卡点阈值
@@ -225,6 +221,4 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                docker ps -a -q -f status=exited | xargs -I {} docker rm {}
-                docker images -q -f dangling=true | xargs -I {} docker rmi {}
                 rm -rf $(Build.SourcesDirectory)
