@@ -2,6 +2,7 @@ package common
 
 import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/version"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/model"
 	"encoding/json"
 	"github.com/shirou/gopsutil/v3/host"
 	"net"
@@ -9,16 +10,16 @@ import (
 
 // Resource 自定义 Event Resource 和 Trace 输出格式一致。
 type Resource struct {
-	SchemaURL     string           `json:"SchemaURL"`
-	Attributes    []*Attribute     `json:"Attributes"`
-	AttributesMap map[string]Value `json:"AttributesMap"`
+	SchemaURL     string                   `json:"SchemaURL"`
+	Attributes    []*model.ARAttribute     `json:"Attributes"`
+	AttributesMap map[string]model.ARValue `json:"AttributesMap"`
 }
 
 // NewResource 创建新的 *Resource 。
 func NewResource() *Resource {
 	r := &Resource{
 		SchemaURL:     "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporters/arevent",
-		Attributes:    make([]*Attribute, 0),
+		Attributes:    make([]*model.ARAttribute, 0),
 		AttributesMap: defaultAttributes(),
 	}
 	r.mapToSlice()
@@ -32,20 +33,20 @@ func (r *Resource) MarshalJSON() ([]byte, error) {
 
 // mapToSlice 把 AttributesMap 转成 Attributes 。
 func (r *Resource) mapToSlice() {
-	result := make([]*Attribute, 0, len(r.AttributesMap))
+	result := make([]*model.ARAttribute, 0, len(r.AttributesMap))
 	for k, v := range r.AttributesMap {
 		s := NewAttribute(k, v)
-		result = append(result, s)
+		result = append(result, &s)
 
 	}
 	r.Attributes = result
 }
 
 // defaultAttributes 获取默认资源信息。
-func defaultAttributes() map[string]Value {
+func defaultAttributes() map[string]model.ARValue {
 	ip := getHostIP()
 	info := getHostInfo()
-	result := make(map[string]Value)
+	result := make(map[string]model.ARValue)
 	// 主机信息
 	hostIP := StringValue(ip)
 	result["host.ip"] = hostIP
@@ -82,4 +83,12 @@ func getHostIP() string {
 func getHostInfo() *host.InfoStat {
 	info, _ := host.Info()
 	return info
+}
+
+func (r *Resource) GetSchemaURL() string {
+	return r.SchemaURL
+}
+
+func (r *Resource) GetAttributes() []*model.ARAttribute {
+	return r.Attributes
 }

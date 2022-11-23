@@ -1,9 +1,11 @@
 package common
 
+import "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/model"
+
 // Attribute 自定义 Event Attribute 和 Trace 输出格式一致。
 type Attribute struct {
-	Key   string `json:"Key"`
-	Value Value  `json:"Value"`
+	Key   string        `json:"Key"`
+	Value model.ARValue `json:"Value"`
 }
 
 // Value 自定义Value统一Type为8种枚举类型。
@@ -12,19 +14,35 @@ type Value struct {
 	Value interface{} `json:"Value"`
 }
 
+func (v Value) GetType() string {
+	return v.Type
+}
+
+func (v Value) GetValue() interface{} {
+	return v.Value
+}
+
+func (a *Attribute) GetKey() string {
+	return a.Key
+}
+
+func (a *Attribute) GetValue() model.ARValue {
+	return a.Value
+}
+
 // Valid 校验 Attribute 格式是否合法。
-func (a Attribute) Valid() bool {
+func (a *Attribute) Valid() bool {
 	return a.keyDefined() && a.valueTyped()
 }
 
 // keyDefined 校验 Attribute.Key 不为空，即有含义。
-func (a Attribute) keyDefined() bool {
+func (a *Attribute) keyDefined() bool {
 	return len(a.Key) > 0
 }
 
 // valueTyped 校验 Value.Type 是枚举类型。
-func (a Attribute) valueTyped() bool {
-	switch a.Value.Type {
+func (a *Attribute) valueTyped() bool {
+	switch a.Value.GetType() {
 	case "BOOL":
 		return true
 	case "BOOLARRAY":
@@ -47,7 +65,7 @@ func (a Attribute) valueTyped() bool {
 }
 
 // NewAttribute 创建新的 Attribute 。
-func NewAttribute(key string, value Value) *Attribute {
+func NewAttribute(key string, value model.ARValue) model.ARAttribute {
 	return &Attribute{
 		Key:   key,
 		Value: value,
@@ -55,7 +73,7 @@ func NewAttribute(key string, value Value) *Attribute {
 }
 
 // BoolValue 传入 bool 类型的值。
-func BoolValue(value bool) Value {
+func BoolValue(value bool) model.ARValue {
 	return Value{
 		Type:  "BOOL",
 		Value: value,
@@ -63,7 +81,7 @@ func BoolValue(value bool) Value {
 }
 
 // BoolArray 传入 []bool 类型的值。
-func BoolArray(value []bool) Value {
+func BoolArray(value []bool) model.ARValue {
 	return Value{
 		Type:  "BOOLARRAY",
 		Value: value,
@@ -71,7 +89,7 @@ func BoolArray(value []bool) Value {
 }
 
 // IntValue 传入 int 类型的值。
-func IntValue(value int) Value {
+func IntValue(value int) model.ARValue {
 	return Value{
 		Type:  "INT",
 		Value: value,
@@ -79,7 +97,7 @@ func IntValue(value int) Value {
 }
 
 // IntArray 传入 []int 类型的值。
-func IntArray(value []int) Value {
+func IntArray(value []int) model.ARValue {
 	return Value{
 		Type:  "INTARRAY",
 		Value: value,
@@ -87,7 +105,7 @@ func IntArray(value []int) Value {
 }
 
 // FloatValue 传入 float64 类型的值。
-func FloatValue(value float64) Value {
+func FloatValue(value float64) model.ARValue {
 	return Value{
 		Type:  "FLOAT",
 		Value: value,
@@ -95,7 +113,7 @@ func FloatValue(value float64) Value {
 }
 
 // FloatArray 传入 []float64 类型的值。
-func FloatArray(value []float64) Value {
+func FloatArray(value []float64) model.ARValue {
 	return Value{
 		Type:  "FLOATARRAY",
 		Value: value,
@@ -103,7 +121,7 @@ func FloatArray(value []float64) Value {
 }
 
 // StringValue 传入 string 类型的值。
-func StringValue(value string) Value {
+func StringValue(value string) model.ARValue {
 	return Value{
 		Type:  "STRING",
 		Value: value,
@@ -111,7 +129,7 @@ func StringValue(value string) Value {
 }
 
 // StringArray 传入 []string 类型的值。
-func StringArray(value []string) Value {
+func StringArray(value []string) model.ARValue {
 	return Value{
 		Type:  "STRINGARRAY",
 		Value: value,

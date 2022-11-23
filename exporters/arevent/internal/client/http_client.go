@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/tls"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/model"
 	"encoding/json"
 	"errors"
 	"io"
@@ -16,7 +17,6 @@ import (
 	"sync"
 	"time"
 
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/common"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/config"
 	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
 )
@@ -41,7 +41,7 @@ func (d *HttpClient) Stop(ctx context.Context) error {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *HttpClient) UploadEvents(ctx context.Context, events []*common.AREvent) error {
+func (d *HttpClient) UploadEvents(ctx context.Context, events []*model.AREvent) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {
@@ -258,7 +258,7 @@ func NewHTTPClient(opts ...config.Option) Client {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *HttpClient) UploadEvent(ctx context.Context, event *common.AREvent) error {
+func (d *HttpClient) UploadEvent(ctx context.Context, event *model.AREvent) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {

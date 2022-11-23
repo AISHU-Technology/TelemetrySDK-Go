@@ -9,9 +9,14 @@ type Link struct {
 }
 
 // NewLink 创建新的 Link 。
-func NewLink(ctx trace.SpanContext) Link {
-	return Link{
-		TraceID: ctx.TraceID(),
-		SpanID:  ctx.SpanID(),
-	}
+func NewLink() Link {
+	return Link{}
+}
+
+func (l Link) GetTraceID() string {
+	return l.TraceID.String()
+}
+
+func (l Link) GetSpanID() string {
+	return l.SpanID.String()
 }
