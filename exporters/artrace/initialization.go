@@ -4,12 +4,16 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/client"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/config"
 	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace/internal/errors"
+	"github.com/shirou/gopsutil/v3/host"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.opentelemetry.io/otel/trace"
 	"log"
+	"net"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -24,7 +28,7 @@ var Tracer = otel.GetTracerProvider().Tracer(
 var (
 	instrumentationName    = "TelemetrySDK-Go/exporters/artrace"
 	instrumentationVersion = "v2.2.0"
-	instrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?version=GBfeature-arp-205194&path=/exporters/artrace/README.md&_a=preview"
+	instrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporters/artrace"
 )
 
 // SetInstrumentation 设置调用链依赖的工具库。
@@ -103,23 +107,22 @@ func WithRetry(enabled bool, internal time.Duration, maxInterval time.Duration, 
 
 // GetResource 获取内置资源信息，记录客户服务名，需要传入服务名 serviceName ，服务版本 serviceVersion ，服务实例ID。
 func GetResource(serviceName string, serviceVersion string, serviceInstanceID string) *resource.Resource {
-	////获取主机IP
-	//connection, _ := net.Dial("udp", "rockyrori.cn:80")
-	//ipPort := connection.LocalAddr().(*net.UDPAddr)
-	//hostIP := strings.Split(ipPort.String(), ":")[0]
-	////获取主机信息
-	//infoState, _ := host.Info()
+	//获取主机IP
+	connection, _ := net.Dial("udp", "255.255.255.255:33")
+	ipPort := connection.LocalAddr().(*net.UDPAddr)
+	hostIP := strings.Split(ipPort.String(), ":")[0]
+	//获取主机信息
+	infoState, _ := host.Info()
 
 	return resource.NewWithAttributes(instrumentationURL,
-		////主机信息
-		//semconv.HostIDKey.String(infoState.HostID),
-		//semconv.HostNameKey.String(infoState.Hostname),
-		//semconv.HostArchKey.String(infoState.KernelArch),
-		//attribute.String("host.ip", hostIP),
-		////操作系统信息
-		//semconv.OSNameKey.String(infoState.OS),
-		//semconv.OSDescriptionKey.String(infoState.Platform),
-		//semconv.OSVersionKey.String(infoState.PlatformVersion),
+		//主机信息
+		semconv.HostNameKey.String(infoState.Hostname),
+		semconv.HostArchKey.String(infoState.KernelArch),
+		attribute.String("host.ip", hostIP),
+		//操作系统信息
+		semconv.OSTypeKey.String(infoState.OS),
+		semconv.OSDescriptionKey.String(infoState.Platform),
+		semconv.OSVersionKey.String(infoState.PlatformVersion),
 		//服务信息
 		semconv.ServiceInstanceIDKey.String(serviceInstanceID),
 		semconv.ServiceNameKey.String(serviceName),
