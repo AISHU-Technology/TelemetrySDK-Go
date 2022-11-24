@@ -14,23 +14,14 @@ type Value struct {
 	Value interface{} `json:"Value"`
 }
 
-func (v Value) GetType() string {
-	return v.Type
+// NewAttribute 创建新的 Attribute 。
+func NewAttribute(key string, value model.ARValue) model.ARAttribute {
+	return &Attribute{
+		Key:   key,
+		Value: value,
+	}
 }
 
-func (v Value) GetValue() interface{} {
-	return v.Value
-}
-
-func (a *Attribute) GetKey() string {
-	return a.Key
-}
-
-func (a *Attribute) GetValue() model.ARValue {
-	return a.Value
-}
-
-// Valid 校验 Attribute 格式是否合法。
 func (a *Attribute) Valid() bool {
 	return a.keyDefined() && a.valueTyped()
 }
@@ -64,12 +55,20 @@ func (a *Attribute) valueTyped() bool {
 	}
 }
 
-// NewAttribute 创建新的 Attribute 。
-func NewAttribute(key string, value model.ARValue) model.ARAttribute {
-	return &Attribute{
-		Key:   key,
-		Value: value,
-	}
+func (a *Attribute) GetKey() string {
+	return a.Key
+}
+
+func (a *Attribute) GetValue() model.ARValue {
+	return a.Value
+}
+
+func (v Value) GetType() string {
+	return v.Type
+}
+
+func (v Value) GetValue() interface{} {
+	return v.Value
 }
 
 // BoolValue 传入 bool 类型的值。

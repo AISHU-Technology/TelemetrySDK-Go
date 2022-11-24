@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Event 自定义 Event 统一数据模型。
 type Event struct {
 	EventID   string        `json:"EventID"`
 	EventType string        `json:"EventType"`
@@ -45,12 +46,6 @@ func generateID() string {
 	return ulid.Make().String()
 }
 
-// setEventID 当前版本不允许设置 EventID 。
-//func (e *Event) setEventID(eventID string) {
-//	e.EventID = eventID
-//}
-
-// SetEventType 设置非空 EventType 。
 func (e *Event) SetEventType(eventType string) {
 	if eventType == "" {
 		eventType = DefaultEventType
@@ -58,17 +53,14 @@ func (e *Event) SetEventType(eventType string) {
 	e.EventType = eventType
 }
 
-// SetTime 设置 time.Time 类型的 Time 。
 func (e *Event) SetTime(time time.Time) {
 	e.Time = time
 }
 
-// SetLevel 设置事件级别 ARLevel 。
 func (e *Event) SetLevel(level model.ARLevel) {
 	e.Level = level
 }
 
-// SetAttributes 设置资源 Resource 。
 func (e *Event) SetAttributes(kvs ...model.ARAttribute) {
 	for _, kv := range kvs {
 		// 校验 Attribute 是否合法，合法的才放进map去重。
@@ -82,61 +74,61 @@ func (e *Event) SetAttributes(kvs ...model.ARAttribute) {
 	e.Resource.mapToSlice()
 }
 
-// SetSubject 设置操作对象 Subject 。
 func (e *Event) SetSubject(subject string) {
 	e.Subject = subject
 }
 
-// SetLink 设置关联链路 Link 。
 func (e *Event) SetLink(link trace.SpanContext) {
 	e.Link.TraceID = link.TraceID()
 	e.Link.SpanID = link.SpanID()
 }
 
-// SetData 设置事件数据 Data 。
 func (e *Event) SetData(data interface{}) {
 	e.Data = data
 }
 
-// GetEventID 获取事件唯一标识符 EventID 。
 func (e *Event) GetEventID() string {
 	return e.EventID
 }
 
-// GetEventType 获取事件类型 EventType 。
 func (e *Event) GetEventType() string {
 	return e.EventType
 }
 
-// GetTime 获取事件时间 Time 。
 func (e *Event) GetTime() time.Time {
 	return e.Time
 }
 
-// GetLevel 获取事件级别 Level 。
 func (e *Event) GetLevel() model.ARLevel {
 	return e.Level
 }
 
-// GetResource 获取事件资源 *Resource 。
 func (e *Event) GetResource() model.ARResource {
 	return e.Resource
 }
 
-// GetSubject 获取事件操作对象 Subject 。
 func (e *Event) GetSubject() string {
 	return e.Subject
 }
 
-// GetLink 获取关联链路ID Link.TraceID Link.SpanID 。
 func (e *Event) GetLink() model.ARLink {
 	return e.Link
 }
 
-// GetData 获取事件数据 Data 。
 func (e *Event) GetData() interface{} {
 	return e.Data
 }
 
-// private 禁止实现 AREvent 接口。
-//func (e *Event) private() {}
+func (e *Event) GetEventMap() map[string]interface{} {
+	result := make(map[string]interface{})
+	result["EventID"] = e.EventID
+	result["EventType"] = e.EventType
+	result["Time"] = e.Time
+	result["Level"] = e.Level
+	result["Resource"] = e.Resource
+	result["Subject"] = e.Subject
+	result["Link"] = e.Link
+	result["Data"] = e.Data
+
+	return result
+}

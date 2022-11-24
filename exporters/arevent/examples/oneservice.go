@@ -4,9 +4,12 @@ import (
 	"context"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace"
+	"encoding/json"
+	"fmt"
 	"go.opentelemetry.io/otel"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"log"
+	"os"
 	"time"
 )
 
@@ -29,7 +32,7 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
+	//client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
 
 	ctx, num := addBefore(ctx, 2, 3)
 	ctx, num = multiplyBefore(ctx, num, 7)
@@ -45,6 +48,16 @@ func StdoutExample() {
 	event.SetLink(span.SpanContext())
 
 	event.SetAttributes(arevent.NewAttribute("", arevent.StringValue("123")))
-	_ = client.UploadEvent(ctx, &event)
+	//_ = client.UploadEvent(ctx, &event)
+
+	event3 := arevent.NewEvent("")
+	mapping := event3.GetEventMap()
+	fmt.Println(mapping)
+	file1 := os.Stdout
+	encoder1 := json.NewEncoder(file1)
+	encoder1.SetEscapeHTML(false)
+	encoder1.SetIndent("", "\t")
+	_ = encoder1.Encode(mapping)
+
 	log.Println(result, num)
 }

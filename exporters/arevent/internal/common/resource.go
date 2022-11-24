@@ -19,31 +19,39 @@ type Resource struct {
 func NewResource() *Resource {
 	r := &Resource{
 		SchemaURL:     "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporters/arevent",
-		Attributes:    make([]*model.ARAttribute, 0),
+		Attributes:    nil,
 		AttributesMap: defaultAttributes(),
 	}
 	r.mapToSlice()
 	return r
 }
 
-//MarshalJSON 只输出 Attributes 。
+// MarshalJSON 只输出 Attributes 。
 func (r *Resource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.Attributes)
 }
 
-// mapToSlice 把 AttributesMap 转成 Attributes 。
+func (r *Resource) GetSchemaURL() string {
+	return r.SchemaURL
+}
+
+func (r *Resource) GetAttributes() []*model.ARAttribute {
+	return r.Attributes
+}
+
+// mapToSlice 把 AttributesMap 转成 Attributes 。在初始化 Resource 、增减 Attributes 时候都必须调用。
 func (r *Resource) mapToSlice() {
 	result := make([]*model.ARAttribute, 0, len(r.AttributesMap))
 	for k, v := range r.AttributesMap {
 		s := NewAttribute(k, v)
 		result = append(result, &s)
-
 	}
 	r.Attributes = result
 }
 
 // defaultAttributes 获取默认资源信息。
 func defaultAttributes() map[string]model.ARValue {
+	// 获取本机IP
 	ip := getHostIP()
 	info := getHostInfo()
 	result := make(map[string]model.ARValue)
@@ -53,7 +61,7 @@ func defaultAttributes() map[string]model.ARValue {
 	hostArch := StringValue(info.KernelArch)
 	result["host.arch"] = hostArch
 	hostName := StringValue(info.Hostname)
-	result["host.name"] = hostName
+	result["host.sdkName"] = hostName
 	// 操作系统信息
 	osType := StringValue(info.OS)
 	result["os.type"] = osType
@@ -62,12 +70,19 @@ func defaultAttributes() map[string]model.ARValue {
 	osDescription := StringValue(info.Platform)
 	result["os.description"] = osDescription
 	// 版本信息
-	language := StringValue("go")
-	result["telemetry.sdk.language"] = language
-	name := StringValue("TelemetrySDK-Go/exporters/arevent")
-	result["telemetry.sdk.name"] = name
-	ver := StringValue(version.VERSION)
-	result["telemetry.sdk.version"] = ver
+	sdkLanguage := StringValue("go")
+	result["telemetry.sdk.sdkLanguage"] = sdkLanguage
+	sdkName := StringValue("TelemetrySDK-Go/exporters/arevent")
+	result["telemetry.sdk.sdkName"] = sdkName
+	sdkVersion := StringValue(version.VERSION)
+	result["telemetry.sdk.version"] = sdkVersion
+	// 服务信息
+	serviceName := StringValue("XXX")
+	result["service.name"] = serviceName
+	serviceVersion := StringValue("XXX")
+	result["service.version"] = serviceVersion
+	serviceInstance := StringValue("XXX")
+	result["service.instance.id"] = serviceInstance
 
 	return result
 }
@@ -83,12 +98,4 @@ func getHostIP() string {
 func getHostInfo() *host.InfoStat {
 	info, _ := host.Info()
 	return info
-}
-
-func (r *Resource) GetSchemaURL() string {
-	return r.SchemaURL
-}
-
-func (r *Resource) GetAttributes() []*model.ARAttribute {
-	return r.Attributes
 }
