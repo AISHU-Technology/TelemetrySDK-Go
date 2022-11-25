@@ -132,3 +132,11 @@ func (e *Event) GetEventMap() map[string]interface{} {
 
 	return result
 }
+
+//func (e *Event) MarshalJSON() ([]byte, error) {
+//	return json.Marshal(e)
+//}
+//
+//func (e *Event) UnmarshalJSON(b []byte) error {
+//	return json.Unmarshal(b, e)
+//}

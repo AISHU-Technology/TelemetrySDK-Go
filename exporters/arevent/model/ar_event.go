@@ -37,8 +37,14 @@ type AREvent interface {
 	GetLink() ARLink
 	// GetData 返回 Data 。
 	GetData() interface{}
+
 	// GetEventMap 返回 map[string]interface{} 形式的 Event 。
 	GetEventMap() map[string]interface{}
+	// MarshalJSON 返回 JSON 形式的 Event 。
+	//MarshalJSON() ([]byte, error)
+	// UnmarshalJSON 解析 JSON 形式的 Event 。
+	//UnmarshalJSON(b []byte) error
+
 	// setEventID 当前不允许修改 EventID 。
 	// setEventID(eventID string)
 }

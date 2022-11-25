@@ -3,7 +3,10 @@ package arevent
 import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/client"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/common"
+	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/model"
+	"encoding/json"
+	"errors"
 )
 
 //// Instrumentation 只能记录一个工具库。当前版本不支持修改 Instrumentation 。
@@ -153,4 +156,18 @@ func StringValue(value string) model.ARValue {
 // StringArray 传入 []string 类型的值。
 func StringArray(value []string) model.ARValue {
 	return common.StringArray(value)
+}
+
+func UnmarshalEvents(b []byte) ([]model.AREvent, error) {
+	events := make([]common.Event, 0)
+	err := json.Unmarshal(b, &events)
+
+	result := make([]model.AREvent, 0, len(events))
+	for _, event := range events {
+		result = append(result, &event)
+	}
+	if len(result) == 0 {
+		err = errors.New(customErrors.AnyRobotEventExporter_InvalidJSON)
+	}
+	return result, err
 }
