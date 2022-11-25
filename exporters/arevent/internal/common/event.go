@@ -11,14 +11,14 @@ import (
 
 // Event 自定义 Event 统一数据模型。
 type Event struct {
-	EventID   string        `json:"EventID"`
-	EventType string        `json:"EventType"`
-	Time      time.Time     `json:"Time"`
-	Level     model.ARLevel `json:"Level"`
-	Resource  *Resource     `json:"Resource"`
-	Subject   string        `json:"Subject"`
-	Link      Link          `json:"Link"`
-	Data      interface{}   `json:"Data"`
+	EventID   string      `json:"EventID"`
+	EventType string      `json:"EventType"`
+	Time      time.Time   `json:"Time"`
+	Level     Level       `json:"Level"`
+	Resource  *Resource   `json:"Resource"`
+	Subject   string      `json:"Subject"`
+	Link      Link        `json:"Link"`
+	Data      interface{} `json:"Data"`
 }
 
 // DefaultEventType 默认的非空事件类型
@@ -58,7 +58,7 @@ func (e *Event) SetTime(time time.Time) {
 }
 
 func (e *Event) SetLevel(level model.ARLevel) {
-	e.Level = level
+	e.Level = Level(level.Self())
 }
 
 func (e *Event) SetAttributes(kvs ...model.ARAttribute) {
@@ -139,4 +139,9 @@ func (e *Event) GetEventMap() map[string]interface{} {
 //
 //func (e *Event) UnmarshalJSON(b []byte) error {
 //	return json.Unmarshal(b, e)
+//}
+
+//func (e *Event) UnmarshalJSON(b []byte) error {
+//	e.Level=Level("sd")
+//	return nil
 //}

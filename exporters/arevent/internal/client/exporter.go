@@ -16,7 +16,7 @@ type Exporter struct {
 //var _ sdktrace.SpanExporter = (*Exporter)(nil)
 
 // ExportSpans 批量发送AnyRobotSpans到AnyRobot Feed Ingester的Trace数据接收器。
-func (e *Exporter) ExportEvents(ctx context.Context, events []*model.AREvent) error {
+func (e *Exporter) ExportEvents(ctx context.Context, events []model.AREvent) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()

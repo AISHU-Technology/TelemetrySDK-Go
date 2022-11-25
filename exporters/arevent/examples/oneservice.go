@@ -29,12 +29,13 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	//client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
 
 	ctx, num := addBefore(ctx, 2, 3)
 	ctx, num = multiplyBefore(ctx, num, 7)
 
 	event := arevent.NewEvent("examples.exporters.arevent")
+	event2 := arevent.NewEvent("examples.exporters.arevent2")
+	event3 := arevent.NewEvent("examples.exporters.arevent3")
 	//println(event.GetEventMap())
 
 	//file1 := os.Stdout
@@ -45,21 +46,27 @@ func StdoutExample() {
 
 	events := make([]model.AREvent, 0)
 	events = append(events, event)
-	events = append(events, event)
-	//bety, _ := json.Marshal(events)
+	events = append(events, event2)
+	events = append(events, event3)
+	//client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
+	//_ = client.UploadEvents(ctx, events)
 
-	betyy, _ := json.Marshal(event.GetEventType())
-	unmarshalEvents, err := arevent.UnmarshalEvents(betyy)
-	//results := make([]model.AREvent, 0)
-	//err = json.Unmarshal(bety, &results)
+	bety, _ := json.Marshal(events)
+
+	unmarshalEvents, err := arevent.UnmarshalEvents(bety)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(unmarshalEvents)
 
 	for _, v := range unmarshalEvents {
 		fmt.Println(v.GetEventID())
 	}
+
+	//betyy, _ := json.Marshal(event.GetEventType())
+
+	//fmt.Println(unmarshalEvents)
+	//
+
 	//file1 := os.Stdout
 	//encoder1 := json.NewEncoder(file1)
 	//encoder1.SetEscapeHTML(false)

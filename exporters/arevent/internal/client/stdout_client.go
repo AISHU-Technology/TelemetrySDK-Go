@@ -26,7 +26,7 @@ func (d *stdoutClient) Stop(ctx context.Context) error {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *stdoutClient) UploadEvents(ctx context.Context, events []*model.AREvent) error {
+func (d *stdoutClient) UploadEvents(ctx context.Context, events []model.AREvent) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {
@@ -74,7 +74,7 @@ func NewStdoutClient(stdoutPath string) Client {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *stdoutClient) UploadEvent(ctx context.Context, event *model.AREvent) error {
+func (d *stdoutClient) UploadEvent(ctx context.Context, event model.AREvent) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {

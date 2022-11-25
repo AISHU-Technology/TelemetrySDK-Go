@@ -5,6 +5,9 @@ import "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/ex
 // Level 实际为 string 类型。
 type Level string
 
+func (l Level) Self() string {
+	return string(l)
+}
 func (l Level) ERROR() model.ARLevel {
 	return Level("ERROR")
 }
