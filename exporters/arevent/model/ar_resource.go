@@ -5,5 +5,5 @@ type ARResource interface {
 	// GetSchemaURL 返回 SchemaURL 。
 	GetSchemaURL() string
 	// GetAttributes 返回 Attributes 。
-	GetAttributes() []*ARAttribute
+	GetAttributes() []ARAttribute
 }

@@ -68,7 +68,10 @@ func (e *Event) SetAttributes(kvs ...model.ARAttribute) {
 			log.Println(customErrors.AnyRobotEventExporter_EmptyKey)
 			continue
 		}
-		e.Resource.AttributesMap[kv.GetKey()] = kv.GetValue()
+		e.Resource.AttributesMap[kv.GetKey()] = Value{
+			Type:  kv.GetValue().GetType(),
+			Value: kv.GetValue().GetValue(),
+		}
 	}
 	// 去重map转数组。
 	e.Resource.mapToSlice()

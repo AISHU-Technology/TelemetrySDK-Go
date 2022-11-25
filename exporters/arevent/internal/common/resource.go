@@ -10,9 +10,9 @@ import (
 
 // Resource 自定义 Event Resource 和 Trace 输出格式一致。
 type Resource struct {
-	SchemaURL     string                   `json:"SchemaURL"`
-	Attributes    []*model.ARAttribute     `json:"Attributes"`
-	AttributesMap map[string]model.ARValue `json:"AttributesMap"`
+	SchemaURL     string           `json:"SchemaURL"`
+	Attributes    []*Attribute     `json:"Attributes"`
+	AttributesMap map[string]Value `json:"AttributesMap"`
 }
 
 // NewResource 创建新的 *Resource 。
@@ -35,26 +35,30 @@ func (r *Resource) GetSchemaURL() string {
 	return r.SchemaURL
 }
 
-func (r *Resource) GetAttributes() []*model.ARAttribute {
-	return r.Attributes
+func (r *Resource) GetAttributes() []model.ARAttribute {
+	attributes := make([]model.ARAttribute, len(r.Attributes))
+	for _, attribute := range r.Attributes {
+		attributes = append(attributes, attribute)
+	}
+	return attributes
 }
 
 // mapToSlice 把 AttributesMap 转成 Attributes 。在初始化 Resource 、增减 Attributes 时候都必须调用。
 func (r *Resource) mapToSlice() {
-	result := make([]*model.ARAttribute, 0, len(r.AttributesMap))
+	result := make([]*Attribute, 0, len(r.AttributesMap))
 	for k, v := range r.AttributesMap {
 		s := NewAttribute(k, v)
-		result = append(result, &s)
+		result = append(result, s)
 	}
 	r.Attributes = result
 }
 
 // defaultAttributes 获取默认资源信息。
-func defaultAttributes() map[string]model.ARValue {
+func defaultAttributes() map[string]Value {
 	// 获取本机IP
 	ip := getHostIP()
 	info := getHostInfo()
-	result := make(map[string]model.ARValue)
+	result := make(map[string]Value)
 	// 主机信息
 	hostIP := StringValue(ip)
 	result["host.ip"] = hostIP
@@ -98,4 +102,9 @@ func getHostIP() string {
 func getHostInfo() *host.InfoStat {
 	info, _ := host.Info()
 	return info
+}
+
+func (r *Resource) UnmarshalJSON(b []byte) error {
+	err := json.Unmarshal(b, &r.Attributes)
+	return err
 }

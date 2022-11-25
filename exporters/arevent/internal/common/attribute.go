@@ -4,8 +4,8 @@ import "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/ex
 
 // Attribute 自定义 Event Attribute 和 Trace 输出格式一致。
 type Attribute struct {
-	Key   string        `json:"Key"`
-	Value model.ARValue `json:"Value"`
+	Key   string `json:"Key"`
+	Value Value  `json:"Value"`
 }
 
 // Value 自定义Value统一Type为8种枚举类型。
@@ -15,10 +15,13 @@ type Value struct {
 }
 
 // NewAttribute 创建新的 Attribute 。
-func NewAttribute(key string, value model.ARValue) model.ARAttribute {
+func NewAttribute(key string, value model.ARValue) *Attribute {
 	return &Attribute{
-		Key:   key,
-		Value: value,
+		Key: key,
+		Value: Value{
+			Type:  value.GetType(),
+			Value: value.GetValue(),
+		},
 	}
 }
 
@@ -72,7 +75,7 @@ func (v Value) GetValue() interface{} {
 }
 
 // BoolValue 传入 bool 类型的值。
-func BoolValue(value bool) model.ARValue {
+func BoolValue(value bool) Value {
 	return Value{
 		Type:  "BOOL",
 		Value: value,
@@ -80,7 +83,7 @@ func BoolValue(value bool) model.ARValue {
 }
 
 // BoolArray 传入 []bool 类型的值。
-func BoolArray(value []bool) model.ARValue {
+func BoolArray(value []bool) Value {
 	return Value{
 		Type:  "BOOLARRAY",
 		Value: value,
@@ -88,7 +91,7 @@ func BoolArray(value []bool) model.ARValue {
 }
 
 // IntValue 传入 int 类型的值。
-func IntValue(value int) model.ARValue {
+func IntValue(value int) Value {
 	return Value{
 		Type:  "INT",
 		Value: value,
@@ -96,7 +99,7 @@ func IntValue(value int) model.ARValue {
 }
 
 // IntArray 传入 []int 类型的值。
-func IntArray(value []int) model.ARValue {
+func IntArray(value []int) Value {
 	return Value{
 		Type:  "INTARRAY",
 		Value: value,
@@ -104,7 +107,7 @@ func IntArray(value []int) model.ARValue {
 }
 
 // FloatValue 传入 float64 类型的值。
-func FloatValue(value float64) model.ARValue {
+func FloatValue(value float64) Value {
 	return Value{
 		Type:  "FLOAT",
 		Value: value,
@@ -112,7 +115,7 @@ func FloatValue(value float64) model.ARValue {
 }
 
 // FloatArray 传入 []float64 类型的值。
-func FloatArray(value []float64) model.ARValue {
+func FloatArray(value []float64) Value {
 	return Value{
 		Type:  "FLOATARRAY",
 		Value: value,
@@ -120,7 +123,7 @@ func FloatArray(value []float64) model.ARValue {
 }
 
 // StringValue 传入 string 类型的值。
-func StringValue(value string) model.ARValue {
+func StringValue(value string) Value {
 	return Value{
 		Type:  "STRING",
 		Value: value,
@@ -128,7 +131,7 @@ func StringValue(value string) model.ARValue {
 }
 
 // StringArray 传入 []string 类型的值。
-func StringArray(value []string) model.ARValue {
+func StringArray(value []string) Value {
 	return Value{
 		Type:  "STRINGARRAY",
 		Value: value,
