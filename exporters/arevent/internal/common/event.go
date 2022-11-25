@@ -82,8 +82,8 @@ func (e *Event) SetSubject(subject string) {
 }
 
 func (e *Event) SetLink(link trace.SpanContext) {
-	e.Link.TraceID = link.TraceID()
-	e.Link.SpanID = link.SpanID()
+	e.Link.TraceID = link.TraceID().String()
+	e.Link.SpanID = link.SpanID().String()
 }
 
 func (e *Event) SetData(data interface{}) {
