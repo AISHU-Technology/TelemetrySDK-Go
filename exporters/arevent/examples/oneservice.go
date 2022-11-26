@@ -33,10 +33,10 @@ func StdoutExample() {
 	ctx, num := addBefore(ctx, 2, 3)
 	ctx, num = multiplyBefore(ctx, num, 7)
 
-	event := arevent.NewEvent("examples.exporters.arevent")
+	event1 := arevent.NewEvent("examples.exporters.arevent1")
 	event2 := arevent.NewEvent("examples.exporters.arevent2")
 	event3 := arevent.NewEvent("examples.exporters.arevent3")
-	event4 := arevent.NewEvent("event4")
+	//event4 := arevent.NewEvent("event4")
 	//println(event.GetEventMap())
 
 	//file1 := os.Stdout
@@ -46,12 +46,12 @@ func StdoutExample() {
 	//_ = encoder1.Encode(event)
 
 	events := make([]model.AREvent, 0)
-	events = append(events, event)
+	events = append(events, event1)
 	events = append(events, event2)
 	events = append(events, event3)
-	events = append(events, event4)
-	//client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
-	//_ = client.UploadEvents(ctx, events)
+	//events = append(events, event4)
+	client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
+	_ = client.UploadEvents(ctx, events)
 
 	bety, _ := json.Marshal(events)
 
@@ -60,8 +60,10 @@ func StdoutExample() {
 		fmt.Println(err)
 	}
 
+	fmt.Println("events", unmarshalEvents)
 	for _, v := range unmarshalEvents {
-		fmt.Println(v.GetEventID())
+		v.GetEventID()
+		fmt.Println("event", v)
 	}
 
 	//betyy, _ := json.Marshal(event.GetEventType())

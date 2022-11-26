@@ -159,12 +159,12 @@ func StringArray(value []string) model.ARValue {
 }
 
 func UnmarshalEvents(b []byte) ([]model.AREvent, error) {
-	events := make([]common.Event, 0)
+	events := make([]*common.Event, 0)
 	err := json.Unmarshal(b, &events)
 
 	result := make([]model.AREvent, 0, len(events))
 	for _, event := range events {
-		result = append(result, &event)
+		result = append(result, event)
 	}
 	if len(result) == 0 {
 		err = errors.New(customErrors.AnyRobotEventExporter_InvalidJSON)

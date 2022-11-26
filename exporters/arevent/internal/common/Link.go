@@ -8,7 +8,10 @@ type Link struct {
 
 // NewLink 创建新的 Link 。
 func NewLink() Link {
-	return Link{}
+	return Link{
+		TraceID: "00000000000000000000000000000000",
+		SpanID:  "0000000000000000",
+	}
 }
 
 func (l Link) GetTraceID() string {
