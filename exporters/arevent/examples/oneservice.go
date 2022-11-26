@@ -36,6 +36,7 @@ func StdoutExample() {
 	event := arevent.NewEvent("examples.exporters.arevent")
 	event2 := arevent.NewEvent("examples.exporters.arevent2")
 	event3 := arevent.NewEvent("examples.exporters.arevent3")
+	event4 := arevent.NewEvent("event4")
 	//println(event.GetEventMap())
 
 	//file1 := os.Stdout
@@ -48,6 +49,7 @@ func StdoutExample() {
 	events = append(events, event)
 	events = append(events, event2)
 	events = append(events, event3)
+	events = append(events, event4)
 	//client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
 	//_ = client.UploadEvents(ctx, events)
 

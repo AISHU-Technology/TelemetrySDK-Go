@@ -65,16 +65,11 @@ func (e *Event) SetAttributes(kvs ...model.ARAttribute) {
 	for _, kv := range kvs {
 		// 校验 Attribute 是否合法，合法的才放进map去重。
 		if !kv.Valid() {
-			log.Println(customErrors.AnyRobotEventExporter_EmptyKey)
+			log.Println(customErrors.AnyRobotEventExporter_InvalidKey)
 			continue
 		}
-		e.Resource.AttributesMap[kv.GetKey()] = Value{
-			Type:  kv.GetValue().GetType(),
-			Value: kv.GetValue().GetValue(),
-		}
+		e.Resource.AttributesMap[kv.GetKey()] = kv.GetValue().GetData()
 	}
-	// 去重map转数组。
-	e.Resource.mapToSlice()
 }
 
 func (e *Event) SetSubject(subject string) {
@@ -135,16 +130,3 @@ func (e *Event) GetEventMap() map[string]interface{} {
 
 	return result
 }
-
-//func (e *Event) MarshalJSON() ([]byte, error) {
-//	return json.Marshal(e)
-//}
-//
-//func (e *Event) UnmarshalJSON(b []byte) error {
-//	return json.Unmarshal(b, e)
-//}
-
-//func (e *Event) UnmarshalJSON(b []byte) error {
-//	e.Level=Level("sd")
-//	return nil
-//}

@@ -14,6 +14,6 @@ const (
 	AnyRobotEventExporter_ExceedRetryElapsedTime = ModuleName + "超过最大重发时间限制"
 	AnyRobotEventExporter_DurationTooLong        = ModuleName + "超过最长连接时间限制"
 	AnyRobotEventExporter_RetryFailure           = ModuleName + "Trace正在重发"
-	AnyRobotEventExporter_EmptyKey               = ModuleName + "Attribute设置了无意义的空键"
+	AnyRobotEventExporter_InvalidKey             = ModuleName + "Attribute设置了无意义的空键或与默认值冲突"
 	AnyRobotEventExporter_InvalidJSON            = ModuleName + "传入了非法的JSON，应该传入[]model.AREvent类型"
 )

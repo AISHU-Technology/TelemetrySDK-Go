@@ -8,12 +8,6 @@ type ARAttribute interface {
 	GetKey() string
 	// GetValue 返回 Attribute 的值。
 	GetValue() ARValue
-}
-
-// ARValue 对外暴露的 Value 接口。
-type ARValue interface {
-	// GetType 返回 Value 的类型。
-	GetType() string
-	// GetValue 返回 Value 的值。
-	GetValue() interface{}
+	// private 禁止自己实现接口
+	//private()
 }
