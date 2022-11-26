@@ -2,21 +2,21 @@ package client
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/common"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"sync"
 )
 
 // Exporter 导出数据到AnyRobot Feed Ingester的Trace数据接收器。
 type Exporter struct {
-	client   Client
+	client   EventClient
 	stopCh   chan struct{}
 	stopOnce sync.Once
 }
 
-//var _ sdktrace.SpanExporter = (*Exporter)(nil)
+var _ eventsdk.EventExporter = (*Exporter)(nil)
 
 // ExportSpans 批量发送AnyRobotSpans到AnyRobot Feed Ingester的Trace数据接收器。
-func (e *Exporter) ExportEvents(ctx context.Context, events []common.AREvent) error {
+func (e *Exporter) ExportEvents(ctx context.Context, events []eventsdk.Event) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -46,6 +46,6 @@ func (e *Exporter) Shutdown(ctx context.Context) error {
 }
 
 // NewExporter 创建已启动的Exporter。
-func NewExporter(client Client) *Exporter {
+func NewExporter(client EventClient) *Exporter {
 	return &Exporter{client: client, stopCh: make(chan struct{})}
 }

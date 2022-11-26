@@ -1,20 +1,20 @@
-package common
+package eventsdk
 
 import (
 	"go.opentelemetry.io/otel/trace"
 	"time"
 )
 
-// AREvent 对外暴露的 event 接口。
-type AREvent interface {
+// Event 对外暴露的 event 接口。
+type Event interface {
 	// SetEventType 设置非空 EventType 。
 	SetEventType(eventType string)
 	// SetTime 设置 Time 。
 	SetTime(time time.Time)
 	// SetLevel 设置 level 。
-	SetLevel(level ARLevel)
+	SetLevel(level Level)
 	// SetAttributes 设置 Attributes 。
-	SetAttributes(kvs ...ARAttribute)
+	SetAttributes(kvs ...Attribute)
 	// SetSubject 设置 Subject 。
 	SetSubject(subject string)
 	// SetLink 设置 link 。
@@ -29,18 +29,21 @@ type AREvent interface {
 	// GetTime 返回 Time 。
 	GetTime() time.Time
 	// GetLevel 返回 level 。
-	GetLevel() ARLevel
+	GetLevel() Level
 	// GetResource 返回 resource 。
-	GetResource() ARResource
+	GetResource() Resource
 	// GetSubject 返回 Subject 。
 	GetSubject() string
 	// GetLink 返回 link 。
-	GetLink() ARLink
+	GetLink() Link
 	// GetData 返回 Data 。
 	GetData() interface{}
 
 	// GetEventMap 返回 map[string]interface{} 形式的 event 。
 	GetEventMap() map[string]interface{}
+
+	// Send 上报 Event 到 AnyRobot Event 数据接收器。
+	Send()
 
 	// private 禁止自己实现接口
 	private()

@@ -1,4 +1,4 @@
-package common
+package eventsdk
 
 // value 自定义Value统一Type为8种枚举类型。
 type value struct {
@@ -17,7 +17,7 @@ func (v value) GetData() interface{} {
 func (v value) private() {}
 
 // BoolValue 传入 bool 类型的值。
-func BoolValue(v bool) ARValue {
+func BoolValue(v bool) Value {
 	return value{
 		Type: "BOOL",
 		Data: v,
@@ -25,7 +25,7 @@ func BoolValue(v bool) ARValue {
 }
 
 // BoolArray 传入 []bool 类型的值。
-func BoolArray(v []bool) ARValue {
+func BoolArray(v []bool) Value {
 	return value{
 		Type: "BOOLARRAY",
 		Data: v,
@@ -33,7 +33,7 @@ func BoolArray(v []bool) ARValue {
 }
 
 // IntValue 传入 int 类型的值。
-func IntValue(v int) ARValue {
+func IntValue(v int) Value {
 	return value{
 		Type: "INT",
 		Data: v,
@@ -41,7 +41,7 @@ func IntValue(v int) ARValue {
 }
 
 // IntArray 传入 []int 类型的值。
-func IntArray(v []int) ARValue {
+func IntArray(v []int) Value {
 	return value{
 		Type: "INTARRAY",
 		Data: v,
@@ -49,7 +49,7 @@ func IntArray(v []int) ARValue {
 }
 
 // FloatValue 传入 float64 类型的值。
-func FloatValue(v float64) ARValue {
+func FloatValue(v float64) Value {
 	return value{
 		Type: "FLOAT",
 		Data: v,
@@ -57,7 +57,7 @@ func FloatValue(v float64) ARValue {
 }
 
 // FloatArray 传入 []float64 类型的值。
-func FloatArray(v []float64) ARValue {
+func FloatArray(v []float64) Value {
 	return value{
 		Type: "FLOATARRAY",
 		Data: v,
@@ -65,7 +65,7 @@ func FloatArray(v []float64) ARValue {
 }
 
 // StringValue 传入 string 类型的值。
-func StringValue(v string) ARValue {
+func StringValue(v string) Value {
 	return value{
 		Type: "STRING",
 		Data: v,
@@ -73,7 +73,7 @@ func StringValue(v string) ARValue {
 }
 
 // StringArray 传入 []string 类型的值。
-func StringArray(v []string) ARValue {
+func StringArray(v []string) Value {
 	return value{
 		Type: "STRINGARRAY",
 		Data: v,

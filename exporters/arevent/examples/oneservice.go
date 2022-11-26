@@ -2,11 +2,11 @@ package examples
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/common"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/errors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent"
-	"encoding/json"
-	"fmt"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace"
+	"go.opentelemetry.io/otel"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"time"
@@ -21,6 +21,19 @@ func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 	return ctx, x + y
 }
 
+// add 增加了Trace埋点的计算两数之和。
+func add(ctx context.Context, x, y int64) (context.Context, int64) {
+	myEvent := eventsdk.NewEvent("EventExporter/add")
+	myEvent.SetLevel(eventsdk.INFO)
+	myEvent.SetSubject("calculation.txt")
+	myEvent.SetData(007)
+	myEvent.Send()
+
+	//业务代码
+	time.Sleep(100 * time.Millisecond)
+	return ctx, x + y
+}
+
 // multiplyBefore 计算两数之积。
 func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 	//业务代码
@@ -28,50 +41,48 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 	return ctx, x * y
 }
 
+// multiply 增加了Trace埋点的计算两数之积。
+func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
+	otel.SetTracerProvider(sdktrace.NewTracerProvider())
+	ctx, span := artrace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
+	myEvent := eventsdk.NewEvent("EventExporter/multiply")
+	myEvent.SetLink(span.SpanContext())
+	myEvent.SetTime(time.Now())
+	myEvent.SetAttributes(eventsdk.NewAttribute("multiply", eventsdk.StringValue("计算两数之积")))
+	myEvent.Send()
+
+	//业务代码
+	time.Sleep(100 * time.Millisecond)
+	return ctx, x * y
+}
+
+// Example 原始的业务系统入口
+func Example() {
+	ctx := context.Background()
+	ctx, num := multiplyBefore(ctx, 2, 3)
+	ctx, num = multiplyBefore(ctx, num, 7)
+	ctx, num = addBefore(ctx, num, 8)
+	log.Println(result, num)
+}
+
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
+	client := arevent.NewStdoutClient("")
+	exporter := arevent.NewExporter(client)
+	eventProvider := eventsdk.NewEventProvider(exporter)
+	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
+	eventsdk.SetEventProvider(eventProvider)
+	defer func() {
+		if err := eventProvider.Shutdown(ctx); err != nil {
+			log.Println(err)
+		}
+	}()
 
-	ctx, num := addBefore(ctx, 2, 3)
-	ctx, num = multiplyBefore(ctx, num, 7)
-
-	name := errors.ModuleName
-
-	eventy := common.NewEvent(name)
-	eventy.SetTime(time.Now())
-	eventy.SetLevel(common.WARN)
-	eventy.SetAttributes(common.NewAttribute("key", common.BoolValue(true)))
-	eventy.SetLink(trace.SpanContext{})
-	eventy.SetSubject("subject")
-	eventy.SetData(996)
-	eventy.SetEventType("type")
-	eventy.GetEventMap()
-
-	fmt.Println(eventy)
-
-	events := make([]common.AREvent, 0)
-	events = append(events, eventy)
-	client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
-	_ = client.UploadEvents(ctx, events)
-
-	bety, _ := json.Marshal(events)
-
-	unmarshalEvents, err := common.UnmarshalEvents(bety)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println("events", unmarshalEvents)
-	for _, v := range unmarshalEvents {
-		fmt.Println("event", v)
-	}
-
+	ctx, num := multiply(ctx, 2, 3)
+	ctx, num = multiply(ctx, num, 7)
+	ctx, num = add(ctx, num, 8)
 	log.Println(result, num)
-
-	//unmar := arevent.NewEvent("123")
-	//b, _ := event.MarshalJSON()
-	//_ = json.Unmarshal(b, &unmar)
-	//println(unmar.GetEventType())
 }
 
 // WithAllExample 修改client所有入参。
@@ -85,6 +96,6 @@ func WithAllExample() {
 	exporter := arevent.NewExporter(client)
 	_ = exporter
 
-	ctx, num := multiplyBefore(ctx, 7, 9)
+	ctx, num := multiply(ctx, 7, 9)
 	log.Println(result, num)
 }

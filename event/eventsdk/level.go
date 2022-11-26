@@ -1,7 +1,7 @@
-package common
+package eventsdk
 
-// ARLevel 定义了 level 的3种级别。
-type ARLevel interface {
+// Level 定义了 level 的3种级别。
+type Level interface {
 	// Self 返回事件级别。
 	Self() string
 

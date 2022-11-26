@@ -5,7 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/tls"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/common"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
 	"encoding/json"
 	"errors"
@@ -41,7 +41,7 @@ func (d *HttpClient) Stop(ctx context.Context) error {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *HttpClient) UploadEvents(ctx context.Context, events []common.AREvent) error {
+func (d *HttpClient) UploadEvents(ctx context.Context, events []eventsdk.Event) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {
@@ -241,7 +241,7 @@ func bodyReader(buf []byte) func() io.ReadCloser {
 }
 
 // NewHTTPClient 创建Exporter的HTTP客户端。
-func NewHTTPClient(opts ...config.Option) Client {
+func NewHTTPClient(opts ...config.Option) EventClient {
 	cfg := config.NewConfig(opts...)
 
 	client := &http.Client{
@@ -258,7 +258,7 @@ func NewHTTPClient(opts ...config.Option) Client {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *HttpClient) UploadEvent(ctx context.Context, event common.AREvent) error {
+func (d *HttpClient) UploadEvent(ctx context.Context, event eventsdk.Event) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {

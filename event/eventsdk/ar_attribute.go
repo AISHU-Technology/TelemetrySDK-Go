@@ -1,4 +1,4 @@
-package common
+package eventsdk
 
 import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/version"
@@ -13,7 +13,7 @@ type attribute struct {
 }
 
 // NewAttribute 创建新的 Attribute 。
-func NewAttribute(key string, v ARValue) ARAttribute {
+func NewAttribute(key string, v Value) Attribute {
 	return &attribute{
 		Key: key,
 		Value: value{
@@ -75,7 +75,7 @@ func (a *attribute) GetKey() string {
 	return a.Key
 }
 
-func (a *attribute) GetValue() ARValue {
+func (a *attribute) GetValue() Value {
 	return a.Value
 }
 

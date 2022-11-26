@@ -1,6 +1,7 @@
 package arevent
 
 import (
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/client"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/config"
 	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
@@ -29,17 +30,17 @@ import (
 //}
 
 // NewExporter 新建Exporter，需要传入指定的数据发送客户端 client.Client 。
-func NewExporter(c client.Client) *client.Exporter {
+func NewExporter(c client.EventClient) eventsdk.EventExporter {
 	return client.NewExporter(c)
 }
 
 // NewStdoutClient 创建 client.Exporter 需要的Local数据发送客户端。
-func NewStdoutClient(stdoutPath string) client.Client {
+func NewStdoutClient(stdoutPath string) client.EventClient {
 	return client.NewStdoutClient(stdoutPath)
 }
 
 // NewHTTPClient 创建 client.Exporter 需要的HTTP数据发送客户端。
-func NewHTTPClient(opts ...config.Option) client.Client {
+func NewHTTPClient(opts ...config.Option) client.EventClient {
 	return client.NewHTTPClient(opts...)
 }
 

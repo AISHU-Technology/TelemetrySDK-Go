@@ -1,7 +1,7 @@
-package common
+package eventsdk
 
 import (
-	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/errors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/customerrors"
 	"encoding/json"
 	"errors"
 	"github.com/oklog/ulid/v2"
@@ -26,7 +26,7 @@ type event struct {
 const DefaultEventType = "Telemetry.Default.event"
 
 // NewEvent 创建新的 event ，默认填充ID、时间、事件级别、资源信息，需要传入事件类型，默认为"Telemetry.Default.event"。
-func NewEvent(eventType string) AREvent {
+func NewEvent(eventType string) Event {
 	if eventType == "" {
 		eventType = DefaultEventType
 	}
@@ -58,15 +58,15 @@ func (e *event) SetTime(time time.Time) {
 	e.Time = time
 }
 
-func (e *event) SetLevel(level ARLevel) {
+func (e *event) SetLevel(level Level) {
 	e.Level = newLevel(level.Self())
 }
 
-func (e *event) SetAttributes(kvs ...ARAttribute) {
+func (e *event) SetAttributes(kvs ...Attribute) {
 	for _, kv := range kvs {
 		// 校验 attribute 是否合法，合法的才放进map去重。
 		if !kv.Valid() {
-			log.Println(customErrors.Event_InvalidKey)
+			log.Println(customerrors.Event_InvalidKey)
 			continue
 		}
 		e.Resource.AttributesMap[kv.GetKey()] = kv.GetValue().GetData()
@@ -98,11 +98,11 @@ func (e *event) GetTime() time.Time {
 	return e.Time
 }
 
-func (e *event) GetLevel() ARLevel {
+func (e *event) GetLevel() Level {
 	return e.Level
 }
 
-func (e *event) GetResource() ARResource {
+func (e *event) GetResource() Resource {
 	return e.Resource
 }
 
@@ -110,7 +110,7 @@ func (e *event) GetSubject() string {
 	return e.Subject
 }
 
-func (e *event) GetLink() ARLink {
+func (e *event) GetLink() Link {
 	return e.Link
 }
 
@@ -132,19 +132,23 @@ func (e *event) GetEventMap() map[string]interface{} {
 	return result
 }
 
+func (e *event) Send() {
+	GetEventProvider().Load(e)
+}
+
 func (e *event) private() {}
 
-// UnmarshalEvents 将JSON解析成[]AREvent。
-func UnmarshalEvents(b []byte) ([]AREvent, error) {
+// UnmarshalEvents 将JSON解析成[]Event。
+func UnmarshalEvents(b []byte) ([]Event, error) {
 	events := make([]*event, 0)
 	err := json.Unmarshal(b, &events)
 
-	result := make([]AREvent, 0, len(events))
+	result := make([]Event, 0, len(events))
 	for _, e := range events {
 		result = append(result, e)
 	}
 	if len(result) == 0 {
-		err = errors.New(customErrors.Event_InvalidJSON)
+		err = errors.New(customerrors.Event_InvalidJSON)
 	}
 	return result, err
 }

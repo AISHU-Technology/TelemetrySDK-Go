@@ -2,7 +2,7 @@ package client
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/common"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"encoding/json"
 	"os"
 	"strings"
@@ -26,7 +26,7 @@ func (d *stdoutClient) Stop(ctx context.Context) error {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *stdoutClient) UploadEvents(ctx context.Context, events []common.AREvent) error {
+func (d *stdoutClient) UploadEvents(ctx context.Context, events []eventsdk.Event) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {
@@ -66,15 +66,15 @@ func (d *stdoutClient) contextWithStop(ctx context.Context) (context.Context, co
 }
 
 // NewStdoutClient 创建Exporter的Local客户端。
-func NewStdoutClient(stdoutPath string) Client {
+func NewStdoutClient(stdoutPath string) EventClient {
 	if strings.TrimSpace(stdoutPath) == "" {
-		return &stdoutClient{filepath: "./AnyRobotTrace.txt", stopCh: make(chan struct{})}
+		return &stdoutClient{filepath: "./AnyRobotEvent.txt", stopCh: make(chan struct{})}
 	}
 	return &stdoutClient{filepath: stdoutPath, stopCh: make(chan struct{})}
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *stdoutClient) UploadEvent(ctx context.Context, event common.AREvent) error {
+func (d *stdoutClient) UploadEvent(ctx context.Context, event eventsdk.Event) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {

@@ -1,4 +1,4 @@
-package common
+package eventsdk
 
 // link 用于关联 Trace 信息， event 和 Trace 一对一。
 type link struct {

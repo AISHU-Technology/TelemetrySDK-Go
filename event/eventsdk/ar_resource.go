@@ -1,4 +1,4 @@
-package common
+package eventsdk
 
 import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/version"
