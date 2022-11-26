@@ -1,4 +1,4 @@
-package model
+package common
 
 // ARLink 和 Trace 关联，记录 TraceID 和 SpanID 。
 type ARLink interface {
@@ -6,4 +6,7 @@ type ARLink interface {
 	GetTraceID() string
 	// GetSpanID 返回 SpanID 。
 	GetSpanID() string
+
+	// private 禁止自己实现接口
+	private()
 }

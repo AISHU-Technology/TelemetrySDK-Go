@@ -31,7 +31,7 @@ type RetryableError struct {
 
 // Error 实现error接口。
 func (e RetryableError) Error() string {
-	return customErrors.AnyRobotEventExporter_RetryFailure
+	return customErrors.EventExporter_RetryFailure
 }
 
 // evaluate 通过 RetryableError 类型来判断是否可重发。
@@ -75,8 +75,8 @@ func (r RetryConfig) RetryFunc() RetryFunc {
 
 			backOff := offset.NextBackOff()
 			if backOff == backoff.Stop {
-				log.Println(customErrors.AnyRobotEventExporter_ExceedRetryElapsedTime)
-				return errors.New(customErrors.AnyRobotEventExporter_ExceedRetryElapsedTime)
+				log.Println(customErrors.EventExporter_ExceedRetryElapsedTime)
+				return errors.New(customErrors.EventExporter_ExceedRetryElapsedTime)
 			}
 
 			var delay time.Duration
@@ -85,8 +85,8 @@ func (r RetryConfig) RetryFunc() RetryFunc {
 			} else {
 				elapsed := offset.GetElapsedTime()
 				if offset.MaxElapsedTime != 0 && elapsed+throttle > offset.MaxElapsedTime {
-					log.Println(customErrors.AnyRobotEventExporter_ExceedRetryElapsedTime)
-					return errors.New(customErrors.AnyRobotEventExporter_ExceedRetryElapsedTime)
+					log.Println(customErrors.EventExporter_ExceedRetryElapsedTime)
+					return errors.New(customErrors.EventExporter_ExceedRetryElapsedTime)
 				}
 				delay = throttle
 			}

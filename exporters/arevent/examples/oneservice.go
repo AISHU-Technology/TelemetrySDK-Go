@@ -2,10 +2,12 @@ package examples
 
 import (
 	"context"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/common"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/errors"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/model"
 	"encoding/json"
 	"fmt"
+	"go.opentelemetry.io/otel/trace"
 	"log"
 	"time"
 )
@@ -33,92 +35,36 @@ func StdoutExample() {
 	ctx, num := addBefore(ctx, 2, 3)
 	ctx, num = multiplyBefore(ctx, num, 7)
 
-	event1 := arevent.NewEvent("examples.exporters.arevent1")
-	event2 := arevent.NewEvent("examples.exporters.arevent2")
-	event3 := arevent.NewEvent("examples.exporters.arevent3")
-	//event4 := arevent.NewEvent("event4")
-	//println(event.GetEventMap())
+	name := errors.ModuleName
 
-	//file1 := os.Stdout
-	//encoder1 := json.NewEncoder(file1)
-	//encoder1.SetEscapeHTML(false)
-	//encoder1.SetIndent("", "\t")
-	//_ = encoder1.Encode(event)
+	eventy := common.NewEvent(name)
+	eventy.SetTime(time.Now())
+	eventy.SetLevel(common.WARN)
+	eventy.SetAttributes(common.NewAttribute("key", common.BoolValue(true)))
+	eventy.SetLink(trace.SpanContext{})
+	eventy.SetSubject("subject")
+	eventy.SetData(996)
+	eventy.SetEventType("type")
+	eventy.GetEventMap()
 
-	events := make([]model.AREvent, 0)
-	events = append(events, event1)
-	events = append(events, event2)
-	events = append(events, event3)
-	//events = append(events, event4)
+	fmt.Println(eventy)
+
+	events := make([]common.AREvent, 0)
+	events = append(events, eventy)
 	client := arevent.NewStdoutClient("./AnyRobotEvent.txt")
 	_ = client.UploadEvents(ctx, events)
 
 	bety, _ := json.Marshal(events)
 
-	unmarshalEvents, err := arevent.UnmarshalEvents(bety)
+	unmarshalEvents, err := common.UnmarshalEvents(bety)
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	fmt.Println("events", unmarshalEvents)
 	for _, v := range unmarshalEvents {
-		v.GetEventID()
 		fmt.Println("event", v)
 	}
-
-	//betyy, _ := json.Marshal(event.GetEventType())
-
-	//fmt.Println(unmarshalEvents)
-	//
-
-	//file1 := os.Stdout
-	//encoder1 := json.NewEncoder(file1)
-	//encoder1.SetEscapeHTML(false)
-	//encoder1.SetIndent("", "\t")
-	//_ = encoder1.Encode(unmarshalEvents)
-
-	//event.SetSubject("stdout.example")
-	//event.SetLevel(arevent.WARN)
-	//event.SetAttributes(arevent.NewAttribute("样例", arevent.StringValue("结果")))
-	//event.SetData(num)
-	//tracerProvider := sdktrace.NewTracerProvider()
-	//otel.SetTracerProvider(tracerProvider)
-	//_, span := artrace.Tracer.Start(ctx, "")
-	//event.SetLink(span.SpanContext())
-
-	//event.SetAttributes(arevent.NewAttribute("", arevent.StringValue("123")))
-	//_ = client.UploadEvent(context.Background(), &event)
-
-	//event3 := arevent.NewEvent("123")
-	//mapping := event3.GetEventMap()
-	//fmt.Println(mapping)
-	//file1 := os.Stdout
-	//encoder1 := json.NewEncoder(file1)
-	//encoder1.SetEscapeHTML(false)
-	//encoder1.SetIndent("", "\t")
-	//_ = encoder1.Encode(mapping)
-
-	//events := make([]model.AREvent, 0)
-	//events = append(events, event)
-	//events = append(events, event3)
-	//bety, _ := json.Marshal(events)
-	//unmarshalEvents, err := arevent.UnmarshalEvents(bety)
-	//results := make([]model.AREvent, 0)
-	//err := json.Unmarshal(bety, &results)
-	//if err != nil {
-	//	println(err)
-	//}
-
-	//fmt.Println(events)
-
-	//println(results)
-	//client := arevent.NewStdoutClient("")
-	//client.UploadEvent(context.Background(), &event3)
-	//file1 := os.Stdout
-	//encoder1 := json.NewEncoder(file1)
-	//encoder1.SetEscapeHTML(false)
-	//encoder1.SetIndent("", "\t")
-	//_ = encoder1.Encode(&event3)
 
 	log.Println(result, num)
 
@@ -126,4 +72,19 @@ func StdoutExample() {
 	//b, _ := event.MarshalJSON()
 	//_ = json.Unmarshal(b, &unmar)
 	//println(unmar.GetEventType())
+}
+
+// WithAllExample 修改client所有入参。
+func WithAllExample() {
+	ctx := context.Background()
+	header := make(map[string]string)
+	header["self-defined"] = "some_header"
+	client := arevent.NewHTTPClient(arevent.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
+		arevent.WithCompression(1), arevent.WithTimeout(10*time.Second), arevent.WithHeader(header),
+		arevent.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
+	exporter := arevent.NewExporter(client)
+	_ = exporter
+
+	ctx, num := multiplyBefore(ctx, 7, 9)
+	log.Println(result, num)
 }

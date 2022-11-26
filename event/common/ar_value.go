@@ -1,4 +1,4 @@
-package model
+package common
 
 // ARValue 对外暴露的 Data 接口。
 type ARValue interface {
@@ -6,6 +6,7 @@ type ARValue interface {
 	GetType() string
 	// GetData 返回 Data 的值。
 	GetData() interface{}
+
 	// private 禁止自己实现接口
-	//private()
+	private()
 }

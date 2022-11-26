@@ -5,7 +5,8 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/tls"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/model"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/common"
+	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
 	"encoding/json"
 	"errors"
 	"io"
@@ -18,7 +19,6 @@ import (
 	"time"
 
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/config"
-	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
 )
 
 // HttpClient 客户端结构体。
@@ -41,7 +41,7 @@ func (d *HttpClient) Stop(ctx context.Context) error {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *HttpClient) UploadEvents(ctx context.Context, events []model.AREvent) error {
+func (d *HttpClient) UploadEvents(ctx context.Context, events []common.AREvent) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {
@@ -85,13 +85,13 @@ func (d *HttpClient) UploadEvents(ctx context.Context, events []model.AREvent) e
 		case http.StatusNoContent, http.StatusOK:
 		// 格式校验不通过，不重发。
 		case http.StatusBadRequest:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_InvalidFormat)
+			rErr = errors.New(customErrors.EventExporter_InvalidFormat)
 		// 接收器地址不正确，不重发。
 		case http.StatusNotFound:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_JobIdNotFound)
+			rErr = errors.New(customErrors.EventExporter_JobIdNotFound)
 		// Trace太长超过5MB，不重发。
 		case http.StatusRequestEntityTooLarge:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_PayloadTooLarge)
+			rErr = errors.New(customErrors.EventExporter_PayloadTooLarge)
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
@@ -100,7 +100,7 @@ func (d *HttpClient) UploadEvents(ctx context.Context, events []model.AREvent) e
 				return err
 			}
 		default:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_Unsent)
+			rErr = errors.New(customErrors.EventExporter_Unsent)
 		}
 		if err := resp.Body.Close(); err != nil {
 			return err
@@ -258,7 +258,7 @@ func NewHTTPClient(opts ...config.Option) Client {
 }
 
 // UploadTraces 批量发送Trace数据。
-func (d *HttpClient) UploadEvent(ctx context.Context, event model.AREvent) error {
+func (d *HttpClient) UploadEvent(ctx context.Context, event common.AREvent) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
 	select {
@@ -302,13 +302,13 @@ func (d *HttpClient) UploadEvent(ctx context.Context, event model.AREvent) error
 		case http.StatusNoContent, http.StatusOK:
 		// 格式校验不通过，不重发。
 		case http.StatusBadRequest:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_InvalidFormat)
+			rErr = errors.New(customErrors.EventExporter_InvalidFormat)
 		// 接收器地址不正确，不重发。
 		case http.StatusNotFound:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_JobIdNotFound)
+			rErr = errors.New(customErrors.EventExporter_JobIdNotFound)
 		// Trace太长超过5MB，不重发。
 		case http.StatusRequestEntityTooLarge:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_PayloadTooLarge)
+			rErr = errors.New(customErrors.EventExporter_PayloadTooLarge)
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
@@ -317,7 +317,7 @@ func (d *HttpClient) UploadEvent(ctx context.Context, event model.AREvent) error
 				return err
 			}
 		default:
-			rErr = errors.New(customErrors.AnyRobotEventExporter_Unsent)
+			rErr = errors.New(customErrors.EventExporter_Unsent)
 		}
 		if err := resp.Body.Close(); err != nil {
 			return err
