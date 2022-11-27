@@ -3,7 +3,7 @@ module devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exp
 go 1.18
 
 require (
-	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127081413-b3e14a020804
+	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127084001-d86630fae901
 	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace v0.0.0-20221122145311-2fffe2859de6
 	github.com/cenkalti/backoff/v4 v4.1.3
 	go.opentelemetry.io/otel v1.11.1

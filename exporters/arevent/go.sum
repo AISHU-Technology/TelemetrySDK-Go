@@ -14,6 +14,8 @@ devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127070835-b77fec1b3dc6/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127081413-b3e14a020804 h1:7aZl51DgGVC89vObGSqNberCOAcvH0tM4pxanATXjrI=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127081413-b3e14a020804/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127084001-d86630fae901 h1:BkLXQLGheifrxerUguj5qGf67gaWi+mCLyc5mlvXBvQ=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127084001-d86630fae901/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace v0.0.0-20221122145311-2fffe2859de6 h1:lmP7UgcsLMx6Ny47Gr/H5a9VGG1UaZf5FTFb988VJzo=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace v0.0.0-20221122145311-2fffe2859de6/go.mod h1:1z/e5AsiZ0iDf/2oU+tZE+uKpvWy0LF7EPWXNvL/Wi0=
 github.com/agiledragon/gomonkey/v2 v2.9.0 h1:PDiKKybR596O6FHW+RVSG0Z7uGCBNbmbUXh3uCNQ7Hc=

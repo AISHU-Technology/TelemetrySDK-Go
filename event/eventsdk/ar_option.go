@@ -3,9 +3,9 @@ package eventsdk
 import "time"
 
 // eventProviderOptionFunc 执行 EventProviderOption 的方法。
-type eventProviderOptionFunc func(*eventProviderConfig) *eventProviderConfig
+type eventProviderOptionFunc func(eventProviderConfig) eventProviderConfig
 
-func (o eventProviderOptionFunc) apply(cfg *eventProviderConfig) *eventProviderConfig {
+func (o eventProviderOptionFunc) apply(cfg eventProviderConfig) eventProviderConfig {
 	return o(cfg)
 }
 
@@ -17,7 +17,7 @@ type eventProviderConfig struct {
 }
 
 // defaultProviderConfig EventProvider 默认配置
-var defaultProviderConfig = &eventProviderConfig{
+var defaultProviderConfig = eventProviderConfig{
 	Exporters:     make(map[string]EventExporter),
 	FlashInternal: 5 * time.Second,
 	MaxEvent:      9,
@@ -25,7 +25,7 @@ var defaultProviderConfig = &eventProviderConfig{
 
 // WithExporters 批量设置 EventExporter 。
 func WithExporters(exporters ...EventExporter) EventProviderOption {
-	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
+	return eventProviderOptionFunc(func(cfg eventProviderConfig) eventProviderConfig {
 		for _, e := range exporters {
 			cfg.Exporters[e.Name()] = e
 		}
@@ -35,7 +35,7 @@ func WithExporters(exporters ...EventExporter) EventProviderOption {
 
 // WithServiceInfo 记录服务信息。
 func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstance string) EventProviderOption {
-	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
+	return eventProviderOptionFunc(func(cfg eventProviderConfig) eventProviderConfig {
 		if ServiceName != "" {
 			serviceName = ServiceName
 		}
@@ -51,7 +51,7 @@ func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstance 
 
 // WithFlashInternal 设置发送间隔。
 func WithFlashInternal(flashInternal time.Duration) EventProviderOption {
-	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
+	return eventProviderOptionFunc(func(cfg eventProviderConfig) eventProviderConfig {
 		cfg.FlashInternal = flashInternal
 		return cfg
 	})
@@ -59,7 +59,7 @@ func WithFlashInternal(flashInternal time.Duration) EventProviderOption {
 
 // WithMaxEvent 设置Event发送上限。
 func WithMaxEvent(maxEvent int) EventProviderOption {
-	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
+	return eventProviderOptionFunc(func(cfg eventProviderConfig) eventProviderConfig {
 		cfg.MaxEvent = maxEvent
 		return cfg
 	})
