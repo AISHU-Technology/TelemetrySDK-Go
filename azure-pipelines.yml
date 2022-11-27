@@ -15,7 +15,7 @@ trigger:
       - "release/*"
 
 variables:
-  - group: anyrobot-global-config
+  - group: anyrobot-global-option
   - name: BUILD_IMAGE
     value: "acr.aishu.cn/ar/go.build:1.17.13"
   - name: SONARQUBE_IMAGE

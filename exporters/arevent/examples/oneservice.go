@@ -97,6 +97,12 @@ func WithAllExample() {
 	eventProvider := eventsdk.NewEventProvider(exporter)
 	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
 	eventsdk.SetEventProvider(eventProvider)
+	eventsdk.SetEventProvider(eventProvider)
+	defer func() {
+		if err := eventProvider.Shutdown(ctx); err != nil {
+			log.Println(err)
+		}
+	}()
 	ctx, num := multiply(ctx, 2, 3)
 	for i := 0; i < 12; i++ {
 		ctx, num = add(ctx, 2, 3)

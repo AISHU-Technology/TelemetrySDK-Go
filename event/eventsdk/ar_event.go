@@ -23,9 +23,9 @@ type event struct {
 }
 
 // DefaultEventType 默认的非空事件类型
-const DefaultEventType = "Telemetry.Default.event"
+const DefaultEventType = "Telemetry.Default.Event"
 
-// NewEvent 创建新的 event ，默认填充ID、时间、事件级别、资源信息，需要传入事件类型，默认为"Telemetry.Default.event"。
+// NewEvent 创建新的 event ，默认填充ID、时间、事件级别、资源信息，需要传入事件类型，默认为"Telemetry.Default.Event"。
 func NewEvent(eventType string) Event {
 	if eventType == "" {
 		eventType = DefaultEventType
@@ -133,7 +133,7 @@ func (e *event) GetEventMap() map[string]interface{} {
 }
 
 func (e *event) Send() {
-	GetEventProvider().LoadEvent(e)
+	GetEventProvider().(*eventProvider).loadEvent(e)
 }
 
 func (e *event) private() {}

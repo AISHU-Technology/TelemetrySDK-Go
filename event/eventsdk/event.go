@@ -41,7 +41,6 @@ type Event interface {
 
 	// GetEventMap 返回 map[string]interface{} 形式的 event 。
 	GetEventMap() map[string]interface{}
-
 	// Send 上报 Event 到 AnyRobot Event 数据接收器。
 	Send()
 

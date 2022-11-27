@@ -12,7 +12,7 @@ type attribute struct {
 	Value value  `json:"Data"`
 }
 
-// NewAttribute 创建新的 Attribute 。
+// NewAttribute 创建新的 attribute 。
 func NewAttribute(key string, v Value) Attribute {
 	return &attribute{
 		Key: key,
@@ -22,6 +22,7 @@ func NewAttribute(key string, v Value) Attribute {
 		},
 	}
 }
+
 func (a *attribute) Valid() bool {
 	return a.keyNotNil() && a.keyNotCollide()
 }
@@ -46,30 +47,6 @@ func (a *attribute) keyNotCollide() bool {
 		return true
 	}
 }
-
-// valueTyped 校验 value.Type 是枚举类型。
-//func (a *attribute) valueTyped() bool {
-//	switch a.Value.GetType() {
-//	case "BOOL":
-//		return true
-//	case "BOOLARRAY":
-//		return true
-//	case "INT":
-//		return true
-//	case "INTARRAY":
-//		return true
-//	case "FLOAT":
-//		return true
-//	case "FLOATARRAY":
-//		return true
-//	case "STRING":
-//		return true
-//	case "STRINGARRAY":
-//		return true
-//	default:
-//		return false
-//	}
-//}
 
 func (a *attribute) GetKey() string {
 	return a.Key
@@ -132,11 +109,8 @@ func defaultAttributes() map[string]interface{} {
 	// 服务信息
 	serviceMap := make(map[string]string, 3)
 	result["service"] = serviceMap
-	serviceName := "XXXAAA"
 	serviceMap["name"] = serviceName
-	serviceVersion := "XXXAAA"
 	serviceMap["version"] = serviceVersion
-	serviceInstance := "XXXAAA"
 	serviceMap["instance"] = serviceInstance
 
 	return result

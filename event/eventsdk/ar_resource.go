@@ -35,6 +35,7 @@ func (r *resource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.AttributesMap)
 }
 
+// UnmarshalJSON AttributesMap 变回 resource 。
 func (r *resource) UnmarshalJSON(b []byte) error {
 	err := json.Unmarshal(b, &r.AttributesMap)
 	return err
