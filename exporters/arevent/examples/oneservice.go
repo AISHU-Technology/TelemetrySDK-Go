@@ -21,13 +21,13 @@ func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 	return ctx, x + y
 }
 
-// add 增加了Trace埋点的计算两数之和。
+// add 增加了 Event 的计算两数之和。
 func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	myEvent := eventsdk.NewEvent("EventExporter/add")
 	myEvent.SetLevel(eventsdk.INFO)
 	myEvent.SetSubject("calculation.txt")
 	myEvent.SetData(007)
-	myEvent.Send()
+	myEvent.GetEventMap()
 
 	//业务代码
 	time.Sleep(800 * time.Millisecond)
@@ -41,7 +41,7 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 	return ctx, x * y
 }
 
-// multiply 增加了Trace埋点的计算两数之积。
+// multiply 增加了 Event 的计算两数之积。
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, span := artrace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
@@ -89,6 +89,7 @@ func StdoutExample() {
 	exporter2 := arevent.NewExporter(client2)
 	eventProvider2 := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter2), eventsdk.WithServiceInfo("YYY1", "111", ""))
 	eventsdk.SetEventProvider(eventProvider2)
+	eventsdk.SetEventProvider(eventProvider2)
 
 	ctx, num = multiply(ctx, 1, 7)
 	ctx, num = add(ctx, num, 8)
@@ -116,8 +117,10 @@ func WithAllExample() {
 	exporter := arevent.NewExporter(client)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter))
 	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
-	eventsdk.SetEventProvider(eventProvider)
-	eventsdk.SetEventProvider(eventProvider)
+	//eventsdk.SetEventProvider(eventProvider)
+	eventsdk.SetEventProvider(eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter()), eventsdk.WithServiceInfo("YYY1", "111", "")))
+	//eventsdk.SetEventProvider(eventProvider)
+
 	defer func() {
 		if err := eventProvider.Shutdown(ctx); err != nil {
 			log.Println(err)
@@ -126,6 +129,10 @@ func WithAllExample() {
 	ctx, num := multiply(ctx, 2, 3)
 	for i := 0; i < 12; i++ {
 		ctx, num = add(ctx, 2, 3)
+		if i%2 == 0 {
+			eventsdk.GetEventProvider().ForceFlash(ctx)
+			eventsdk.SetEventProvider(eventProvider)
+		}
 	}
 	ctx, num = multiply(ctx, 2, 3)
 	log.Println(result, num)

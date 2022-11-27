@@ -53,7 +53,6 @@ func (ep *eventProvider) Shutdown(ctx context.Context) error {
 			}
 		}
 	}
-
 	return returnErr
 }
 
