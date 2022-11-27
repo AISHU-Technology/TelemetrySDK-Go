@@ -70,7 +70,7 @@ func StdoutExample() {
 	ctx := context.Background()
 	client := arevent.NewStdoutClient("")
 	exporter := arevent.NewExporter(client)
-	eventProvider := eventsdk.NewEventProvider(exporter)
+	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter(), exporter))
 	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
 	eventsdk.SetEventProvider(eventProvider)
 	defer func() {
@@ -94,7 +94,7 @@ func WithAllExample() {
 		arevent.WithCompression(0), arevent.WithTimeout(10*time.Second), arevent.WithHeader(header),
 		arevent.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := arevent.NewExporter(client)
-	eventProvider := eventsdk.NewEventProvider(exporter)
+	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter))
 	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
 	eventsdk.SetEventProvider(eventProvider)
 	eventsdk.SetEventProvider(eventProvider)

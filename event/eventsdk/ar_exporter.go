@@ -10,7 +10,7 @@ import (
 // exporter 导出数据到AnyRobot Feed Ingester的 Event 数据接收器。
 type exporter struct {
 	name     string
-	stopCh   chan bool
+	stopCh   chan struct{}
 	stopOnce sync.Once
 }
 
@@ -18,7 +18,7 @@ type exporter struct {
 func GetDefaultExporter() EventExporter {
 	return &exporter{
 		name:     "DefaultExporter",
-		stopCh:   make(chan bool, 1),
+		stopCh:   make(chan struct{}),
 		stopOnce: sync.Once{},
 	}
 }
@@ -28,8 +28,9 @@ func (e *exporter) Name() string {
 }
 
 func (e *exporter) Shutdown(ctx context.Context) error {
+	// 只关闭一次通道。
 	e.stopOnce.Do(func() {
-		e.stopCh <- true
+		close(e.stopCh)
 	})
 	select {
 	case <-ctx.Done():
@@ -43,8 +44,10 @@ func (e *exporter) ExportEvents(ctx context.Context, events []Event) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
+	// 已关闭通道，不发送。
 	case <-e.stopCh:
 		return nil
+	// 正常情况，发送数据。
 	default:
 		return export(events)
 	}

@@ -6,14 +6,19 @@ import (
 	"sync"
 )
 
+var _ eventsdk.EventExporter = (*Exporter)(nil)
+
 // Exporter 导出数据到AnyRobot Feed Ingester的Trace数据接收器。
 type Exporter struct {
+	name     string
 	client   EventClient
 	stopCh   chan struct{}
 	stopOnce sync.Once
 }
 
-var _ eventsdk.EventExporter = (*Exporter)(nil)
+func (e *Exporter) Name() string {
+	return e.name
+}
 
 // ExportSpans 批量发送AnyRobotSpans到AnyRobot Feed Ingester的Trace数据接收器。
 func (e *Exporter) ExportEvents(ctx context.Context, events []eventsdk.Event) error {
