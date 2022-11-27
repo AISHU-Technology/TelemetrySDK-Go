@@ -1,6 +1,7 @@
 package eventsdk
 
 import (
+	"encoding/json"
 	"go.opentelemetry.io/otel/trace"
 	"reflect"
 	"testing"
@@ -32,6 +33,7 @@ func TestNewEvent(t *testing.T) {
 }
 
 func TestUnmarshalEvents(t *testing.T) {
+	bety, _ := json.Marshal(make([]*event, 1))
 	type args struct {
 		b []byte
 	}
@@ -41,7 +43,17 @@ func TestUnmarshalEvents(t *testing.T) {
 		want    []Event
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			args{bety},
+			make([]Event, 1),
+			false,
+		}, {
+			"",
+			args{[]byte{}},
+			make([]Event, 0),
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -50,7 +62,7 @@ func TestUnmarshalEvents(t *testing.T) {
 				t.Errorf("UnmarshalEvents() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(len(got), len(tt.want)) {
 				t.Errorf("UnmarshalEvents() got = %v, want %v", got, tt.want)
 			}
 		})
@@ -73,7 +85,20 @@ func TestEventGetData(t *testing.T) {
 		fields fields
 		want   interface{}
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -110,7 +135,20 @@ func TestEventGetEventID(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "12345",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			"12345",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -132,6 +170,16 @@ func TestEventGetEventID(t *testing.T) {
 }
 
 func TestEventGetEventMap(t *testing.T) {
+	myEvent := &event{
+		EventID:   "",
+		EventType: "",
+		Time:      time.Time{},
+		Level:     "",
+		Resource:  nil,
+		Subject:   "",
+		Link:      link{},
+		Data:      nil,
+	}
 	type fields struct {
 		EventID   string
 		EventType string
@@ -147,7 +195,20 @@ func TestEventGetEventMap(t *testing.T) {
 		fields fields
 		want   map[string]interface{}
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			myEvent.GetEventMap(),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -184,7 +245,20 @@ func TestEventGetEventType(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "service.call",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			"service.call",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -221,7 +295,20 @@ func TestEventGetLevel(t *testing.T) {
 		fields fields
 		want   Level
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "ERROR",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			level("ERROR"),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -258,7 +345,23 @@ func TestEventGetLink(t *testing.T) {
 		fields fields
 		want   Link
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			link{
+				TraceID: "",
+				SpanID:  "",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -295,7 +398,20 @@ func TestEventGetResource(t *testing.T) {
 		fields fields
 		want   Resource
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  newResource(),
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			newResource(),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -309,7 +425,7 @@ func TestEventGetResource(t *testing.T) {
 				Link:      tt.fields.Link,
 				Data:      tt.fields.Data,
 			}
-			if got := e.GetResource(); !reflect.DeepEqual(got, tt.want) {
+			if got := e.GetResource(); !reflect.DeepEqual(got.GetSchemaURL(), tt.want.GetSchemaURL()) {
 				t.Errorf("GetResource() = %v, want %v", got, tt.want)
 			}
 		})
@@ -332,7 +448,20 @@ func TestEventGetSubject(t *testing.T) {
 		fields fields
 		want   string
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "operating.obj",
+				Link:      link{},
+				Data:      nil,
+			},
+			"operating.obj",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -369,7 +498,20 @@ func TestEventGetTime(t *testing.T) {
 		fields fields
 		want   time.Time
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			time.Time{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -405,7 +547,19 @@ func TestEventSend(t *testing.T) {
 		name   string
 		fields fields
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -443,7 +597,20 @@ func TestEventSetAttributes(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  newResource(),
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			args{[]Attribute{NewAttribute("key", BoolValue(true))}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -481,7 +648,20 @@ func TestEventSetData(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			args{struct{}{}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -519,7 +699,20 @@ func TestEventSetEventType(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			args{"type"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -557,7 +750,20 @@ func TestEventSetLevel(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			args{ERROR},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -595,7 +801,20 @@ func TestEventSetLink(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			args{trace.SpanContext{}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -633,7 +852,20 @@ func TestEventSetSubject(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			args{"operating.obj"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -671,7 +903,20 @@ func TestEventSetTime(t *testing.T) {
 		fields fields
 		args   args
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			args{time.Time{}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -705,7 +950,19 @@ func TestEventPrivate(t *testing.T) {
 		name   string
 		fields fields
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -729,11 +986,14 @@ func TestGenerateID(t *testing.T) {
 		name string
 		want string
 	}{
-		// TODO: Add test cases.
+		{
+			"",
+			generateID(),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := generateID(); got != tt.want {
+			if got := generateID(); len(got) != len(tt.want) {
 				t.Errorf("generateID() = %v, want %v", got, tt.want)
 			}
 		})

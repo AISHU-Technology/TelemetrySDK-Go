@@ -119,7 +119,7 @@ func (e *event) GetData() interface{} {
 }
 
 func (e *event) GetEventMap() map[string]interface{} {
-	result := make(map[string]interface{})
+	result := make(map[string]interface{}, 8)
 	result["EventID"] = e.EventID
 	result["EventType"] = e.EventType
 	result["Time"] = e.Time
