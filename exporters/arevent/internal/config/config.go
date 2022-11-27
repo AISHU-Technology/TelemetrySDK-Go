@@ -20,7 +20,7 @@ var DefaultConfig = Config{
 var DefaultHTTPConfig = HTTPConfig{
 	Insecure:    true,
 	Endpoint:    "localhost:5678",
-	Path:        "/api/feed_ingester/v1/jobs/traceTest/events",
+	Path:        "/api/feed_ingester/v1/jobs/eventsTest/events",
 	Compression: 1,
 	Timeout:     10 * time.Second,
 	Headers:     nil,

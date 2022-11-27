@@ -2,14 +2,14 @@ package config
 
 import (
 	"context"
-	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/customerrors"
 	"errors"
 	"github.com/cenkalti/backoff/v4"
 	"log"
 	"time"
 )
 
-// RetryConfig 当Trace数据发送失败时，根据重发机制来重新发送，保障数据不漏。
+// RetryConfig 当Event数据发送失败时，根据重发机制来重新发送，保障数据不漏。
 type RetryConfig struct {
 	// Enabled 是否启用重发机制。
 	Enabled bool
@@ -31,7 +31,7 @@ type RetryableError struct {
 
 // Error 实现error接口。
 func (e RetryableError) Error() string {
-	return customErrors.EventExporter_RetryFailure
+	return customerrors.EventExporter_RetryFailure
 }
 
 // evaluate 通过 RetryableError 类型来判断是否可重发。
@@ -75,8 +75,8 @@ func (r RetryConfig) RetryFunc() RetryFunc {
 
 			backOff := offset.NextBackOff()
 			if backOff == backoff.Stop {
-				log.Println(customErrors.EventExporter_ExceedRetryElapsedTime)
-				return errors.New(customErrors.EventExporter_ExceedRetryElapsedTime)
+				log.Println(customerrors.EventExporter_ExceedRetryElapsedTime)
+				return errors.New(customerrors.EventExporter_ExceedRetryElapsedTime)
 			}
 
 			var delay time.Duration
@@ -85,8 +85,8 @@ func (r RetryConfig) RetryFunc() RetryFunc {
 			} else {
 				elapsed := offset.GetElapsedTime()
 				if offset.MaxElapsedTime != 0 && elapsed+throttle > offset.MaxElapsedTime {
-					log.Println(customErrors.EventExporter_ExceedRetryElapsedTime)
-					return errors.New(customErrors.EventExporter_ExceedRetryElapsedTime)
+					log.Println(customerrors.EventExporter_ExceedRetryElapsedTime)
+					return errors.New(customerrors.EventExporter_ExceedRetryElapsedTime)
 				}
 				delay = throttle
 			}

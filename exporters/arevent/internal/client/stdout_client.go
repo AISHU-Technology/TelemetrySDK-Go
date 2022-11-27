@@ -14,6 +14,10 @@ type stdoutClient struct {
 	stopCh   chan struct{}
 }
 
+func (d *stdoutClient) Path() string {
+	return d.filepath
+}
+
 // Stop 关闭发送器。
 func (d *stdoutClient) Stop(ctx context.Context) error {
 	close(d.stopCh)
@@ -21,11 +25,11 @@ func (d *stdoutClient) Stop(ctx context.Context) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
+		return nil
 	}
-	return nil
 }
 
-// UploadTraces 批量发送Trace数据。
+// UploadEvents 批量发送 Event 数据。
 func (d *stdoutClient) UploadEvents(ctx context.Context, events []eventsdk.Event) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
@@ -71,31 +75,4 @@ func NewStdoutClient(stdoutPath string) EventClient {
 		return &stdoutClient{filepath: "./AnyRobotEvent.txt", stopCh: make(chan struct{})}
 	}
 	return &stdoutClient{filepath: stdoutPath, stopCh: make(chan struct{})}
-}
-
-// UploadTraces 批量发送Trace数据。
-func (d *stdoutClient) UploadEvent(ctx context.Context, event eventsdk.Event) error {
-	//退出逻辑：
-	ctx, cancel := d.contextWithStop(ctx)
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-	defer cancel()
-
-	//控制台输出
-	file1 := os.Stdout
-	encoder1 := json.NewEncoder(file1)
-	encoder1.SetEscapeHTML(false)
-	encoder1.SetIndent("", "\t")
-	_ = encoder1.Encode(event)
-
-	//写入本地文件，每次覆盖
-	file2, err := os.Create(d.filepath)
-	encoder2 := json.NewEncoder(file2)
-	encoder2.SetEscapeHTML(false)
-	encoder2.SetIndent("", "\t")
-	_ = encoder2.Encode(event)
-	return err
 }

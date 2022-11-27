@@ -1,6 +1,6 @@
 package customerrors
 
-// errors 定义错误码和错误描述。
+// customerrors 定义错误码和错误描述。
 const (
 	ModuleName = "TelemetrySDK-EventProvider(Go).Error: "
 

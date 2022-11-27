@@ -6,7 +6,7 @@ import (
 	"context"
 	"crypto/tls"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
-	customErrors "devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/errors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/customerrors"
 	"encoding/json"
 	"errors"
 	"io"
@@ -29,6 +29,10 @@ type HttpClient struct {
 	stopCh    chan struct{}
 }
 
+func (d *HttpClient) Path() string {
+	return d.cfg.Path
+}
+
 // Stop 关闭发送器。
 func (d *HttpClient) Stop(ctx context.Context) error {
 	close(d.stopCh)
@@ -40,7 +44,7 @@ func (d *HttpClient) Stop(ctx context.Context) error {
 	return nil
 }
 
-// UploadTraces 批量发送Trace数据。
+// UploadEvents 批量发送 Events 数据。
 func (d *HttpClient) UploadEvents(ctx context.Context, events []eventsdk.Event) error {
 	//退出逻辑：
 	ctx, cancel := d.contextWithStop(ctx)
@@ -85,13 +89,13 @@ func (d *HttpClient) UploadEvents(ctx context.Context, events []eventsdk.Event) 
 		case http.StatusNoContent, http.StatusOK:
 		// 格式校验不通过，不重发。
 		case http.StatusBadRequest:
-			rErr = errors.New(customErrors.EventExporter_InvalidFormat)
+			rErr = errors.New(customerrors.EventExporter_InvalidFormat)
 		// 接收器地址不正确，不重发。
 		case http.StatusNotFound:
-			rErr = errors.New(customErrors.EventExporter_JobIdNotFound)
+			rErr = errors.New(customerrors.EventExporter_JobIdNotFound)
 		// Trace太长超过5MB，不重发。
 		case http.StatusRequestEntityTooLarge:
-			rErr = errors.New(customErrors.EventExporter_PayloadTooLarge)
+			rErr = errors.New(customerrors.EventExporter_PayloadTooLarge)
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
@@ -100,7 +104,7 @@ func (d *HttpClient) UploadEvents(ctx context.Context, events []eventsdk.Event) 
 				return err
 			}
 		default:
-			rErr = errors.New(customErrors.EventExporter_Unsent)
+			rErr = errors.New(customerrors.EventExporter_Unsent)
 		}
 		if err := resp.Body.Close(); err != nil {
 			return err
@@ -255,74 +259,4 @@ func NewHTTPClient(opts ...config.Option) EventClient {
 		stopCh:    make(chan struct{}),
 		client:    client,
 	}
-}
-
-// UploadTraces 批量发送Trace数据。
-func (d *HttpClient) UploadEvent(ctx context.Context, event eventsdk.Event) error {
-	//退出逻辑：
-	ctx, cancel := d.contextWithStop(ctx)
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	default:
-	}
-	defer cancel()
-
-	//编码Trace数据。
-	file := bytes.NewBuffer([]byte{})
-	encoder := json.NewEncoder(file)
-	encoder.SetEscapeHTML(false)
-	encoder.SetIndent("", "\t")
-	_ = encoder.Encode(event)
-	request, err := d.newRequest(file.Bytes())
-	if err != nil {
-		return err
-	}
-
-	//发送HTTP请求。
-	requestFunc := d.retryFunc(ctx, func(ctx context.Context) error {
-		// 外部驱动终止时，此处退出发送数据。
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-
-		request.reset(ctx)
-		//真正发送http.Request的地方
-		resp, err := send(d, request.Request)
-		//resp, err := d.client.Do(request.Request)
-		if err != nil {
-			return err
-		}
-
-		var rErr error
-		switch resp.StatusCode {
-		// 发送成功，不重发。
-		case http.StatusNoContent, http.StatusOK:
-		// 格式校验不通过，不重发。
-		case http.StatusBadRequest:
-			rErr = errors.New(customErrors.EventExporter_InvalidFormat)
-		// 接收器地址不正确，不重发。
-		case http.StatusNotFound:
-			rErr = errors.New(customErrors.EventExporter_JobIdNotFound)
-		// Trace太长超过5MB，不重发。
-		case http.StatusRequestEntityTooLarge:
-			rErr = errors.New(customErrors.EventExporter_PayloadTooLarge)
-		// 网络错误，使用~可重发错误~来管理重发机制。
-		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
-			rErr = newResponseError(resp.Header)
-			if _, err := io.Copy(ioutil.Discard, resp.Body); err != nil {
-				_ = resp.Body.Close()
-				return err
-			}
-		default:
-			rErr = errors.New(customErrors.EventExporter_Unsent)
-		}
-		if err := resp.Body.Close(); err != nil {
-			return err
-		}
-		return rErr
-	})
-	return requestFunc
 }
