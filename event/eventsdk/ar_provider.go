@@ -22,10 +22,7 @@ type eventProvider struct {
 // NewEventProvider 根据配置项，新建 EventProvider 。
 func NewEventProvider(opts ...EventProviderOption) EventProvider {
 	// 获取默认配置，更新传入配置。
-	cfg := defaultProviderConfig
-	for _, opt := range opts {
-		cfg = opt.apply(cfg)
-	}
+	cfg := newEventProviderConfig(opts...)
 	// 根据配置创建 EventExporter 。
 	return &eventProvider{
 		RWLock:    sync.RWMutex{},

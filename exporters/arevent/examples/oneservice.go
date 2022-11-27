@@ -73,16 +73,36 @@ func StdoutExample() {
 	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter(), exporter))
 	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
 	eventsdk.SetEventProvider(eventProvider)
+
+	ctx, num := multiply(ctx, 1, 7)
+	ctx, num = add(ctx, num, 8)
+	eventsdk.GetEventProvider().ForceFlash(ctx)
+	eventsdk.GetEventProvider().Shutdown(ctx)
+
+	eventsdk.SetEventProvider(eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter()), eventsdk.WithServiceInfo("xxxxxxxYYY1", "111", "")))
+	eventsdk.GetEventProvider().Shutdown(ctx)
+	ctx, num = multiply(ctx, 1, 7)
+	ctx, num = add(ctx, num, 8)
+	eventsdk.GetEventProvider().ForceFlash(ctx)
+
+	client2 := arevent.NewStdoutClient("Event2.txt")
+	exporter2 := arevent.NewExporter(client2)
+	eventProvider2 := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter2), eventsdk.WithServiceInfo("YYY1", "111", ""))
+	eventsdk.SetEventProvider(eventProvider2)
+
+	ctx, num = multiply(ctx, 1, 7)
+	ctx, num = add(ctx, num, 8)
+	eventsdk.GetEventProvider().ForceFlash(ctx)
 	defer func() {
 		if err := eventProvider.Shutdown(ctx); err != nil {
 			log.Println(err)
 		}
 	}()
 
-	ctx, num := multiply(ctx, 2, 3)
 	ctx, num = multiply(ctx, num, 7)
 	ctx, num = add(ctx, num, 8)
 	log.Println(result, num)
+	eventsdk.GetEventProvider().ForceFlash(ctx)
 }
 
 // WithAllExample 修改client所有入参。
