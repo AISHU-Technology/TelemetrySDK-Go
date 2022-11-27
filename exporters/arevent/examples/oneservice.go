@@ -30,7 +30,7 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	myEvent.Send()
 
 	//业务代码
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(800 * time.Millisecond)
 	return ctx, x + y
 }
 
@@ -52,7 +52,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	myEvent.Send()
 
 	//业务代码
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(800 * time.Millisecond)
 	return ctx, x * y
 }
 
@@ -90,14 +90,18 @@ func WithAllExample() {
 	ctx := context.Background()
 	header := make(map[string]string)
 	header["self-defined"] = "some_header"
-	client := arevent.NewHTTPClient(arevent.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
-		arevent.WithCompression(1), arevent.WithTimeout(10*time.Second), arevent.WithHeader(header),
+	client := arevent.NewHTTPClient(arevent.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
+		arevent.WithCompression(0), arevent.WithTimeout(10*time.Second), arevent.WithHeader(header),
 		arevent.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := arevent.NewExporter(client)
 	eventProvider := eventsdk.NewEventProvider(exporter)
 	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
 	eventsdk.SetEventProvider(eventProvider)
-
-	ctx, num := multiply(ctx, 7, 9)
+	ctx, num := multiply(ctx, 2, 3)
+	for i := 0; i < 12; i++ {
+		ctx, num = add(ctx, 2, 3)
+	}
+	ctx, num = multiply(ctx, 2, 3)
 	log.Println(result, num)
+	//eventProvider.ForceFlash()
 }

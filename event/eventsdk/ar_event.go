@@ -133,7 +133,7 @@ func (e *event) GetEventMap() map[string]interface{} {
 }
 
 func (e *event) Send() {
-	GetEventProvider().Load(e)
+	GetEventProvider().LoadEvent(e)
 }
 
 func (e *event) private() {}
