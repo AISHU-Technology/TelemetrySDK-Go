@@ -90,11 +90,13 @@ func WithAllExample() {
 	ctx := context.Background()
 	header := make(map[string]string)
 	header["self-defined"] = "some_header"
-	client := arevent.NewHTTPClient(arevent.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
+	client := arevent.NewHTTPClient(arevent.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
 		arevent.WithCompression(1), arevent.WithTimeout(10*time.Second), arevent.WithHeader(header),
 		arevent.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := arevent.NewExporter(client)
-	_ = exporter
+	eventProvider := eventsdk.NewEventProvider(exporter)
+	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
+	eventsdk.SetEventProvider(eventProvider)
 
 	ctx, num := multiply(ctx, 7, 9)
 	log.Println(result, num)

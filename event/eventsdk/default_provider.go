@@ -4,7 +4,7 @@ import (
 	"context"
 )
 
-var GlobalEventProvider EventProvider
+var GlobalEventProvider = NewEventProvider(GetDefaultExporter())
 
 type eventProvider struct {
 	Exporter EventExporter
