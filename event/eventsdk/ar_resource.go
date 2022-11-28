@@ -29,7 +29,7 @@ func (r *resource) GetAttributes() map[string]interface{} {
 }
 
 func (r *resource) Valid() bool {
-	return r.GetAttributes() != nil && len(r.GetAttributes()) > 0
+	return r != nil && r.GetAttributes() != nil && len(r.GetAttributes()) > 0
 }
 
 func (r *resource) private() {}
