@@ -12,6 +12,19 @@ func (l level) Self() string {
 	return string(l)
 }
 
+func (l level) Valid() bool {
+	switch l.Self() {
+	case "ERROR":
+		return true
+	case "WARN":
+		return true
+	case "INFO":
+		return true
+	default:
+		return false
+	}
+}
+
 func (l level) private() {}
 
 const (

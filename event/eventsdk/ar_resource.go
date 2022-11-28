@@ -28,6 +28,10 @@ func (r *resource) GetAttributes() map[string]interface{} {
 	return r.AttributesMap
 }
 
+func (r *resource) Valid() bool {
+	return r.GetAttributes() != nil && len(r.GetAttributes()) > 0
+}
+
 func (r *resource) private() {}
 
 // MarshalJSON 只输出 AttributesMap 。

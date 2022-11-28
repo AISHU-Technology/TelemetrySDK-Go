@@ -140,15 +140,27 @@ func (e *event) private() {}
 
 // UnmarshalEvents 将JSON解析成[]Event。
 func UnmarshalEvents(b []byte) ([]Event, error) {
+	// 使用实际类型 []*event 来接收数据。
 	events := make([]*event, 0)
 	err := json.Unmarshal(b, &events)
 
+	// 返回接口类型 Event 。
 	result := make([]Event, 0, len(events))
 	for _, e := range events {
-		result = append(result, e)
+		// 校验格式
+		if e != nil && e.Valid() {
+			result = append(result, e)
+		}
 	}
+	// 如果返回空切片说明传入的JSON格式错误。
 	if len(result) == 0 {
 		err = errors.New(customerrors.Event_InvalidJSON)
 	}
 	return result, err
+}
+
+var date = time.Date(2000, time.July, 2, 12, 0, 0, 0, time.Local)
+
+func (e *event) Valid() bool {
+	return len(e.GetEventID()) == 26 && e.GetEventType() != "" && e.GetTime().After(date) && e.GetLevel().Valid() && e.GetResource().Valid() && e.GetLink().Valid()
 }

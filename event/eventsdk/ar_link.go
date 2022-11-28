@@ -22,4 +22,8 @@ func (l link) GetSpanID() string {
 	return l.SpanID
 }
 
+func (l link) Valid() bool {
+	return len(l.GetTraceID()) == 32 && len(l.GetSpanID()) == 16
+}
+
 func (l link) private() {}

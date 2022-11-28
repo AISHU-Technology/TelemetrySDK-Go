@@ -6,7 +6,8 @@ type Resource interface {
 	GetSchemaURL() string
 	// GetAttributes 返回 Attributes 。
 	GetAttributes() map[string]interface{}
-
+	// Valid 校验是否合法。
+	Valid() bool
 	// private 禁止自己实现接口
 	private()
 }

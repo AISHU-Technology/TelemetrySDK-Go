@@ -118,3 +118,42 @@ func TestNewLink(t *testing.T) {
 		})
 	}
 }
+
+func TestLinkValid(t *testing.T) {
+	type fields struct {
+		TraceID string
+		SpanID  string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			"",
+			fields{
+				TraceID: "5bd0ecc145cc8639007721df27ecda50",
+				SpanID:  "4cbf3e2c1e8517e7",
+			},
+			true,
+		}, {
+			"",
+			fields{
+				TraceID: "",
+				SpanID:  "",
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := link{
+				TraceID: tt.fields.TraceID,
+				SpanID:  tt.fields.SpanID,
+			}
+			if got := l.Valid(); got != tt.want {
+				t.Errorf("Valid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

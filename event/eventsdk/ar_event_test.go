@@ -33,7 +33,10 @@ func TestNewEvent(t *testing.T) {
 }
 
 func TestUnmarshalEvents(t *testing.T) {
-	bety, _ := json.Marshal(make([]*event, 1))
+	myEvent := NewEvent("type")
+	myEvents := []Event{myEvent}
+	array, _ := json.Marshal(myEvents)
+	bety, _ := json.Marshal(make([]Event, 1))
 	type args struct {
 		b []byte
 	}
@@ -45,9 +48,14 @@ func TestUnmarshalEvents(t *testing.T) {
 	}{
 		{
 			"",
-			args{bety},
+			args{array},
 			make([]Event, 1),
 			false,
+		}, {
+			"",
+			args{bety},
+			make([]Event, 0),
+			true,
 		}, {
 			"",
 			args{[]byte{}},
@@ -63,7 +71,7 @@ func TestUnmarshalEvents(t *testing.T) {
 				return
 			}
 			if !reflect.DeepEqual(len(got), len(tt.want)) {
-				t.Errorf("UnmarshalEvents() got = %v, want %v", got, tt.want)
+				t.Errorf("UnmarshalEvents() got = %v, want %v", len(got), len(tt.want))
 			}
 		})
 	}
@@ -995,6 +1003,72 @@ func TestGenerateID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := generateID(); len(got) != len(tt.want) {
 				t.Errorf("generateID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEventValid(t *testing.T) {
+	type fields struct {
+		EventID   string
+		EventType string
+		Time      time.Time
+		Level     level
+		Resource  *resource
+		Subject   string
+		Link      link
+		Data      interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			"",
+			fields{
+				EventID:   "01GJWE6272JXT700WY7EG8V52S",
+				EventType: "EventExporter/multiply",
+				Time:      time.Now(),
+				Level:     "INFO",
+				Resource:  &resource{"", defaultAttributes()},
+				Subject:   "",
+				Link: link{
+					"5bd0ecc145cc8639007721df27ecda50",
+					"4cbf3e2c1e8517e7",
+				},
+				Data: nil,
+			},
+			true,
+		}, {
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      link{},
+				Data:      nil,
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &event{
+				EventID:   tt.fields.EventID,
+				EventType: tt.fields.EventType,
+				Time:      tt.fields.Time,
+				Level:     tt.fields.Level,
+				Resource:  tt.fields.Resource,
+				Subject:   tt.fields.Subject,
+				Link:      tt.fields.Link,
+				Data:      tt.fields.Data,
+			}
+			if got := e.Valid(); got != tt.want {
+				t.Errorf("Valid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

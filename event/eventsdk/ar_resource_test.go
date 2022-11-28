@@ -202,3 +202,42 @@ func TestResourcePrivate(t *testing.T) {
 		})
 	}
 }
+
+func TestResourceValid(t *testing.T) {
+	type fields struct {
+		SchemaURL     string
+		AttributesMap map[string]interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			"",
+			fields{
+				SchemaURL:     "",
+				AttributesMap: defaultAttributes(),
+			},
+			true,
+		}, {
+			"",
+			fields{
+				SchemaURL:     "",
+				AttributesMap: nil,
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &resource{
+				SchemaURL:     tt.fields.SchemaURL,
+				AttributesMap: tt.fields.AttributesMap,
+			}
+			if got := r.Valid(); got != tt.want {
+				t.Errorf("Valid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -4,7 +4,8 @@ package eventsdk
 type Level interface {
 	// Self 返回事件级别。
 	Self() string
-
+	// Valid 校验是否合法。
+	Valid() bool
 	// private 禁止自己实现接口
 	private()
 	// ERROR 事件级别：错误。

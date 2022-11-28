@@ -71,3 +71,28 @@ func TestNewLevel(t *testing.T) {
 		})
 	}
 }
+
+func TestLevelValid(t *testing.T) {
+	tests := []struct {
+		name string
+		l    level
+		want bool
+	}{
+		{
+			"",
+			level("WARN"),
+			true,
+		}, {
+			"",
+			level(""),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.l.Valid(); got != tt.want {
+				t.Errorf("Valid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -6,7 +6,8 @@ type Link interface {
 	GetTraceID() string
 	// GetSpanID 返回 SpanID 。
 	GetSpanID() string
-
+	// Valid 校验是否合法。
+	Valid() bool
 	// private 禁止自己实现接口
 	private()
 }
