@@ -68,42 +68,20 @@ func Example() {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	client := arevent.NewStdoutClient("")
-	exporter := arevent.NewExporter(client)
+	client := ar_event.NewStdoutClient("")
+	exporter := ar_event.NewExporter(client)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter(), exporter))
-	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
 	eventsdk.SetEventProvider(eventProvider)
 
 	ctx, num := multiply(ctx, 1, 7)
 	ctx, num = add(ctx, num, 8)
-	eventsdk.GetEventProvider().ForceFlash(ctx)
-	eventsdk.GetEventProvider().Shutdown(ctx)
+	_ = eventsdk.GetEventProvider().ForceFlash(ctx)
 
-	eventsdk.SetEventProvider(eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter()), eventsdk.WithServiceInfo("xxxxxxxYYY1", "111", "")))
-	eventsdk.GetEventProvider().Shutdown(ctx)
-	ctx, num = multiply(ctx, 1, 7)
-	ctx, num = add(ctx, num, 8)
-	eventsdk.GetEventProvider().ForceFlash(ctx)
-
-	client2 := arevent.NewStdoutClient("Event2.txt")
-	exporter2 := arevent.NewExporter(client2)
-	eventProvider2 := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter2), eventsdk.WithServiceInfo("YYY1", "111", ""))
-	eventsdk.SetEventProvider(eventProvider2)
-	eventsdk.SetEventProvider(eventProvider2)
-
-	ctx, num = multiply(ctx, 1, 7)
-	ctx, num = add(ctx, num, 8)
-	eventsdk.GetEventProvider().ForceFlash(ctx)
 	defer func() {
 		if err := eventProvider.Shutdown(ctx); err != nil {
 			log.Println(err)
 		}
 	}()
-
-	ctx, num = multiply(ctx, num, 7)
-	ctx, num = add(ctx, num, 8)
-	log.Println(result, num)
-	eventsdk.GetEventProvider().ForceFlash(ctx)
 }
 
 // WithAllExample 修改client所有入参。
@@ -111,10 +89,10 @@ func WithAllExample() {
 	ctx := context.Background()
 	header := make(map[string]string)
 	header["self-defined"] = "some_header"
-	client := arevent.NewHTTPClient(arevent.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
-		arevent.WithCompression(0), arevent.WithTimeout(10*time.Second), arevent.WithHeader(header),
-		arevent.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
-	exporter := arevent.NewExporter(client)
+	client := ar_event.NewHTTPClient(ar_event.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
+		ar_event.WithCompression(0), ar_event.WithTimeout(10*time.Second), ar_event.WithHeader(header),
+		ar_event.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
+	exporter := ar_event.NewExporter(client)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter))
 	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
 	//eventsdk.SetEventProvider(eventProvider)
@@ -130,11 +108,11 @@ func WithAllExample() {
 	for i := 0; i < 12; i++ {
 		ctx, num = add(ctx, 2, 3)
 		if i%2 == 0 {
-			eventsdk.GetEventProvider().ForceFlash(ctx)
+			_ = eventsdk.GetEventProvider().ForceFlash(ctx)
 			eventsdk.SetEventProvider(eventProvider)
 		}
 	}
 	ctx, num = multiply(ctx, 2, 3)
 	log.Println(result, num)
-	//eventProvider.ForceFlash()
+	//eventProvider.ForceFlush()
 }

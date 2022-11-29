@@ -1,6 +1,6 @@
 package errors
 
-// customerrors 定义错误码和错误描述。
+// custom_errors 定义错误码和错误描述。
 const (
 	ModuleName = "TelemetrySDK-Go-TraceExporter.Error: "
 

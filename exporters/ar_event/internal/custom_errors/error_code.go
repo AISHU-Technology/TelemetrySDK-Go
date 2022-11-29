@@ -1,6 +1,6 @@
-package customerrors
+package custom_errors
 
-// customerrors 定义错误码和错误描述。
+// custom_errors 定义错误码和错误描述。
 const (
 	ModuleName                           = "TelemetrySDK-EventExporter(Go).Error: "
 	EventExporter_JobIdNotFound          = ModuleName + "接收器上报地址不正确"

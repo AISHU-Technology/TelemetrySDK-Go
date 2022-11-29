@@ -6,7 +6,7 @@ import (
 	"context"
 	"crypto/tls"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/customerrors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/custom_errors"
 	"encoding/json"
 	"errors"
 	"io"
@@ -89,13 +89,13 @@ func (d *HttpClient) UploadEvents(ctx context.Context, events []eventsdk.Event) 
 		case http.StatusNoContent, http.StatusOK:
 		// 格式校验不通过，不重发。
 		case http.StatusBadRequest:
-			rErr = errors.New(customerrors.EventExporter_InvalidFormat)
+			rErr = errors.New(custom_errors.EventExporter_InvalidFormat)
 		// 接收器地址不正确，不重发。
 		case http.StatusNotFound:
-			rErr = errors.New(customerrors.EventExporter_JobIdNotFound)
+			rErr = errors.New(custom_errors.EventExporter_JobIdNotFound)
 		// Trace太长超过5MB，不重发。
 		case http.StatusRequestEntityTooLarge:
-			rErr = errors.New(customerrors.EventExporter_PayloadTooLarge)
+			rErr = errors.New(custom_errors.EventExporter_PayloadTooLarge)
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
@@ -104,7 +104,7 @@ func (d *HttpClient) UploadEvents(ctx context.Context, events []eventsdk.Event) 
 				return err
 			}
 		default:
-			rErr = errors.New(customerrors.EventExporter_Unsent)
+			rErr = errors.New(custom_errors.EventExporter_Unsent)
 		}
 		if err := resp.Body.Close(); err != nil {
 			return err

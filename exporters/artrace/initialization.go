@@ -35,7 +35,7 @@ var (
 // 当前版本不支持修改Instrumentation。
 //func SetInstrumentation(InstrumentationName string, InstrumentationVersion string, InstrumentationURL string) error {
 //	if _, err := url.Parse(InstrumentationURL); err != nil {
-//		return customerrors.New(customErrors.AnyRobotTraceExporter_InvalidURL)
+//		return custom_errors.New(customErrors.AnyRobotTraceExporter_InvalidURL)
 //	}
 //	instrumentationName = InstrumentationName
 //	instrumentationVersion = InstrumentationVersion

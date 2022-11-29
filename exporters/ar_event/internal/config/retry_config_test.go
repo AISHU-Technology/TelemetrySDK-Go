@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/customerrors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/arevent/internal/custom_errors"
 	"errors"
 	"fmt"
 	"github.com/agiledragon/gomonkey/v2"
@@ -37,7 +37,7 @@ func result(ctx context.Context) error {
 	case 413:
 		return errors.New("413")
 	case 500:
-		return errors.New(customerrors.EventExporter_ExceedRetryElapsedTime)
+		return errors.New(custom_errors.EventExporter_ExceedRetryElapsedTime)
 	case 503:
 		return RetryableError{}
 	default:

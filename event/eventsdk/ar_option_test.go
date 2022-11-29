@@ -8,7 +8,7 @@ import (
 
 var config = &eventProviderConfig{
 	Exporters:     make(map[string]EventExporter),
-	FlashInternal: 5 * time.Second,
+	FlushInternal: 5 * time.Second,
 	MaxEvent:      9,
 }
 
@@ -36,9 +36,9 @@ func TestWithExporters(t *testing.T) {
 	}
 }
 
-func TestWithFlashInternal(t *testing.T) {
+func TestWithFlushInternal(t *testing.T) {
 	type args struct {
-		flashInternal time.Duration
+		flushInternal time.Duration
 	}
 	tests := []struct {
 		name string
@@ -48,13 +48,13 @@ func TestWithFlashInternal(t *testing.T) {
 		{
 			"",
 			args{time.Minute},
-			WithFlashInternal(time.Minute),
+			WithFlushInternal(time.Minute),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithFlashInternal(tt.args.flashInternal); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
-				t.Errorf("WithFlashInternal() = %v, want %v", got, tt.want)
+			if got := WithFlushInternal(tt.args.flushInternal); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
+				t.Errorf("WithFlushInternal() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -172,7 +172,7 @@ func TestNewEventProviderConfig(t *testing.T) {
 			args{nil},
 			&eventProviderConfig{
 				Exporters:     make(map[string]EventExporter),
-				FlashInternal: 5 * time.Second,
+				FlushInternal: 5 * time.Second,
 				MaxEvent:      9,
 			},
 		}, {
@@ -180,7 +180,7 @@ func TestNewEventProviderConfig(t *testing.T) {
 			args{[]EventProviderOption{WithMaxEvent(19)}},
 			WithMaxEvent(19).apply(&eventProviderConfig{
 				Exporters:     make(map[string]EventExporter),
-				FlashInternal: 5 * time.Second,
+				FlushInternal: 5 * time.Second,
 				MaxEvent:      9,
 			}),
 		},

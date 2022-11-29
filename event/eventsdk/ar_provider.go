@@ -27,7 +27,7 @@ func NewEventProvider(opts ...EventProviderOption) EventProvider {
 	return &eventProvider{
 		RWLock:    sync.RWMutex{},
 		Exporters: cfg.Exporters,
-		Ticker:    time.NewTicker(cfg.FlashInternal),
+		Ticker:    time.NewTicker(cfg.FlushInternal),
 		Limit:     cfg.MaxEvent,
 		Events:    make([]Event, 0, cfg.MaxEvent+1),
 		Sent:      make(chan bool, 3),
@@ -37,26 +37,30 @@ func NewEventProvider(opts ...EventProviderOption) EventProvider {
 }
 
 func (ep *eventProvider) Shutdown(ctx context.Context) error {
-	ep.stopOnce.Do(func() {
-		close(ep.stopCh)
-	})
 	// 只返回其中一个错误
 	var returnErr error = nil
-	for _, e := range ep.Exporters {
-		err := e.Shutdown(ctx)
-		if err != nil {
-			// 如果多余一个错误则记日志
-			if returnErr == nil {
-				returnErr = err
-			} else {
-				log.Println(err)
+	ep.stopOnce.Do(func() {
+		// 关闭信号
+		close(ep.stopCh)
+		// 关闭之前发送剩余数据
+		returnErr = ep.ForceFlush(ctx)
+		// 发送剩余的数据马上释放exporters
+		for _, e := range ep.Exporters {
+			err := e.Shutdown(ctx)
+			if err != nil {
+				// 如果多余一个错误则记日志
+				if returnErr == nil {
+					returnErr = err
+				} else {
+					log.Println(err)
+				}
 			}
 		}
-	}
+	})
 	return returnErr
 }
 
-func (ep *eventProvider) ForceFlash(ctx context.Context) error {
+func (ep *eventProvider) ForceFlush(ctx context.Context) error {
 	// 调用发送方法，可发送标记位重置。
 	ep.Sent = make(chan bool, 3)
 	// 不存在发送目标，直接丢弃数据。
@@ -116,21 +120,20 @@ func (ep *eventProvider) loadEvent(event Event) {
 
 // sendEvents 无限等待定时发送或超过上限发送。
 func (ep *eventProvider) sendEvents() {
-EXIT:
 	for {
 		select {
 		// 关闭之后退出循环。
 		case <-ep.stopCh:
-			break EXIT
+			return
 		// 超过上限发送。
 		case <-ep.Sent:
-			err := ep.ForceFlash(context.Background())
+			err := ep.ForceFlush(context.Background())
 			if err != nil {
 				log.Println(err)
 			}
 		// 定时发送
 		case <-ep.Ticker.C:
-			err := ep.ForceFlash(context.Background())
+			err := ep.ForceFlush(context.Background())
 			if err != nil {
 				log.Println(err)
 			}

@@ -86,7 +86,7 @@ func TestSetEventProvider(t *testing.T) {
 	}
 }
 
-func TestEventProviderForceFlash(t *testing.T) {
+func TestEventProviderForceFlush(t *testing.T) {
 	exporterMap := make(map[string]EventExporter)
 	exporterMap["DefaultExporter"] = GetDefaultExporter()
 	type fields struct {
@@ -164,8 +164,8 @@ func TestEventProviderForceFlash(t *testing.T) {
 				stopOnce:  sync.Once{},
 				stopCh:    tt.fields.stopCh,
 			}
-			if err := ep.ForceFlash(tt.args.ctx); (err != nil) != tt.wantErr {
-				t.Errorf("ForceFlash() error = %v, wantErr %v", err, tt.wantErr)
+			if err := ep.ForceFlush(tt.args.ctx); (err != nil) != tt.wantErr {
+				t.Errorf("ForceFlush() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

@@ -14,15 +14,18 @@ func (o eventProviderOptionFunc) apply(cfg *eventProviderConfig) *eventProviderC
 // eventProviderConfig EventProvider 初始化配置。
 type eventProviderConfig struct {
 	Exporters     map[string]EventExporter
-	FlashInternal time.Duration
+	FlushInternal time.Duration
 	MaxEvent      int
 }
+
+const Internal = 5 * time.Second
+const MaxEvent = 9
 
 func newEventProviderConfig(opts ...EventProviderOption) *eventProviderConfig {
 	cfg := &eventProviderConfig{
 		Exporters:     make(map[string]EventExporter),
-		FlashInternal: 5 * time.Second,
-		MaxEvent:      9,
+		FlushInternal: Internal,
+		MaxEvent:      MaxEvent,
 	}
 	for _, opt := range opts {
 		cfg = opt.apply(cfg)
@@ -56,10 +59,10 @@ func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstance 
 	})
 }
 
-// WithFlashInternal 设置发送间隔。
-func WithFlashInternal(flashInternal time.Duration) EventProviderOption {
+// WithFlushInternal 设置发送间隔。
+func WithFlushInternal(flushInternal time.Duration) EventProviderOption {
 	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
-		cfg.FlashInternal = flashInternal
+		cfg.FlushInternal = flushInternal
 		return cfg
 	})
 }

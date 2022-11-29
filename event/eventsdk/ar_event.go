@@ -1,7 +1,7 @@
 package eventsdk
 
 import (
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/customerrors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/custom_errors"
 	"encoding/json"
 	"errors"
 	"github.com/oklog/ulid/v2"
@@ -66,7 +66,7 @@ func (e *event) SetAttributes(kvs ...Attribute) {
 	for _, kv := range kvs {
 		// 校验 attribute 是否合法，合法的才放进map去重。
 		if !kv.Valid() {
-			log.Println(customerrors.Event_InvalidKey)
+			log.Println(custom_errors.Event_InvalidKey)
 			continue
 		}
 		e.Resource.AttributesMap[kv.GetKey()] = kv.GetValue().GetData()
@@ -154,7 +154,7 @@ func UnmarshalEvents(b []byte) ([]Event, error) {
 	}
 	// 如果返回空切片说明传入的JSON格式错误。
 	if len(result) == 0 {
-		err = errors.New(customerrors.Event_InvalidJSON)
+		err = errors.New(custom_errors.Event_InvalidJSON)
 	}
 	return result, err
 }

@@ -2,8 +2,12 @@ devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221127113500-00592f8435d6/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221128031209-47fac100fea6 h1:VBOaXOwm7VRL1WCpswrSeWBI/38P5Stv1nCt0nsqgDE=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221128031209-47fac100fea6/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221129065739-bbd1753ae257 h1:qwvgCscsDJbtCaidP61N7TOaekFnrP0XQSUsX/a3agc=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221129065739-bbd1753ae257/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace v0.0.0-20221122145311-2fffe2859de6 h1:lmP7UgcsLMx6Ny47Gr/H5a9VGG1UaZf5FTFb988VJzo=
 devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace v0.0.0-20221122145311-2fffe2859de6/go.mod h1:1z/e5AsiZ0iDf/2oU+tZE+uKpvWy0LF7EPWXNvL/Wi0=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace v0.0.0-20221129065739-bbd1753ae257 h1:AH5hfdxS7TqHllNBM2Xkayi33xz/A+5w9z+4BVN3+9A=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporters/artrace v0.0.0-20221129065739-bbd1753ae257/go.mod h1:1z/e5AsiZ0iDf/2oU+tZE+uKpvWy0LF7EPWXNvL/Wi0=
 github.com/agiledragon/gomonkey/v2 v2.9.0 h1:PDiKKybR596O6FHW+RVSG0Z7uGCBNbmbUXh3uCNQ7Hc=
 github.com/agiledragon/gomonkey/v2 v2.9.0/go.mod h1:ap1AmDzcVOAz1YpeJ3TCzIgstoaWLA6jbbgxfB4w2iY=
 github.com/cenkalti/backoff/v4 v4.1.3 h1:cFAlzYUlVYDysBEH2T5hyJZMh3+5+WCBvSnK6Q8UtC4=

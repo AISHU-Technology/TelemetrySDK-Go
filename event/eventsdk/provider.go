@@ -8,8 +8,8 @@ import (
 type EventProvider interface {
 	// Shutdown 关闭 Event 生产和发送。
 	Shutdown(ctx context.Context) error
-	// ForceFlash 立即发送 []Event 。
-	ForceFlash(ctx context.Context) error
+	// ForceFlush 立即发送 []Event 。
+	ForceFlush(ctx context.Context) error
 
 	// private 禁止自己实现接口
 	private()
