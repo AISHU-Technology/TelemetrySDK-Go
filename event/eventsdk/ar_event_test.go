@@ -20,12 +20,12 @@ func TestNewEvent(t *testing.T) {
 		{
 			"",
 			args{""},
-			NewEvent(""),
+			NewEvent(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewEvent(tt.args.eventType); !reflect.DeepEqual(got.GetEventType(), tt.want.GetEventType()) {
+			if got := NewEvent(); !reflect.DeepEqual(got.GetEventType(), tt.want.GetEventType()) {
 				t.Errorf("NewEvent() = %v, want %v", got, tt.want)
 			}
 		})
@@ -33,7 +33,7 @@ func TestNewEvent(t *testing.T) {
 }
 
 func TestUnmarshalEvents(t *testing.T) {
-	myEvent := NewEvent("type")
+	myEvent := NewEvent()
 	myEvents := []Event{myEvent}
 	array, _ := json.Marshal(myEvents)
 	bety, _ := json.Marshal(make([]Event, 1))
@@ -182,7 +182,7 @@ func TestEventGetEventMap(t *testing.T) {
 		EventID:   "",
 		EventType: "",
 		Time:      time.Time{},
-		Level:     "",
+		Level:     WARN,
 		Resource:  nil,
 		Subject:   "",
 		Link:      link{},
@@ -1069,6 +1069,81 @@ func TestEventValid(t *testing.T) {
 			}
 			if got := e.Valid(); got != tt.want {
 				t.Errorf("Valid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestInfo(t *testing.T) {
+	type args struct {
+		data interface{}
+		opts []EventStartOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want Event
+	}{
+		{
+			"",
+			args{},
+			NewEvent(WithLevel(INFO)),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Info(tt.args.data, tt.args.opts...); !reflect.DeepEqual(got.GetLevel(), tt.want.GetLevel()) {
+				t.Errorf("Info() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWarn(t *testing.T) {
+	type args struct {
+		data interface{}
+		opts []EventStartOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want Event
+	}{
+		{
+			"",
+			args{},
+			NewEvent(WithLevel(WARN)),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Warn(tt.args.data, tt.args.opts...); !reflect.DeepEqual(got.GetLevel(), tt.want.GetLevel()) {
+				t.Errorf("Warn() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestError(t *testing.T) {
+	type args struct {
+		data interface{}
+		opts []EventStartOption
+	}
+	tests := []struct {
+		name string
+		args args
+		want Event
+	}{
+		{
+			"",
+			args{},
+			NewEvent(WithLevel(ERROR)),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Error(tt.args.data, tt.args.opts...); !reflect.DeepEqual(got.GetLevel(), tt.want.GetLevel()) {
+				t.Errorf("Error() = %v, want %v", got, tt.want)
 			}
 		})
 	}

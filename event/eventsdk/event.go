@@ -7,6 +7,8 @@ import (
 
 // Event 对外暴露的 event 接口。
 type Event interface {
+	//SetEventID 当前不允许修改 EventID 。
+	SetEventID(eventID string)
 	// SetEventType 设置非空 EventType 。
 	SetEventType(eventType string)
 	// SetTime 设置 Time 。
@@ -46,6 +48,4 @@ type Event interface {
 
 	// private 禁止自己实现接口
 	private()
-	// setEventID 当前不允许修改 EventID 。
-	// setEventID(eventID string)
 }

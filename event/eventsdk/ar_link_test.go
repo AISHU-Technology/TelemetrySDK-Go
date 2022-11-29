@@ -1,6 +1,7 @@
 package eventsdk
 
 import (
+	"go.opentelemetry.io/otel/trace"
 	"reflect"
 	"testing"
 )
@@ -112,7 +113,7 @@ func TestNewLink(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := newLink(); !reflect.DeepEqual(got, tt.want) {
+			if got := newLink(trace.SpanContext{}); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("newLink() = %v, want %v", got, tt.want)
 			}
 		})

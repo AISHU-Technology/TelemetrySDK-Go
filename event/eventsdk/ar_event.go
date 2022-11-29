@@ -15,31 +15,46 @@ type event struct {
 	EventID   string      `json:"EventID"`
 	EventType string      `json:"EventType"`
 	Time      time.Time   `json:"Time"`
-	Level     level       `json:"Level"`
+	Level     Level       `json:"Level"`
 	Resource  *resource   `json:"Resource"`
 	Subject   string      `json:"Subject"`
 	Link      link        `json:"Link"`
 	Data      interface{} `json:"Data"`
 }
 
-// DefaultEventType 默认的非空事件类型
-const DefaultEventType = "Default.EventType"
+func Info(data interface{}, opts ...EventStartOption) Event {
+	opts = append(opts, WithData(data))
+	opts = append(opts, WithLevel(INFO))
+	return NewEvent(opts...)
+}
 
-// NewEvent 创建新的 event ，默认填充ID、时间、事件级别、资源信息，需要传入事件类型，默认为"Telemetry.Default.Event"。
-func NewEvent(eventType string) Event {
-	if eventType == "" {
-		eventType = DefaultEventType
-	}
-	return &event{
-		EventID:   generateID(),
-		EventType: eventType,
-		Time:      time.Now(),
-		Level:     INFO,
+func Warn(data interface{}, opts ...EventStartOption) Event {
+	opts = append(opts, WithData(data))
+	opts = append(opts, WithLevel(WARN))
+	return NewEvent(opts...)
+}
+
+func Error(data interface{}, opts ...EventStartOption) Event {
+	opts = append(opts, WithData(data))
+	opts = append(opts, WithLevel(ERROR))
+	return NewEvent(opts...)
+}
+
+// NewEvent 创建新的 event ，默认填充ID、时间、事件级别、资源信息、事件类型。
+func NewEvent(opts ...EventStartOption) Event {
+	cfg := newEventStartConfig(opts...)
+	e := &event{
+		EventID:   cfg.EventID,
+		EventType: cfg.EventType,
+		Time:      cfg.Time,
+		Level:     cfg.Level,
 		Resource:  newResource(),
-		Subject:   "",
-		Link:      newLink(),
-		Data:      nil,
+		Subject:   cfg.Subject,
+		Link:      newLink(cfg.SpanContext),
+		Data:      cfg.Data,
 	}
+	e.SetAttributes(cfg.Attributes...)
+	return e
 }
 
 // generateID 生成全球唯一ULID。
@@ -47,19 +62,32 @@ func generateID() string {
 	return ulid.Make().String()
 }
 
+func (e *event) SetEventID(eventID string) {
+	if len(eventID) != 26 {
+		log.Println(errors.New(custom_errors.ModuleName))
+		return
+	}
+	e.EventID = eventID
+}
+
 func (e *event) SetEventType(eventType string) {
 	if eventType == "" {
-		eventType = DefaultEventType
+		log.Println(errors.New(custom_errors.ModuleName))
+		return
 	}
 	e.EventType = eventType
 }
 
-func (e *event) SetTime(time time.Time) {
-	e.Time = time
+func (e *event) SetTime(t time.Time) {
+	if t.Equal(time.Time{}) {
+		log.Println(errors.New(custom_errors.ModuleName))
+		return
+	}
+	e.Time = t
 }
 
 func (e *event) SetLevel(level Level) {
-	e.Level = newLevel(level.Self())
+	e.Level = level
 }
 
 func (e *event) SetAttributes(kvs ...Attribute) {
@@ -77,9 +105,13 @@ func (e *event) SetSubject(subject string) {
 	e.Subject = subject
 }
 
-func (e *event) SetLink(link trace.SpanContext) {
-	e.Link.TraceID = link.TraceID().String()
-	e.Link.SpanID = link.SpanID().String()
+func (e *event) SetLink(spanContext trace.SpanContext) {
+	if !spanContext.IsValid() {
+		log.Println(errors.New(custom_errors.ModuleName))
+		return
+	}
+	e.Link.TraceID = spanContext.TraceID().String()
+	e.Link.SpanID = spanContext.SpanID().String()
 }
 
 func (e *event) SetData(data interface{}) {
@@ -160,6 +192,5 @@ func UnmarshalEvents(b []byte) ([]Event, error) {
 }
 
 func (e *event) Valid() bool {
-
 	return len(e.GetEventID()) == 26 && e.GetEventType() != "" && e.GetTime().After(time.Time{}) && e.GetLevel().Valid() && e.GetResource().Valid() && e.GetLink().Valid()
 }

@@ -11,28 +11,6 @@ func (o eventProviderOptionFunc) apply(cfg *eventProviderConfig) *eventProviderC
 	return o(cfg)
 }
 
-// eventProviderConfig EventProvider 初始化配置。
-type eventProviderConfig struct {
-	Exporters     map[string]EventExporter
-	FlushInternal time.Duration
-	MaxEvent      int
-}
-
-const Internal = 5 * time.Second
-const MaxEvent = 9
-
-func newEventProviderConfig(opts ...EventProviderOption) *eventProviderConfig {
-	cfg := &eventProviderConfig{
-		Exporters:     make(map[string]EventExporter),
-		FlushInternal: Internal,
-		MaxEvent:      MaxEvent,
-	}
-	for _, opt := range opts {
-		cfg = opt.apply(cfg)
-	}
-	return cfg
-}
-
 // WithExporters 批量设置 EventExporter 。
 func WithExporters(exporters ...EventExporter) EventProviderOption {
 	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
