@@ -15,15 +15,15 @@ type event struct {
 	EventID   string      `json:"EventID"`
 	EventType string      `json:"EventType"`
 	Time      time.Time   `json:"Time"`
-	Level     level       `json:"level"`
-	Resource  *resource   `json:"resource"`
+	Level     level       `json:"Level"`
+	Resource  *resource   `json:"Resource"`
 	Subject   string      `json:"Subject"`
-	Link      link        `json:"link"`
+	Link      link        `json:"Link"`
 	Data      interface{} `json:"Data"`
 }
 
 // DefaultEventType 默认的非空事件类型
-const DefaultEventType = "Telemetry.Default.Event"
+const DefaultEventType = "Default.EventType"
 
 // NewEvent 创建新的 event ，默认填充ID、时间、事件级别、资源信息，需要传入事件类型，默认为"Telemetry.Default.Event"。
 func NewEvent(eventType string) Event {
@@ -123,10 +123,10 @@ func (e *event) GetEventMap() map[string]interface{} {
 	result["EventID"] = e.EventID
 	result["EventType"] = e.EventType
 	result["Time"] = e.Time
-	result["level"] = e.Level
-	result["resource"] = e.Resource
+	result["Level"] = e.Level
+	result["Resource"] = e.Resource
 	result["Subject"] = e.Subject
-	result["link"] = e.Link
+	result["Link"] = e.Link
 	result["Data"] = e.Data
 
 	return result

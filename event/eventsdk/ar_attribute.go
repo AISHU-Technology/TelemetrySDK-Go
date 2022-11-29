@@ -102,7 +102,7 @@ func defaultAttributes() map[string]interface{} {
 	result["telemetry"] = telemetryMap
 	sdkLanguage := "go"
 	sdkMap["language"] = sdkLanguage
-	sdkName := "TelemetrySDK-Go/exporters/arevent"
+	sdkName := "TelemetrySDK-Go/exporter/arevent"
 	sdkMap["name"] = sdkName
 	sdkVersion := version.VERSION
 	sdkMap["version"] = sdkVersion
