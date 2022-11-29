@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go.opentelemetry.io/otel/trace"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
@@ -209,7 +210,7 @@ func TestEventGetEventMap(t *testing.T) {
 				EventID:   "",
 				EventType: "",
 				Time:      time.Time{},
-				Level:     "",
+				Level:     WARN,
 				Resource:  nil,
 				Subject:   "",
 				Link:      link{},
@@ -572,6 +573,7 @@ func TestEventSend(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := &event{
+				sent:      &sync.Once{},
 				EventID:   tt.fields.EventID,
 				EventType: tt.fields.EventType,
 				Time:      tt.fields.Time,
@@ -1069,81 +1071,6 @@ func TestEventValid(t *testing.T) {
 			}
 			if got := e.Valid(); got != tt.want {
 				t.Errorf("Valid() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestInfo(t *testing.T) {
-	type args struct {
-		data interface{}
-		opts []EventStartOption
-	}
-	tests := []struct {
-		name string
-		args args
-		want Event
-	}{
-		{
-			"",
-			args{},
-			NewEvent(WithLevel(INFO)),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Info(tt.args.data, tt.args.opts...); !reflect.DeepEqual(got.GetLevel(), tt.want.GetLevel()) {
-				t.Errorf("Info() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestWarn(t *testing.T) {
-	type args struct {
-		data interface{}
-		opts []EventStartOption
-	}
-	tests := []struct {
-		name string
-		args args
-		want Event
-	}{
-		{
-			"",
-			args{},
-			NewEvent(WithLevel(WARN)),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Warn(tt.args.data, tt.args.opts...); !reflect.DeepEqual(got.GetLevel(), tt.want.GetLevel()) {
-				t.Errorf("Warn() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestError(t *testing.T) {
-	type args struct {
-		data interface{}
-		opts []EventStartOption
-	}
-	tests := []struct {
-		name string
-		args args
-		want Event
-	}{
-		{
-			"",
-			args{},
-			NewEvent(WithLevel(ERROR)),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Error(tt.args.data, tt.args.opts...); !reflect.DeepEqual(got.GetLevel(), tt.want.GetLevel()) {
-				t.Errorf("Error() = %v, want %v", got, tt.want)
 			}
 		})
 	}

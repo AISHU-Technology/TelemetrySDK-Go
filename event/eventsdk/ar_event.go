@@ -7,47 +7,50 @@ import (
 	"github.com/oklog/ulid/v2"
 	"go.opentelemetry.io/otel/trace"
 	"log"
+	"sync"
 	"time"
 )
 
 // event 自定义 event 统一数据模型。
 type event struct {
+	sent      *sync.Once
 	EventID   string      `json:"EventID"`
 	EventType string      `json:"EventType"`
 	Time      time.Time   `json:"Time"`
-	Level     Level       `json:"Level"`
+	Level     level       `json:"Level"`
 	Resource  *resource   `json:"Resource"`
 	Subject   string      `json:"Subject"`
 	Link      link        `json:"Link"`
 	Data      interface{} `json:"Data"`
 }
 
-func Info(data interface{}, opts ...EventStartOption) Event {
+func Info(data interface{}, opts ...EventStartOption) {
 	opts = append(opts, WithData(data))
 	opts = append(opts, WithLevel(INFO))
-	return NewEvent(opts...)
+	NewEvent(opts...).Send()
 }
 
-func Warn(data interface{}, opts ...EventStartOption) Event {
+func Warn(data interface{}, opts ...EventStartOption) {
 	opts = append(opts, WithData(data))
 	opts = append(opts, WithLevel(WARN))
-	return NewEvent(opts...)
+	NewEvent(opts...).Send()
 }
 
-func Error(data interface{}, opts ...EventStartOption) Event {
+func Error(data interface{}, opts ...EventStartOption) {
 	opts = append(opts, WithData(data))
 	opts = append(opts, WithLevel(ERROR))
-	return NewEvent(opts...)
+	NewEvent(opts...).Send()
 }
 
 // NewEvent 创建新的 event ，默认填充ID、时间、事件级别、资源信息、事件类型。
 func NewEvent(opts ...EventStartOption) Event {
 	cfg := newEventStartConfig(opts...)
 	e := &event{
+		sent:      &sync.Once{},
 		EventID:   cfg.EventID,
 		EventType: cfg.EventType,
 		Time:      cfg.Time,
-		Level:     cfg.Level,
+		Level:     newLevel(cfg.Level.Self()),
 		Resource:  newResource(),
 		Subject:   cfg.Subject,
 		Link:      newLink(cfg.SpanContext),
@@ -87,7 +90,7 @@ func (e *event) SetTime(t time.Time) {
 }
 
 func (e *event) SetLevel(level Level) {
-	e.Level = level
+	e.Level = newLevel(level.Self())
 }
 
 func (e *event) SetAttributes(kvs ...Attribute) {
@@ -165,7 +168,9 @@ func (e *event) GetEventMap() map[string]interface{} {
 }
 
 func (e *event) Send() {
-	GetEventProvider().(*eventProvider).loadEvent(e)
+	e.sent.Do(func() {
+		GetEventProvider().(*eventProvider).loadEvent(e)
+	})
 }
 
 func (e *event) private() {}
@@ -192,5 +197,10 @@ func UnmarshalEvents(b []byte) ([]Event, error) {
 }
 
 func (e *event) Valid() bool {
-	return len(e.GetEventID()) == 26 && e.GetEventType() != "" && e.GetTime().After(time.Time{}) && e.GetLevel().Valid() && e.GetResource().Valid() && e.GetLink().Valid()
+	return len(e.GetEventID()) == 26 &&
+		e.GetEventType() != "" &&
+		e.GetTime().After(time.Time{}) &&
+		e.GetLevel().Valid() &&
+		e.GetResource().Valid() &&
+		e.GetLink().Valid()
 }

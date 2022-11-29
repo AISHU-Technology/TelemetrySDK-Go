@@ -23,11 +23,7 @@ func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 
 // add 增加了 Event 的计算两数之和。
 func add(ctx context.Context, x, y int64) (context.Context, int64) {
-	myEvent := eventsdk.NewEvent("EventExporter/add")
-	myEvent.SetLevel(eventsdk.INFO)
-	myEvent.SetSubject("calculation.txt")
-	myEvent.SetData(007)
-	myEvent.GetEventMap()
+	eventsdk.Info(007, eventsdk.WithEventType("EventExporter/add"))
 
 	//业务代码
 	time.Sleep(800 * time.Millisecond)
@@ -45,11 +41,7 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, span := artrace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
-	myEvent := eventsdk.NewEvent("EventExporter/multiply")
-	myEvent.SetLink(span.SpanContext())
-	myEvent.SetTime(time.Now())
-	myEvent.SetAttributes(eventsdk.NewAttribute("multiply", eventsdk.StringValue("计算两数之积")))
-	myEvent.Send()
+	eventsdk.Warn(800, eventsdk.WithSpanContext(span.SpanContext()))
 
 	//业务代码
 	time.Sleep(800 * time.Millisecond)
@@ -70,15 +62,14 @@ func StdoutExample() {
 	ctx := context.Background()
 	client := ar_event.NewStdoutClient("")
 	exporter := ar_event.NewExporter(client)
-	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter(), exporter))
+	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter))
 	eventsdk.SetEventProvider(eventProvider)
 
 	ctx, num := multiply(ctx, 1, 7)
 	ctx, num = add(ctx, num, 8)
-	_ = eventsdk.GetEventProvider().ForceFlash(ctx)
 
 	defer func() {
-		if err := eventProvider.Shutdown(ctx); err != nil {
+		if err := eventProvider.Shutdown(); err != nil {
 			log.Println(err)
 		}
 	}()
@@ -93,26 +84,18 @@ func WithAllExample() {
 		ar_event.WithCompression(0), ar_event.WithTimeout(10*time.Second), ar_event.WithHeader(header),
 		ar_event.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	exporter := ar_event.NewExporter(client)
-	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter))
-	//tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(artrace.GetResource("YourServiceName", "1.0.0", "")))
-	//eventsdk.SetEventProvider(eventProvider)
-	eventsdk.SetEventProvider(eventsdk.NewEventProvider(eventsdk.WithExporters(eventsdk.GetDefaultExporter()), eventsdk.WithServiceInfo("YYY1", "111", "")))
-	//eventsdk.SetEventProvider(eventProvider)
+	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(exporter, eventsdk.GetDefaultExporter()), eventsdk.WithServiceInfo("YourServiceName", "1.0.1", ""))
+	eventsdk.SetEventProvider(eventProvider)
 
 	defer func() {
-		if err := eventProvider.Shutdown(ctx); err != nil {
+		if err := eventProvider.Shutdown(); err != nil {
 			log.Println(err)
 		}
 	}()
 	ctx, num := multiply(ctx, 2, 3)
 	for i := 0; i < 12; i++ {
 		ctx, num = add(ctx, 2, 3)
-		if i%2 == 0 {
-			_ = eventsdk.GetEventProvider().ForceFlash(ctx)
-			eventsdk.SetEventProvider(eventProvider)
-		}
 	}
 	ctx, num = multiply(ctx, 2, 3)
 	log.Println(result, num)
-	//eventProvider.ForceFlush()
 }
