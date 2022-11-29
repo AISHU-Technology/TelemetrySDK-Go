@@ -2,6 +2,8 @@ package eventsdk
 
 import (
 	"context"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/custom_errors"
+	"errors"
 	"log"
 	"sync"
 	"time"
@@ -9,14 +11,15 @@ import (
 
 // eventProvider 全局唯一，控制 Event 批量发送。
 type eventProvider struct {
-	RWLock    sync.RWMutex
-	Exporters map[string]EventExporter
-	Ticker    *time.Ticker
-	Limit     int
+	Ctx       context.Context
+	Cancel    context.CancelFunc
+	In        chan Event
 	Events    []Event
-	Sent      chan bool
-	stopOnce  sync.Once
-	stopCh    chan struct{}
+	Size      int
+	StopOnce  *sync.Once
+	Ticker    *time.Ticker
+	MaxEvent  int
+	Exporters map[string]EventExporter
 }
 
 // NewEventProvider 根据配置项，新建 EventProvider 。
@@ -24,58 +27,47 @@ func NewEventProvider(opts ...EventProviderOption) EventProvider {
 	// 获取默认配置，更新传入配置。
 	cfg := newEventProviderConfig(opts...)
 	// 根据配置创建 EventExporter 。
+	ctx, cancel := context.WithCancel(context.Background())
 	return &eventProvider{
-		RWLock:    sync.RWMutex{},
-		Exporters: cfg.Exporters,
-		Ticker:    time.NewTicker(cfg.FlushInternal),
-		Limit:     cfg.MaxEvent,
+		Ctx:       ctx,
+		Cancel:    cancel,
+		In:        make(chan Event, 10),
 		Events:    make([]Event, 0, cfg.MaxEvent+1),
-		Sent:      make(chan bool, 3),
-		stopOnce:  sync.Once{},
-		stopCh:    make(chan struct{}),
+		Size:      0,
+		StopOnce:  &sync.Once{},
+		Ticker:    time.NewTicker(cfg.FlushInternal),
+		MaxEvent:  cfg.MaxEvent,
+		Exporters: cfg.Exporters,
 	}
 }
 
-func (ep *eventProvider) Shutdown(ctx context.Context) error {
-	// 只返回其中一个错误
+func (ep *eventProvider) Shutdown() error {
+	// 只返回其中一个错误。
 	var returnErr error = nil
-	ep.stopOnce.Do(func() {
-		// 关闭信号
-		close(ep.stopCh)
-		// 关闭之前发送剩余数据
-		returnErr = ep.ForceFlush(ctx)
-		// 发送剩余的数据马上释放exporters
-		for _, e := range ep.Exporters {
-			err := e.Shutdown(ctx)
-			if err != nil {
-				// 如果多余一个错误则记日志
-				if returnErr == nil {
-					returnErr = err
-				} else {
-					log.Println(err)
-				}
-			}
-		}
+	ep.StopOnce.Do(func() {
+		returnErr = ep.ForceFlush()
+		// 关闭信号。
+		ep.Cancel()
+		close(ep.In)
 	})
 	return returnErr
 }
 
-func (ep *eventProvider) ForceFlush(ctx context.Context) error {
-	// 调用发送方法，可发送标记位重置。
-	ep.Sent = make(chan bool, 3)
+func (ep *eventProvider) ForceFlush() error {
+	// 如果已经关闭了 EventProvider 调用发送方法报错。
+	if ep.Ctx.Err() != nil {
+		return errors.New(custom_errors.Event_AlreadyShutdown)
+	}
 	// 不存在发送目标，直接丢弃数据。
 	if len(ep.Exporters) == 0 {
-		ep.Events = make([]Event, 0, ep.Limit+1)
+		ep.Events = make([]Event, 0, ep.MaxEvent+1)
 		return nil
 	}
 	// 只返回其中一个错误。
 	var returnErr error = nil
-	// 发送中禁止修改 Events ，上锁。
-	ep.RWLock.Lock()
 	// 往所有发送地址发送相同的数据。
 	for _, e := range ep.Exporters {
-		err := e.ExportEvents(ctx, ep.Events)
-		if err != nil {
+		if err := e.ExportEvents(ep.Ctx, ep.Events); err != nil {
 			// 如果多余一个错误则记日志。
 			if returnErr == nil {
 				returnErr = err
@@ -84,10 +76,9 @@ func (ep *eventProvider) ForceFlush(ctx context.Context) error {
 			}
 		}
 	}
-	// 发送结束解锁。
-	ep.RWLock.Unlock()
-
-	ep.Events = make([]Event, 0, ep.Limit+1)
+	// 发送完之后清空队列。
+	ep.Size = 0
+	ep.Events = make([]Event, 0, ep.MaxEvent+1)
 	return returnErr
 }
 
@@ -99,7 +90,7 @@ func GetEventProvider() EventProvider {
 // SetEventProvider 设置全局唯一 EventProvider 。
 func SetEventProvider(ep EventProvider) {
 	// 先关闭上一个 EventProvider 。
-	_ = globalEventProvider.Shutdown(context.Background())
+	_ = globalEventProvider.Shutdown()
 	globalEventProvider = ep
 	// 设置了 EventProvider 就开启发送。
 	go func() {
@@ -109,42 +100,36 @@ func SetEventProvider(ep EventProvider) {
 
 // loadEvent 缓存 Event 等待定时发送或强制发送。
 func (ep *eventProvider) loadEvent(event Event) {
-	// 增加 Event ，上锁。
-	ep.RWLock.Lock()
-	ep.Events = append(ep.Events, event)
-	// 每次添加 Event ，判断是否超过数量上限。
-	ep.verdictSent()
-	// 结束载入，解锁。
-	ep.RWLock.Unlock()
+	// 如果 EventProvider 正常运行才能添加 Event 。
+	if ep.Ctx.Err() == nil {
+		ep.In <- event
+	}
 }
 
 // sendEvents 无限等待定时发送或超过上限发送。
 func (ep *eventProvider) sendEvents() {
 	for {
 		select {
-		// 关闭之后退出循环。
-		case <-ep.stopCh:
-			return
-		// 超过上限发送。
-		case <-ep.Sent:
-			err := ep.ForceFlush(context.Background())
-			if err != nil {
-				log.Println(err)
+		// 每次进来一个Event就进入这里。
+		case e, ok := <-ep.In:
+			// 关闭之后退出循环。
+			if !ok {
+				return
 			}
-		// 定时发送
+			ep.Events = append(ep.Events, e)
+			ep.Size++
+			// 超过上限发送。
+			if ep.Size >= ep.MaxEvent {
+				if err := ep.ForceFlush(); err != nil {
+					log.Println(err)
+				}
+			}
+		// 定时发送。
 		case <-ep.Ticker.C:
-			err := ep.ForceFlush(context.Background())
-			if err != nil {
+			if err := ep.ForceFlush(); err != nil {
 				log.Println(err)
 			}
 		}
-	}
-}
-
-// verdictSent 判断是否超过上限。
-func (ep *eventProvider) verdictSent() {
-	if len(ep.Events) >= ep.Limit {
-		ep.Sent <- true
 	}
 }
 

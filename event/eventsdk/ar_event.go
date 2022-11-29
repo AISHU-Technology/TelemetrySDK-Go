@@ -159,8 +159,7 @@ func UnmarshalEvents(b []byte) ([]Event, error) {
 	return result, err
 }
 
-var date = time.Date(2000, time.July, 2, 12, 0, 0, 0, time.Local)
-
 func (e *event) Valid() bool {
-	return len(e.GetEventID()) == 26 && e.GetEventType() != "" && e.GetTime().After(date) && e.GetLevel().Valid() && e.GetResource().Valid() && e.GetLink().Valid()
+
+	return len(e.GetEventID()) == 26 && e.GetEventType() != "" && e.GetTime().After(time.Time{}) && e.GetLevel().Valid() && e.GetResource().Valid() && e.GetLink().Valid()
 }

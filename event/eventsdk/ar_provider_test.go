@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+var _, cancel = context.WithCancel(context.Background())
+var cfg = newEventProviderConfig()
+
 func contextWithDone() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -46,20 +49,21 @@ func TestNewEventProvider(t *testing.T) {
 			"",
 			args{nil},
 			&eventProvider{
-				RWLock:    sync.RWMutex{},
-				Exporters: make(map[string]EventExporter),
-				Ticker:    time.NewTicker(5 * time.Second),
-				Limit:     9,
-				Events:    make([]Event, 0, 10),
-				Sent:      make(chan bool, 3),
-				stopOnce:  sync.Once{},
-				stopCh:    make(chan struct{}),
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewEventProvider(tt.args.opts...); !reflect.DeepEqual(got.Shutdown(context.Background()), tt.want.Shutdown(context.Background())) {
+			if got := NewEventProvider(tt.args.opts...); !reflect.DeepEqual(got.Shutdown(), tt.want.Shutdown()) {
 				t.Errorf("NewEventProvider() = %v, want %v", got, tt.want)
 			}
 		})
@@ -90,81 +94,65 @@ func TestEventProviderForceFlush(t *testing.T) {
 	exporterMap := make(map[string]EventExporter)
 	exporterMap["DefaultExporter"] = GetDefaultExporter()
 	type fields struct {
-		RWLock    *sync.RWMutex
-		Exporters map[string]EventExporter
-		Ticker    *time.Ticker
-		Limit     int
+		Ctx       context.Context
+		Cancel    context.CancelFunc
+		In        chan Event
 		Events    []Event
-		Sent      chan bool
-		stopOnce  *sync.Once
-		stopCh    chan struct{}
-	}
-	type args struct {
-		ctx context.Context
+		Size      int
+		StopOnce  *sync.Once
+		Ticker    *time.Ticker
+		MaxEvent  int
+		Exporters map[string]EventExporter
 	}
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
 		wantErr bool
 	}{
 		{
 			"",
 			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: nil,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    nil,
-				Sent:      nil,
-				stopOnce:  &sync.Once{},
-				stopCh:    nil,
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
-			args{context.Background()},
 			false,
 		}, {
 			"",
 			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: nil,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    make([]Event, 1, 2),
-				Sent:      nil,
-				stopOnce:  &sync.Once{},
-				stopCh:    nil,
+				Ctx:       contextWithDone(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
-			args{context.Background()},
-			false,
-		}, {
-			"",
-			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: exporterMap,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    make([]Event, 1, 2),
-				Sent:      nil,
-				stopOnce:  &sync.Once{},
-				stopCh:    nil,
-			},
-			args{contextWithDone()},
 			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ep := &eventProvider{
-				RWLock:    sync.RWMutex{},
-				Exporters: tt.fields.Exporters,
-				Ticker:    tt.fields.Ticker,
-				Limit:     tt.fields.Limit,
+				Ctx:       tt.fields.Ctx,
+				Cancel:    tt.fields.Cancel,
+				In:        tt.fields.In,
 				Events:    tt.fields.Events,
-				Sent:      tt.fields.Sent,
-				stopOnce:  sync.Once{},
-				stopCh:    tt.fields.stopCh,
+				Size:      tt.fields.Size,
+				StopOnce:  &sync.Once{},
+				Ticker:    tt.fields.Ticker,
+				MaxEvent:  tt.fields.MaxEvent,
+				Exporters: tt.fields.Exporters,
 			}
-			if err := ep.ForceFlush(tt.args.ctx); (err != nil) != tt.wantErr {
+			if err := ep.ForceFlush(); (err != nil) != tt.wantErr {
 				t.Errorf("ForceFlush() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -175,67 +163,65 @@ func TestEventProviderShutdown(t *testing.T) {
 	exporterMap := make(map[string]EventExporter)
 	exporterMap["DefaultExporter"] = GetDefaultExporter()
 	type fields struct {
-		RWLock    *sync.RWMutex
-		Exporters map[string]EventExporter
-		Ticker    *time.Ticker
-		Limit     int
+		Ctx       context.Context
+		Cancel    context.CancelFunc
+		In        chan Event
 		Events    []Event
-		Sent      chan bool
-		stopOnce  *sync.Once
-		stopCh    chan struct{}
-	}
-	type args struct {
-		ctx context.Context
+		Size      int
+		StopOnce  *sync.Once
+		Ticker    *time.Ticker
+		MaxEvent  int
+		Exporters map[string]EventExporter
 	}
 	tests := []struct {
 		name    string
 		fields  fields
-		args    args
 		wantErr bool
 	}{
 		{
 			"",
 			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: nil,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    nil,
-				Sent:      nil,
-				stopOnce:  &sync.Once{},
-				stopCh:    make(chan struct{}),
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
-			args{context.Background()},
 			false,
 		}, {
 			"",
 			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: exporterMap,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    nil,
-				Sent:      nil,
-				stopOnce:  &sync.Once{},
-				stopCh:    make(chan struct{}),
+				Ctx:       contextWithDone(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
-			args{contextWithDone()},
 			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ep := &eventProvider{
-				RWLock:    sync.RWMutex{},
-				Exporters: tt.fields.Exporters,
-				Ticker:    tt.fields.Ticker,
-				Limit:     tt.fields.Limit,
+				Ctx:       tt.fields.Ctx,
+				Cancel:    tt.fields.Cancel,
+				In:        tt.fields.In,
 				Events:    tt.fields.Events,
-				Sent:      tt.fields.Sent,
-				stopOnce:  sync.Once{},
-				stopCh:    tt.fields.stopCh,
+				Size:      tt.fields.Size,
+				StopOnce:  &sync.Once{},
+				Ticker:    tt.fields.Ticker,
+				MaxEvent:  tt.fields.MaxEvent,
+				Exporters: tt.fields.Exporters,
 			}
-			if err := ep.Shutdown(tt.args.ctx); (err != nil) != tt.wantErr {
+			if err := ep.Shutdown(); (err != nil) != tt.wantErr {
 				t.Errorf("Shutdown() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -244,14 +230,15 @@ func TestEventProviderShutdown(t *testing.T) {
 
 func TestEventProvideLoadEvent(t *testing.T) {
 	type fields struct {
-		RWLock    *sync.RWMutex
-		Exporters map[string]EventExporter
-		Ticker    *time.Ticker
-		Limit     int
+		Ctx       context.Context
+		Cancel    context.CancelFunc
+		In        chan Event
 		Events    []Event
-		Sent      chan bool
-		stopOnce  *sync.Once
-		stopCh    chan struct{}
+		Size      int
+		StopOnce  *sync.Once
+		Ticker    *time.Ticker
+		MaxEvent  int
+		Exporters map[string]EventExporter
 	}
 	type args struct {
 		event Event
@@ -265,14 +252,15 @@ func TestEventProvideLoadEvent(t *testing.T) {
 		{
 			"",
 			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: nil,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    []Event{},
-				Sent:      make(chan bool, 1),
-				stopOnce:  &sync.Once{},
-				stopCh:    make(chan struct{}),
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
 			args{nil},
 		},
@@ -280,14 +268,15 @@ func TestEventProvideLoadEvent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ep := &eventProvider{
-				RWLock:    sync.RWMutex{},
-				Exporters: tt.fields.Exporters,
-				Ticker:    tt.fields.Ticker,
-				Limit:     tt.fields.Limit,
+				Ctx:       tt.fields.Ctx,
+				Cancel:    tt.fields.Cancel,
+				In:        tt.fields.In,
 				Events:    tt.fields.Events,
-				Sent:      tt.fields.Sent,
-				stopOnce:  sync.Once{},
-				stopCh:    tt.fields.stopCh,
+				Size:      tt.fields.Size,
+				StopOnce:  &sync.Once{},
+				Ticker:    tt.fields.Ticker,
+				MaxEvent:  tt.fields.MaxEvent,
+				Exporters: tt.fields.Exporters,
 			}
 			ep.loadEvent(tt.args.event)
 		})
@@ -296,14 +285,15 @@ func TestEventProvideLoadEvent(t *testing.T) {
 
 func TestEventProviderPrivate(t *testing.T) {
 	type fields struct {
-		RWLock    *sync.RWMutex
-		Exporters map[string]EventExporter
-		Ticker    *time.Ticker
-		Limit     int
+		Ctx       context.Context
+		Cancel    context.CancelFunc
+		In        chan Event
 		Events    []Event
-		Sent      chan bool
-		stopOnce  *sync.Once
-		stopCh    chan struct{}
+		Size      int
+		StopOnce  *sync.Once
+		Ticker    *time.Ticker
+		MaxEvent  int
+		Exporters map[string]EventExporter
 	}
 	tests := []struct {
 		name   string
@@ -312,28 +302,30 @@ func TestEventProviderPrivate(t *testing.T) {
 		{
 			"",
 			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: nil,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    nil,
-				Sent:      nil,
-				stopOnce:  &sync.Once{},
-				stopCh:    nil,
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ep := &eventProvider{
-				RWLock:    sync.RWMutex{},
-				Exporters: tt.fields.Exporters,
-				Ticker:    tt.fields.Ticker,
-				Limit:     tt.fields.Limit,
+				Ctx:       tt.fields.Ctx,
+				Cancel:    tt.fields.Cancel,
+				In:        tt.fields.In,
 				Events:    tt.fields.Events,
-				Sent:      tt.fields.Sent,
-				stopOnce:  sync.Once{},
-				stopCh:    tt.fields.stopCh,
+				Size:      tt.fields.Size,
+				StopOnce:  &sync.Once{},
+				Ticker:    tt.fields.Ticker,
+				MaxEvent:  tt.fields.MaxEvent,
+				Exporters: tt.fields.Exporters,
 			}
 			ep.private()
 		})
@@ -346,62 +338,23 @@ func channelWithStop() chan struct{} {
 	return stopCh
 }
 
-func TestEventProviderSendEvents(t *testing.T) {
-	type fields struct {
-		RWLock    *sync.RWMutex
-		Exporters map[string]EventExporter
-		Ticker    *time.Ticker
-		Limit     int
-		Events    []Event
-		Sent      chan bool
-		stopOnce  *sync.Once
-		stopCh    chan struct{}
-	}
-	tests := []struct {
-		name   string
-		fields fields
-	}{
-		{
-			"",
-			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: nil,
-				Ticker:    time.NewTicker(time.Second),
-				Limit:     0,
-				Events:    nil,
-				Sent:      nil,
-				stopOnce:  &sync.Once{},
-				stopCh:    channelWithStop(),
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ep := &eventProvider{
-				RWLock:    sync.RWMutex{},
-				Exporters: tt.fields.Exporters,
-				Ticker:    tt.fields.Ticker,
-				Limit:     tt.fields.Limit,
-				Events:    tt.fields.Events,
-				Sent:      tt.fields.Sent,
-				stopOnce:  sync.Once{},
-				stopCh:    tt.fields.stopCh,
-			}
-			ep.sendEvents()
-		})
-	}
+func closedChannel() chan Event {
+	channel := make(chan Event, 10)
+	close(channel)
+	return channel
 }
 
-func TestEventProviderVerdictSent(t *testing.T) {
+func TestEventProviderSendEvents(t *testing.T) {
 	type fields struct {
-		RWLock    *sync.RWMutex
-		Exporters map[string]EventExporter
-		Ticker    *time.Ticker
-		Limit     int
+		Ctx       context.Context
+		Cancel    context.CancelFunc
+		In        chan Event
 		Events    []Event
-		Sent      chan bool
-		stopOnce  *sync.Once
-		stopCh    chan struct{}
+		Size      int
+		StopOnce  *sync.Once
+		Ticker    *time.Ticker
+		MaxEvent  int
+		Exporters map[string]EventExporter
 	}
 	tests := []struct {
 		name   string
@@ -410,30 +363,32 @@ func TestEventProviderVerdictSent(t *testing.T) {
 		{
 			"",
 			fields{
-				RWLock:    &sync.RWMutex{},
-				Exporters: nil,
-				Ticker:    nil,
-				Limit:     0,
-				Events:    nil,
-				Sent:      make(chan bool, 1),
-				stopOnce:  &sync.Once{},
-				stopCh:    nil,
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        closedChannel(),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ep := &eventProvider{
-				RWLock:    sync.RWMutex{},
-				Exporters: tt.fields.Exporters,
-				Ticker:    tt.fields.Ticker,
-				Limit:     tt.fields.Limit,
+				Ctx:       tt.fields.Ctx,
+				Cancel:    tt.fields.Cancel,
+				In:        tt.fields.In,
 				Events:    tt.fields.Events,
-				Sent:      tt.fields.Sent,
-				stopOnce:  sync.Once{},
-				stopCh:    tt.fields.stopCh,
+				Size:      tt.fields.Size,
+				StopOnce:  &sync.Once{},
+				Ticker:    tt.fields.Ticker,
+				MaxEvent:  tt.fields.MaxEvent,
+				Exporters: tt.fields.Exporters,
 			}
-			ep.verdictSent()
+			ep.sendEvents()
 		})
 	}
 }
