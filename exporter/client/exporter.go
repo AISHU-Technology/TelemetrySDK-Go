@@ -2,20 +2,18 @@ package client
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"sync"
 )
 
-var _ eventsdk.EventExporter = (*Exporter)(nil)
-
-// Exporter 导出数据到AnyRobot Feed Ingester的 Event 数据接收器。
+// Exporter 导出可观测性数据到 AnyRobot Feed Ingester 的数据接收器。
 type Exporter struct {
 	name     string
-	client   EventClient
+	client   Client
 	stopCh   chan struct{}
 	stopOnce sync.Once
 }
 
+// Name Exporter身份证，同名视为同一个发送器，本质为上报地址。
 func (e *Exporter) Name() string {
 	return e.name
 }
@@ -35,8 +33,8 @@ func (e *Exporter) Shutdown(ctx context.Context) error {
 	}
 }
 
-// ExportEvents 批量发送 AnyRobotEvents 到AnyRobot Feed Ingester的 Event 数据接收器。
-func (e *Exporter) ExportEvents(ctx context.Context, events []eventsdk.Event) error {
+// ExportData 批量发送可观测性数据到 AnyRobot Feed Ingester 的数据接收器。
+func (e *Exporter) ExportData(ctx context.Context, data ...interface{}) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -44,14 +42,14 @@ func (e *Exporter) ExportEvents(ctx context.Context, events []eventsdk.Event) er
 		return nil
 	default:
 	}
-	if len(events) == 0 {
+	if len(data) == 0 {
 		return nil
 	}
-	return e.client.UploadEvents(ctx, events)
+	return e.client.UploadData(ctx, data)
 }
 
 // NewExporter 创建已启动的Exporter。
-func NewExporter(client EventClient) *Exporter {
+func NewExporter(client Client) *Exporter {
 	return &Exporter{
 		name:     client.Path(),
 		client:   client,

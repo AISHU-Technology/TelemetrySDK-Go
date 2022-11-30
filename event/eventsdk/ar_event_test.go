@@ -1075,3 +1075,66 @@ func TestEventValid(t *testing.T) {
 		})
 	}
 }
+
+func TestInfo(t *testing.T) {
+	type args struct {
+		data interface{}
+		opts []EventStartOption
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			"",
+			args{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Info(tt.args.data, tt.args.opts...)
+		})
+	}
+}
+
+func TestWarn(t *testing.T) {
+	type args struct {
+		data interface{}
+		opts []EventStartOption
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			"",
+			args{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Warn(tt.args.data, tt.args.opts...)
+		})
+	}
+}
+
+func TestError(t *testing.T) {
+	type args struct {
+		data interface{}
+		opts []EventStartOption
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			"",
+			args{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			Error(tt.args.data, tt.args.opts...)
+		})
+	}
+}
