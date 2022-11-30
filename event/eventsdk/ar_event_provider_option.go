@@ -1,6 +1,7 @@
 package eventsdk
 
 import (
+	"strings"
 	"time"
 )
 
@@ -24,13 +25,13 @@ func WithExporters(exporters ...EventExporter) EventProviderOption {
 // WithServiceInfo 记录服务信息。
 func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstance string) EventProviderOption {
 	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
-		if ServiceName != "" {
+		if strings.TrimSpace(ServiceName) != "" {
 			serviceName = ServiceName
 		}
-		if ServiceVersion != "" {
+		if strings.TrimSpace(serviceVersion) != "" {
 			serviceVersion = ServiceVersion
 		}
-		if serviceInstance != "" {
+		if strings.TrimSpace(serviceInstance) != "" {
 			serviceInstance = ServiceInstance
 		}
 		return cfg

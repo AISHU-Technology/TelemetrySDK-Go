@@ -2,6 +2,7 @@ package eventsdk
 
 import (
 	"go.opentelemetry.io/otel/trace"
+	"strings"
 	"time"
 )
 
@@ -23,7 +24,7 @@ func WithEventID(eventID string) EventStartOption {
 
 func WithEventType(eventType string) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
-		if eventType != "" {
+		if strings.TrimSpace(eventType) != "" {
 			cfg.EventType = eventType
 		}
 		return cfg

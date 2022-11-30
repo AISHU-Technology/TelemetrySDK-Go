@@ -192,7 +192,7 @@ func TestWithTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithTime(tt.args.t); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).Time, tt.want.apply(defaultEventStartConfig()).Time) {
+			if got := WithTime(tt.args.t); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).Level, tt.want.apply(defaultEventStartConfig()).Level) {
 				t.Errorf("WithTime() = %v, want %v", got, tt.want)
 			}
 		})

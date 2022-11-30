@@ -15,9 +15,9 @@ trigger:
       - "release/*"
 
 variables:
-  - group: anyrobot-global-option
+  - group: anyrobot-global-config
   - name: BUILD_IMAGE
-    value: "acr.aishu.cn/ar/go.build:1.17.13"
+    value: "acr.aishu.cn/ar/go.build:1.18.8-20221108"
   - name: SONARQUBE_IMAGE
     value: "acr.aishu.cn/public/sonarsource/sonar-scanner-cli:4.7"
   - name: SONARQUBE_SERVER
@@ -44,7 +44,7 @@ stages:
         workspace:
           clean: all
         pool:
-          name: ONE-Architecture-centos7.8-x86_64
+          name: telemetrySDK-pool
           demands:
             - docker
         steps:
@@ -65,10 +65,10 @@ stages:
                   set -ex
 
                   echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
-
-                  cd /TelemetrySDK-Go/exporters/artrace
+                  
+                  cd /TelemetrySDK-Go/event
                   go mod download
-                  mkdir -p /TelemetrySDK-Go/exporters/artrace/report
+                  mkdir -p /TelemetrySDK-Go/event/report
                   go test -gcflags=all=-l -v -coverprofile=report/ut_coverage.out ./... 2>&1 | go-junit-report > report/$(UTReportName)
                   gocov convert report/ut_coverage.out | gocov-xml > report/$(CoverageReportName)
                   go tool cover --html=report/ut_coverage.out -o report/ut_coverage.html
@@ -77,7 +77,7 @@ stages:
 
           - task: PublishBuildArtifacts@1  # 将相应目录publish到artifact
             inputs:
-              PathtoPublish: '$(Build.SourcesDirectory)/exporters/artrace/report'
+              PathtoPublish: '$(Build.SourcesDirectory)/event/report'
               ArtifactName: CodeCheckReportFiles
 
           - task: Post-Bash@3
@@ -91,7 +91,7 @@ stages:
         container: dotnet
         dependsOn: CodeCheck
         pool:
-          name: ONE-Architecture-centos7.8-x86_64
+          name: telemetrySDK-pool
           demands:
             - docker
         steps:
@@ -172,7 +172,7 @@ stages:
         workspace:
           clean: all
         pool:
-          name: ONE-Architecture-centos7.8-x86_64
+          name: telemetrySDK-pool
           demands:
             - docker
         steps:

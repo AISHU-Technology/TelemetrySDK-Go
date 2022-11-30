@@ -7,6 +7,7 @@ import (
 	"github.com/oklog/ulid/v2"
 	"go.opentelemetry.io/otel/trace"
 	"log"
+	"strings"
 	"sync"
 	"time"
 )
@@ -74,7 +75,7 @@ func (e *event) SetEventID(eventID string) {
 }
 
 func (e *event) SetEventType(eventType string) {
-	if eventType == "" {
+	if strings.TrimSpace(eventType) == "" {
 		log.Println(errors.New(custom_errors.ModuleName))
 		return
 	}
@@ -198,7 +199,7 @@ func UnmarshalEvents(b []byte) ([]Event, error) {
 
 func (e *event) Valid() bool {
 	return len(e.GetEventID()) == 26 &&
-		e.GetEventType() != "" &&
+		strings.TrimSpace(e.GetEventType()) != "" &&
 		e.GetTime().After(time.Time{}) &&
 		e.GetLevel().Valid() &&
 		e.GetResource().Valid() &&
