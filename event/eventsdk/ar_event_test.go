@@ -741,57 +741,6 @@ func TestEventSetEventType(t *testing.T) {
 	}
 }
 
-func TestEventSetLevel(t *testing.T) {
-	type fields struct {
-		EventID   string
-		EventType string
-		Time      time.Time
-		Level     level
-		Resource  *resource
-		Subject   string
-		Link      link
-		Data      interface{}
-	}
-	type args struct {
-		level Level
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{
-			"",
-			fields{
-				EventID:   "",
-				EventType: "",
-				Time:      time.Time{},
-				Level:     "",
-				Resource:  nil,
-				Subject:   "",
-				Link:      link{},
-				Data:      nil,
-			},
-			args{ERROR},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			e := &event{
-				EventID:   tt.fields.EventID,
-				EventType: tt.fields.EventType,
-				Time:      tt.fields.Time,
-				Level:     tt.fields.Level,
-				Resource:  tt.fields.Resource,
-				Subject:   tt.fields.Subject,
-				Link:      tt.fields.Link,
-				Data:      tt.fields.Data,
-			}
-			e.SetLevel(tt.args.level)
-		})
-	}
-}
-
 func TestEventSetLink(t *testing.T) {
 	type fields struct {
 		EventID   string

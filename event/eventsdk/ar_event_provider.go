@@ -2,6 +2,8 @@ package eventsdk
 
 import (
 	"context"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/custom_errors"
+	"errors"
 	"log"
 	"sync"
 	"time"
@@ -41,7 +43,7 @@ func NewEventProvider(opts ...EventProviderOption) EventProvider {
 
 func (ep *eventProvider) Shutdown() error {
 	// 只返回其中一个错误。
-	var returnErr error = nil
+	var returnErr error = errors.New(custom_errors.AlreadyShutdown)
 	ep.StopOnce.Do(func() {
 		// 读取最后一个数据之后发送。
 		returnErr = ep.ForceFlush()

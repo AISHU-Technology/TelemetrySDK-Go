@@ -26,20 +26,20 @@ type event struct {
 }
 
 func Info(data interface{}, opts ...EventStartOption) {
-	opts = append(opts, WithData(data))
-	opts = append(opts, WithLevel(INFO))
+	opts = append(opts, withData(data))
+	opts = append(opts, withLevel(INFO))
 	NewEvent(opts...).Send()
 }
 
 func Warn(data interface{}, opts ...EventStartOption) {
-	opts = append(opts, WithData(data))
-	opts = append(opts, WithLevel(WARN))
+	opts = append(opts, withData(data))
+	opts = append(opts, withLevel(WARN))
 	NewEvent(opts...).Send()
 }
 
 func Error(data interface{}, opts ...EventStartOption) {
-	opts = append(opts, WithData(data))
-	opts = append(opts, WithLevel(ERROR))
+	opts = append(opts, withData(data))
+	opts = append(opts, withLevel(ERROR))
 	NewEvent(opts...).Send()
 }
 
@@ -66,17 +66,9 @@ func generateID() string {
 	return ulid.Make().String()
 }
 
-func (e *event) SetEventID(eventID string) {
-	if len(eventID) != 26 {
-		log.Println(errors.New(custom_errors.ModuleName))
-		return
-	}
-	e.EventID = eventID
-}
-
 func (e *event) SetEventType(eventType string) {
 	if strings.TrimSpace(eventType) == "" {
-		log.Println(errors.New(custom_errors.ModuleName))
+		log.Println(errors.New(custom_errors.EmptyEventType))
 		return
 	}
 	e.EventType = eventType
@@ -84,7 +76,7 @@ func (e *event) SetEventType(eventType string) {
 
 func (e *event) SetTime(t time.Time) {
 	if t.Equal(time.Time{}) {
-		log.Println(errors.New(custom_errors.ModuleName))
+		log.Println(errors.New(custom_errors.ZeroTime))
 		return
 	}
 	e.Time = t
@@ -98,7 +90,7 @@ func (e *event) SetAttributes(kvs ...Attribute) {
 	for _, kv := range kvs {
 		// 校验 attribute 是否合法，合法的才放进map去重。
 		if !kv.Valid() {
-			log.Println(custom_errors.Event_InvalidKey)
+			log.Println(custom_errors.EmptyKey)
 			continue
 		}
 		e.Resource.AttributesMap[kv.GetKey()] = kv.GetValue().GetData()
@@ -111,7 +103,7 @@ func (e *event) SetSubject(subject string) {
 
 func (e *event) SetLink(spanContext trace.SpanContext) {
 	if !spanContext.IsValid() {
-		log.Println(errors.New(custom_errors.ModuleName))
+		log.Println(errors.New(custom_errors.InvalidLink))
 		return
 	}
 	e.Link.TraceID = spanContext.TraceID().String()
@@ -192,7 +184,7 @@ func UnmarshalEvents(b []byte) ([]Event, error) {
 	}
 	// 如果返回空切片说明传入的JSON格式错误。
 	if len(result) == 0 {
-		err = errors.New(custom_errors.Event_InvalidJSON)
+		err = errors.New(custom_errors.InvalidJSON)
 	}
 	return result, err
 }

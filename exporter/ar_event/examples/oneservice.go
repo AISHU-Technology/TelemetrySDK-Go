@@ -24,7 +24,10 @@ func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 
 // add 增加了 Event 的计算两数之和。
 func add(ctx context.Context, x, y int64) (context.Context, int64) {
-	eventsdk.Info(007, eventsdk.WithEventType("EventExporter/add"))
+	eventsdk.Info(struct {
+		Name string
+		Age  int
+	}{"name", 22}, eventsdk.WithEventType("EventExporter/add"))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
@@ -42,7 +45,7 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, span := ar_trace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
-	eventsdk.Warn(100, eventsdk.WithSpanContext(span.SpanContext()))
+	eventsdk.Warn(map[string]string{"key": "value", "data": "data"}, eventsdk.WithSpanContext(span.SpanContext()))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)

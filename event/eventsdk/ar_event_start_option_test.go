@@ -43,41 +43,41 @@ func TestWithData(t *testing.T) {
 		{
 			"",
 			args{nil},
-			WithData(nil),
+			withData(nil),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithData(tt.args.data); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).Data, tt.want.apply(defaultEventStartConfig()).Data) {
-				t.Errorf("WithData() = %v, want %v", got, tt.want)
+			if got := withData(tt.args.data); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).Data, tt.want.apply(defaultEventStartConfig()).Data) {
+				t.Errorf("withData() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestWithEventID(t *testing.T) {
-	type args struct {
-		eventID string
-	}
-	tests := []struct {
-		name string
-		args args
-		want EventStartOption
-	}{
-		{
-			"",
-			args{"qwertyuiopasdfghjklzxcvbnm"},
-			WithEventID("qwertyuiopasdfghjklzxcvbnm"),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := WithEventID(tt.args.eventID); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).EventID, tt.want.apply(defaultEventStartConfig()).EventID) {
-				t.Errorf("WithEventID() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
+//func TestWithEventID(t *testing.T) {
+//	type args struct {
+//		eventID string
+//	}
+//	tests := []struct {
+//		name string
+//		args args
+//		want EventStartOption
+//	}{
+//		{
+//			"",
+//			args{"qwertyuiopasdfghjklzxcvbnm"},
+//			WithEventID("qwertyuiopasdfghjklzxcvbnm"),
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			if got := WithEventID(tt.args.eventID); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).EventID, tt.want.apply(defaultEventStartConfig()).EventID) {
+//				t.Errorf("WithEventID() = %v, want %v", got, tt.want)
+//			}
+//		})
+//	}
+//}
 
 func TestWithEventType(t *testing.T) {
 	type args struct {
@@ -115,13 +115,13 @@ func TestWithLevel(t *testing.T) {
 		{
 			"",
 			args{WARN},
-			WithLevel(WARN),
+			withLevel(WARN),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithLevel(tt.args.level); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).Level, tt.want.apply(defaultEventStartConfig()).Level) {
-				t.Errorf("WithLevel() = %v, want %v", got, tt.want)
+			if got := withLevel(tt.args.level); !reflect.DeepEqual(got.apply(defaultEventStartConfig()).Level, tt.want.apply(defaultEventStartConfig()).Level) {
+				t.Errorf("withLevel() = %v, want %v", got, tt.want)
 			}
 		})
 	}

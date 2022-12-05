@@ -13,14 +13,15 @@ func (o eventStartOptionFunc) apply(cfg *eventStartConfig) *eventStartConfig {
 	return o(cfg)
 }
 
-func WithEventID(eventID string) EventStartOption {
-	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
-		if len(eventID) == 26 {
-			cfg.EventID = eventID
-		}
-		return cfg
-	})
-}
+//当前版本不允许修改eventID。
+//func WithEventID(eventID string) EventStartOption {
+//	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
+//		if len(eventID) == 26 {
+//			cfg.EventID = eventID
+//		}
+//		return cfg
+//	})
+//}
 
 func WithEventType(eventType string) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
@@ -40,7 +41,7 @@ func WithTime(t time.Time) EventStartOption {
 	})
 }
 
-func WithLevel(level Level) EventStartOption {
+func withLevel(level Level) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		cfg.Level = level
 		return cfg
@@ -68,7 +69,7 @@ func WithSpanContext(spanContext trace.SpanContext) EventStartOption {
 	})
 }
 
-func WithData(data interface{}) EventStartOption {
+func withData(data interface{}) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		cfg.Data = data
 		return cfg

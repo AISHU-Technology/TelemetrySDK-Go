@@ -7,13 +7,11 @@ import (
 
 // Event 对外暴露的 event 接口。
 type Event interface {
-	//SetEventID 当前不允许修改 EventID 。
-	SetEventID(eventID string)
 	// SetEventType 设置非空 EventType 。
 	SetEventType(eventType string)
 	// SetTime 设置 Time 。
 	SetTime(time time.Time)
-	// SetLevel 设置 level 。
+	//SetLevel 设置 level 。
 	SetLevel(level Level)
 	// SetAttributes 设置 Attributes 。
 	SetAttributes(kvs ...Attribute)
@@ -40,7 +38,6 @@ type Event interface {
 	GetLink() Link
 	// GetData 返回 Data 。
 	GetData() interface{}
-
 	// GetEventMap 返回 map[string]interface{} 形式的 event 。
 	GetEventMap() map[string]interface{}
 	// Send 上报 Event 到 AnyRobot Event 数据接收器。
@@ -48,4 +45,7 @@ type Event interface {
 
 	// private 禁止自己实现接口
 	private()
+	//SetEventID 当前不允许修改 EventID 。
+	//SetEventID(eventID string)
+
 }
