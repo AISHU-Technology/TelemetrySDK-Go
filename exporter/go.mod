@@ -3,7 +3,7 @@ module devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exp
 go 1.18
 
 require (
-	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221205045321-cb0f7b9edbf6
+	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221205075222-d2ec7ea2f176
 	github.com/agiledragon/gomonkey/v2 v2.9.0
 	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/shirou/gopsutil/v3 v3.22.10
@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect

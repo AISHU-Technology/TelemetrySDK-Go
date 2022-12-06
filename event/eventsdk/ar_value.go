@@ -14,7 +14,9 @@ func (v value) GetData() interface{} {
 	return v.Data
 }
 
-func (v value) private() {}
+func (v value) private() {
+	// private 禁止用户自己实现接口。
+}
 
 // BoolValue 传入 bool 类型的值。
 func BoolValue(v bool) Value {

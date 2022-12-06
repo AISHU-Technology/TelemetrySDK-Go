@@ -166,7 +166,9 @@ func (e *event) Send() {
 	})
 }
 
-func (e *event) private() {}
+func (e *event) private() {
+	// private 禁止用户自己实现接口。
+}
 
 // UnmarshalEvents 将JSON解析成[]Event。
 func UnmarshalEvents(b []byte) ([]Event, error) {

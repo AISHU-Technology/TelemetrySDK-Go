@@ -43,7 +43,7 @@ type Event interface {
 	// Send 上报 Event 到 AnyRobot Event 数据接收器。
 	Send()
 
-	// private 禁止自己实现接口
+	// private 禁止用户自己实现接口。
 	private()
 	//SetEventID 当前不允许修改 EventID 。
 	//SetEventID(eventID string)

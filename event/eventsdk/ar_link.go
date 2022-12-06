@@ -28,4 +28,6 @@ func (l link) Valid() bool {
 	return len(l.GetTraceID()) == 32 && len(l.GetSpanID()) == 16
 }
 
-func (l link) private() {}
+func (l link) private() {
+	// private 禁止用户自己实现接口。
+}

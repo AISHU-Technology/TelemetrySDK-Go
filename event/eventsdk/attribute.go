@@ -9,6 +9,6 @@ type Attribute interface {
 	// GetValue 返回 attribute 的值。
 	GetValue() Value
 
-	// private 禁止自己实现接口
+	// private 禁止用户自己实现接口。
 	private()
 }

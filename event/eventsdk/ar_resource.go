@@ -32,7 +32,9 @@ func (r *resource) Valid() bool {
 	return r != nil && r.GetAttributes() != nil && len(r.GetAttributes()) > 0
 }
 
-func (r *resource) private() {}
+func (r *resource) private() {
+	// private 禁止用户自己实现接口。
+}
 
 // MarshalJSON 只输出 AttributesMap 。
 func (r *resource) MarshalJSON() ([]byte, error) {

@@ -7,6 +7,6 @@ type EventProvider interface {
 	// ForceFlush 立即发送 []Event 。
 	ForceFlush() error
 
-	// private 禁止自己实现接口
+	// private 禁止用户自己实现接口。
 	private()
 }

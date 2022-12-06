@@ -25,7 +25,9 @@ func (l level) Valid() bool {
 	}
 }
 
-func (l level) private() {}
+func (l level) private() {
+	// private 禁止用户自己实现接口。
+}
 
 const (
 	ERROR level = "ERROR"

@@ -56,7 +56,9 @@ func (a *attribute) GetValue() Value {
 	return a.Value
 }
 
-func (a *attribute) private() {}
+func (a *attribute) private() {
+	// private 禁止用户自己实现接口。
+}
 
 // getHostIP 获取主机IP。
 func getHostIP() string {

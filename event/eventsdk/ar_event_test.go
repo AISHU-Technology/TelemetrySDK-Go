@@ -823,7 +823,7 @@ func TestEventSetSubject(t *testing.T) {
 				Link:      link{},
 				Data:      nil,
 			},
-			args{"operating.obj"},
+			args{"subject"},
 		},
 	}
 	for _, tt := range tests {

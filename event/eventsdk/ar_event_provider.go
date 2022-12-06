@@ -142,4 +142,6 @@ func (ep *eventProvider) sendEvents() {
 	}
 }
 
-func (ep *eventProvider) private() {}
+func (ep *eventProvider) private() {
+	// private 禁止用户自己实现接口。
+}

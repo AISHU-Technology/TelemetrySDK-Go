@@ -7,6 +7,6 @@ type Value interface {
 	// GetData 返回 Data 的值。
 	GetData() interface{}
 
-	// private 禁止自己实现接口
+	// private 禁止用户自己实现接口。
 	private()
 }

@@ -583,7 +583,7 @@ func TestNewResponseError(t *testing.T) {
 }
 
 func TestSend(t *testing.T) {
-	req, _ := http.NewRequest(http.MethodHead, "http://127.0.0.1", nil)
+	req, _ := http.NewRequest(http.MethodHead, "http://255.255.255.255", nil)
 	res, _ := http.DefaultClient.Do(req)
 	type args struct {
 		d   *HttpClient
@@ -607,7 +607,7 @@ func TestSend(t *testing.T) {
 				req: req,
 			},
 			res,
-			false,
+			true,
 		},
 	}
 	for _, tt := range tests {
