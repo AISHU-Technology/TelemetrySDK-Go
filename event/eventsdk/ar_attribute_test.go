@@ -319,20 +319,20 @@ func TestAttributePrivate(t *testing.T) {
 	}
 }
 
-func TestDefaultAttributes(t *testing.T) {
+func TestGetDefaultAttributes(t *testing.T) {
 	tests := []struct {
 		name string
 		want map[string]interface{}
 	}{
 		{
 			"",
-			defaultAttributes(),
+			getDefaultAttributes(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := defaultAttributes(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("defaultAttributes() = %v, want %v", got, tt.want)
+			if got := getDefaultAttributes(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getDefaultAttributes() = %v, want %v", got, tt.want)
 			}
 		})
 	}

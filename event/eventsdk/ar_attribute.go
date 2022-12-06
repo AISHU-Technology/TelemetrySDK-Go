@@ -73,8 +73,8 @@ func getHostInfo() *host.InfoStat {
 	return info
 }
 
-// defaultAttributes 获取默认资源信息。
-func defaultAttributes() map[string]interface{} {
+// getDefaultAttributes 获取默认资源信息。
+func getDefaultAttributes() map[string]interface{} {
 	// 获取本机IP
 	ip := getHostIP()
 	info := getHostInfo()
@@ -116,4 +116,14 @@ func defaultAttributes() map[string]interface{} {
 	serviceMap["instance"] = serviceInstance
 
 	return result
+}
+
+var defaultAttributes = getDefaultAttributes()
+
+func copyDefaultAttributes() map[string]interface{} {
+	copyMap := make(map[string]interface{})
+	for k, v := range defaultAttributes {
+		copyMap[k] = v
+	}
+	return copyMap
 }

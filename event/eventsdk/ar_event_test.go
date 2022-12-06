@@ -982,7 +982,7 @@ func TestEventValid(t *testing.T) {
 				EventType: "EventExporter/multiply",
 				Time:      time.Now(),
 				Level:     "INFO",
-				Resource:  &resource{"", defaultAttributes()},
+				Resource:  &resource{"", getDefaultAttributes()},
 				Subject:   "",
 				Link: link{
 					"5bd0ecc145cc8639007721df27ecda50",

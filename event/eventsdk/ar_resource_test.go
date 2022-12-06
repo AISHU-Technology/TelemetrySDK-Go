@@ -217,7 +217,7 @@ func TestResourceValid(t *testing.T) {
 			"",
 			fields{
 				SchemaURL:     "",
-				AttributesMap: defaultAttributes(),
+				AttributesMap: getDefaultAttributes(),
 			},
 			true,
 		}, {

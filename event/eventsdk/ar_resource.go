@@ -15,7 +15,7 @@ type resource struct {
 func newResource() *resource {
 	r := &resource{
 		SchemaURL:     version.SchemaURL,
-		AttributesMap: defaultAttributes(),
+		AttributesMap: copyDefaultAttributes(),
 	}
 	return r
 }
