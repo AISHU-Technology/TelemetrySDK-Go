@@ -108,13 +108,6 @@ func getDefaultAttributes() map[string]interface{} {
 	sdkMap["name"] = sdkName
 	sdkVersion := version.VERSION
 	sdkMap["version"] = sdkVersion
-	// 服务信息
-	serviceMap := make(map[string]string, 3)
-	result["service"] = serviceMap
-	serviceMap["name"] = serviceName
-	serviceMap["version"] = serviceVersion
-	serviceMap["instance"] = serviceInstance
-
 	return result
 }
 
@@ -125,5 +118,11 @@ func copyDefaultAttributes() map[string]interface{} {
 	for k, v := range defaultAttributes {
 		copyMap[k] = v
 	}
+	// 服务信息
+	serviceMap := make(map[string]string, 3)
+	copyMap["service"] = serviceMap
+	serviceMap["name"] = serviceName
+	serviceMap["version"] = serviceVersion
+	serviceMap["instance"] = serviceInstance
 	return copyMap
 }
