@@ -30,8 +30,8 @@ func (e *Exporter) ExportEvents(ctx context.Context, events []eventsdk.Event) er
 	return e.ExportData(ctx, file.Bytes())
 }
 
-// NewExporter 创建已启动的Exporter。
-func NewExporter(c public.Client) *Exporter {
+// NewEventExporter 创建已启动的Exporter。
+func NewEventExporter(c public.Client) *Exporter {
 	return &Exporter{
 		public.NewExporter(c),
 	}

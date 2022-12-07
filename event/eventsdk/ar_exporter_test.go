@@ -120,7 +120,7 @@ func TestExporterExportEvents(t *testing.T) {
 				stopOnce: sync.Once{},
 			}
 			if err := e.ExportEvents(tt.args.ctx, tt.args.events); (err != nil) != tt.wantErr {
-				t.Errorf("ExportEvents() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("ExportMetrics() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

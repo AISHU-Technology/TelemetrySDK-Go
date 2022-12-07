@@ -41,8 +41,8 @@ func (e *Exporter) ExportSpans(ctx context.Context, traces []sdktrace.ReadOnlySp
 	return e.ExportData(ctx, file.Bytes())
 }
 
-// NewExporter 创建已启动的Exporter。
-func NewExporter(c public.Client) *Exporter {
+// NewTraceExporter 创建已启动的Exporter。
+func NewTraceExporter(c public.Client) *Exporter {
 	return &Exporter{
 		public.NewExporter(c),
 	}

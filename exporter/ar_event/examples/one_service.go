@@ -27,7 +27,7 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	eventsdk.Info(struct {
 		Name string
 		Age  int
-	}{"name", 22}, eventsdk.WithEventType("EventExporter/add"))
+	}{"name", 22}, eventsdk.WithEventType("NewEventExporter/add"))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
@@ -65,7 +65,7 @@ func Example() {
 func StdoutExample() {
 	ctx := context.Background()
 	eventClient := public.NewStdoutClient("./AnyRobotEvent.txt")
-	eventExporter := ar_event.NewExporter(eventClient)
+	eventExporter := ar_event.NewEventExporter(eventClient)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventExporter))
 	eventsdk.SetEventProvider(eventProvider)
 
@@ -85,7 +85,7 @@ func HTTPExample() {
 	ctx := context.Background()
 	eventClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
-	eventExporter := ar_event.NewExporter(eventClient)
+	eventExporter := ar_event.NewEventExporter(eventClient)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventExporter, eventsdk.GetDefaultExporter()), eventsdk.WithServiceInfo("YourServiceName", "1.0.1", ""))
 	eventsdk.SetEventProvider(eventProvider)
 

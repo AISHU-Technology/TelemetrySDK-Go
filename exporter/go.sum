@@ -1,5 +1,5 @@
-devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221206095733-12cc5a16b5d8 h1:+6L+en/NP6lWZIvnK31eecq967o6ASCTqItPYix+BGw=
-devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221206095733-12cc5a16b5d8/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221207062840-1b1fc8d31ae8 h1:wR/oQK/PcXoIbS/6ElKDMftPQ0gtpSaL+rY7e6yH24k=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20221207062840-1b1fc8d31ae8/go.mod h1:WgsHTPQHDFO4iL5L8FUGVIybS+4cQFsE/Bf6rFWq/xI=
 github.com/agiledragon/gomonkey/v2 v2.9.0 h1:PDiKKybR596O6FHW+RVSG0Z7uGCBNbmbUXh3uCNQ7Hc=
 github.com/agiledragon/gomonkey/v2 v2.9.0/go.mod h1:ap1AmDzcVOAz1YpeJ3TCzIgstoaWLA6jbbgxfB4w2iY=
 github.com/cenkalti/backoff/v4 v4.2.0 h1:HN5dHm3WBOgndBH6E8V0q2jIYIR3s9yglV8k/+MN3u4=
