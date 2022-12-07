@@ -166,6 +166,18 @@ func (e *event) Send() {
 	})
 }
 
+func SetServiceInfo(ServiceName string, ServiceVersion string, ServiceInstance string) {
+	if strings.TrimSpace(ServiceName) != "" {
+		serviceName = ServiceName
+	}
+	if strings.TrimSpace(ServiceVersion) != "" {
+		serviceVersion = ServiceVersion
+	}
+	if strings.TrimSpace(ServiceInstance) != "" {
+		serviceInstance = ServiceInstance
+	}
+}
+
 func (e *event) private() {
 	// private 禁止用户自己实现接口。
 }

@@ -1087,3 +1087,29 @@ func TestError(t *testing.T) {
 		})
 	}
 }
+
+func TestSetServiceInfo(t *testing.T) {
+	type args struct {
+		ServiceName     string
+		ServiceVersion  string
+		ServiceInstance string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			"",
+			args{
+				"MYServiceName",
+				"MYServiceVersion",
+				"MYServiceInstance",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetServiceInfo(tt.args.ServiceName, tt.args.ServiceVersion, tt.args.ServiceInstance)
+		})
+	}
+}
