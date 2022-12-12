@@ -160,6 +160,15 @@ func (js *JsonEncoder) write(f field.Field) error {
 		}
 		_, res := w.WriteBytes(b)
 		return res
+
+	case field.MapType:
+		b, err := json.Marshal(f)
+
+		if err != nil {
+			return err
+		}
+		_, res := w.WriteBytes(b)
+		return res
 	}
 
 }
