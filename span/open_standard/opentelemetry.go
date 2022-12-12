@@ -2,7 +2,7 @@
  * @Author: Nick.nie Nick.nie@aishu.cn
  * @Date: 2022-12-09 03:07:50
  * @LastEditors: Nick.nie Nick.nie@aishu.cn
- * @LastEditTime: 2022-12-12 03:20:29
+ * @LastEditTime: 2022-12-12 03:45:14
  * @FilePath: /span/open_standard/opentelemetry.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -151,8 +151,7 @@ func (o *OpenTelemetry) write(t field.LogSpan, flag int) error {
 func (o *OpenTelemetry) dealResource() {
 	resMap, ok := o.Resource.(field.MapField)
 	if ok {
-
-		_, serviceInfoOk := resMap["serveice"]
+		_, serviceInfoOk := resMap["service"]
 		_, telemetryInfoOk := resMap["telemetry"]
 		_, hostInfoOk := resMap["host"]
 		_, osInfoOk := resMap["os"]
