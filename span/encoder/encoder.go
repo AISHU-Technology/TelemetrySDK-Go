@@ -167,12 +167,16 @@ func (js *JsonEncoder) write(f field.Field) error {
 // String2Bytes unsafe convert string to []byte, they point to the same memory
 func (js *JsonEncoder) string2Bytes(s string) []byte {
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh := reflect.SliceHeader{
-		Data: sh.Data,
-		Len:  sh.Len,
-		Cap:  sh.Len,
-	}
-	return *(*[]byte)(unsafe.Pointer(&bh))
+	result := make([]byte, sh.Len, sh.Len)
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&result))
+	bh.Data = sh.Data
+	return result
+	// bh := reflect.SliceHeader{
+	// 	Data: sh.Data,
+	// 	Len:  sh.Len,
+	// 	Cap:  sh.Len,
+	// }
+	// return *(*[]byte)(unsafe.Pointer(&bh))
 }
 
 func (js *JsonEncoder) safeWriteString(s string) (int, error) {

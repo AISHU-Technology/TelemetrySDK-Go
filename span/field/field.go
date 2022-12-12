@@ -1,3 +1,11 @@
+/*
+ * @Author: Nick.nie Nick.nie@aishu.cn
+ * @Date: 2022-12-09 04:43:20
+ * @LastEditors: Nick.nie Nick.nie@aishu.cn
+ * @LastEditTime: 2022-12-11 22:13:16
+ * @FilePath: /span/field/field.go
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 package field
 
 import "time"
@@ -79,4 +87,14 @@ func MallocJsonField(data interface{}) *JsonFiled {
 	return &JsonFiled{
 		Data: data,
 	}
+}
+
+func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstanceID string) Field {
+	service := make(map[string]interface{})
+	service["name"] = ServiceName
+	service["version"] = ServiceVersion
+	service["instance"] = map[string]string{"id": ServiceInstanceID}
+
+	jsonServiceInfo := MallocJsonField(map[string]interface{}{"service": service})
+	return jsonServiceInfo
 }
