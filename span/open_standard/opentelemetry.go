@@ -2,7 +2,7 @@
  * @Author: Nick.nie Nick.nie@aishu.cn
  * @Date: 2022-12-09 03:07:50
  * @LastEditors: Nick.nie Nick.nie@aishu.cn
- * @LastEditTime: 2022-12-12 03:45:14
+ * @LastEditTime: 2022-12-12 04:16:55
  * @FilePath: /span/open_standard/opentelemetry.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,6 +23,10 @@ const (
 	SDKName     = "TelemetrySDK-Go/span"
 	SDKVersion  = "2.0.1"
 	SDKLanguage = "go"
+
+	serviceName     = "UnknownServiceName"
+	serviceVersion  = "UnknownServiceVersion"
+	serviceInstance = "UnknownServiceInstance"
 )
 
 type Writer interface {
@@ -53,6 +57,11 @@ func (o *OpenTelemetry) Write(t field.LogSpan) error {
 
 func (o *OpenTelemetry) SetDefaultResources() {
 	defaultResource := getDefaultResource()
+	service := make(map[string]interface{})
+	service["name"] = serviceName
+	service["version"] = serviceVersion
+	service["instance"] = map[string]string{"id": serviceInstance}
+	defaultResource["service"] = service
 	o.Resource = field.MapField(defaultResource)
 }
 
@@ -155,12 +164,26 @@ func (o *OpenTelemetry) dealResource() {
 		_, telemetryInfoOk := resMap["telemetry"]
 		_, hostInfoOk := resMap["host"]
 		_, osInfoOk := resMap["os"]
-		if serviceInfoOk && telemetryInfoOk && hostInfoOk && osInfoOk {
-			return
+		if serviceInfoOk {
+			if telemetryInfoOk && hostInfoOk && osInfoOk {
+				return
+			} else {
+				defaultResource := getDefaultResource()
+				for k, v := range defaultResource {
+					resMap[k] = v
+				}
+				o.Resource = field.MapField(resMap)
+				return
+			}
 		}
 
 	}
 	defaultResource := getDefaultResource()
+	service := make(map[string]interface{})
+	service["name"] = serviceName
+	service["version"] = serviceVersion
+	service["instance"] = map[string]string{"id": serviceInstance}
+	defaultResource["service"] = service
 	defaultResource["customer"] = o.Resource
 	o.Resource = field.MapField(defaultResource)
 }
