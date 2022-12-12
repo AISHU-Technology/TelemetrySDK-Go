@@ -2,7 +2,7 @@
  * @Author: Nick.nie Nick.nie@aishu.cn
  * @Date: 2022-12-09 04:43:20
  * @LastEditors: Nick.nie Nick.nie@aishu.cn
- * @LastEditTime: 2022-12-11 22:13:16
+ * @LastEditTime: 2022-12-12 03:15:57
  * @FilePath: /span/field/field.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,6 +18,7 @@ type FieldTpye int
 type JsonFiled struct {
 	Data interface{}
 }
+type MapField map[string]interface{}
 
 const (
 	IntType = iota
@@ -28,6 +29,7 @@ const (
 	StructType
 	MetricType
 	JsonType
+	MapType
 )
 
 type Field interface {
@@ -89,12 +91,18 @@ func MallocJsonField(data interface{}) *JsonFiled {
 	}
 }
 
+func (f MapField) Type() FieldTpye {
+	return MapType
+}
+
+func (f MapField) protect() {}
+
 func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstanceID string) Field {
 	service := make(map[string]interface{})
 	service["name"] = ServiceName
 	service["version"] = ServiceVersion
 	service["instance"] = map[string]string{"id": ServiceInstanceID}
 
-	jsonServiceInfo := MallocJsonField(map[string]interface{}{"service": service})
-	return jsonServiceInfo
+	mapServiceInfo := MapField(map[string]interface{}{"service": service})
+	return mapServiceInfo
 }

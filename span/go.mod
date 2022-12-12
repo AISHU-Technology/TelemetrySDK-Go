@@ -8,7 +8,6 @@ require (
 	github.com/rs/zerolog v1.21.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.1
-	go.opentelemetry.io/otel/sdk v1.0.1
 	go.opentelemetry.io/otel/trace v1.0.1
 	go.uber.org/multierr v1.6.0
 	go.uber.org/zap v1.16.0

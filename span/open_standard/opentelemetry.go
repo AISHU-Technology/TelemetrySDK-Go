@@ -2,7 +2,7 @@
  * @Author: Nick.nie Nick.nie@aishu.cn
  * @Date: 2022-12-09 03:07:50
  * @LastEditors: Nick.nie Nick.nie@aishu.cn
- * @LastEditTime: 2022-12-12 02:32:18
+ * @LastEditTime: 2022-12-12 03:20:29
  * @FilePath: /span/open_standard/opentelemetry.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -53,7 +53,7 @@ func (o *OpenTelemetry) Write(t field.LogSpan) error {
 
 func (o *OpenTelemetry) SetDefaultResources() {
 	defaultResource := getDefaultResource()
-	o.Resource = field.MallocJsonField(defaultResource)
+	o.Resource = field.MapField(defaultResource)
 }
 
 func (o *OpenTelemetry) SetResourcesWithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstanceID string) {
@@ -63,7 +63,7 @@ func (o *OpenTelemetry) SetResourcesWithServiceInfo(ServiceName string, ServiceV
 	service["version"] = ServiceVersion
 	service["instance"] = map[string]string{"id": ServiceInstanceID}
 	defaultResource["service"] = service
-	o.Resource = field.MallocJsonField(defaultResource)
+	o.Resource = field.MapField(defaultResource)
 }
 
 func getHostIP() string {
@@ -149,20 +149,19 @@ func (o *OpenTelemetry) write(t field.LogSpan, flag int) error {
 }
 
 func (o *OpenTelemetry) dealResource() {
-	res, ok := o.Resource.(*field.JsonFiled)
+	resMap, ok := o.Resource.(field.MapField)
 	if ok {
-		resMap, mapOk := res.Data.(map[string]interface{})
-		if mapOk {
-			_, serviceInfoOk := resMap["serveice"]
-			_, telemetryInfoOk := resMap["telemetry"]
-			_, hostInfoOk := resMap["host"]
-			_, osInfoOk := resMap["os"]
-			if serviceInfoOk && telemetryInfoOk && hostInfoOk && osInfoOk {
-				return
-			}
+
+		_, serviceInfoOk := resMap["serveice"]
+		_, telemetryInfoOk := resMap["telemetry"]
+		_, hostInfoOk := resMap["host"]
+		_, osInfoOk := resMap["os"]
+		if serviceInfoOk && telemetryInfoOk && hostInfoOk && osInfoOk {
+			return
 		}
+
 	}
 	defaultResource := getDefaultResource()
 	defaultResource["customer"] = o.Resource
-	o.Resource = field.MallocJsonField(defaultResource)
+	o.Resource = field.MapField(defaultResource)
 }
