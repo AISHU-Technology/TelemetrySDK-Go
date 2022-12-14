@@ -3,7 +3,9 @@ package runtime
 import (
 	"context"
 	"sync"
+	"time"
 
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/config"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/open_standard"
 )
@@ -20,6 +22,9 @@ type Runtime struct {
 	runLock   sync.Mutex
 	w         open_standard.Writer
 	once      sync.Once
+	Logs      []field.LogSpan
+	Size      int
+	Ticker    *time.Ticker
 }
 
 // NewRuntime return a runtime
@@ -37,6 +42,8 @@ func NewRuntime(w open_standard.Writer, builder func(func(field.LogSpan), contex
 		runLock: sync.Mutex{},
 		w:       w,
 		once:    sync.Once{},
+		Ticker:  time.NewTicker(config.Internal),
+		Logs:    make([]field.LogSpan, 0, config.MaxLog+1),
 	}
 
 	return r
@@ -58,11 +65,14 @@ func (r *Runtime) Children(ctx context.Context) field.LogSpan {
 	return s
 }
 
-//Signal stop runtime thread
+// Signal stop runtime thread
 func (r *Runtime) Signal() {
 	r.closeLock.Lock()
 	r.close = true
 	r.wg.Wait()
+	if r.Size > 0 {
+		r.forceWrite()
+	}
 	r.once.Do(func() {
 		r.stop <- 0
 		close(r.cache)
@@ -87,16 +97,36 @@ func (r *Runtime) Run() {
 	r.runLock.Lock()
 	defer r.runLock.Unlock()
 	for {
-		s, ok := <-(r.cache)
-		if ok != true {
-			err := r.w.Close()
-			if err != nil {
-				panic(err)
+		select {
+		case s, ok := <-(r.cache):
+			// 关闭之后退出循环。
+			if !ok {
+				// 发完最后的数据关闭Exporter。
+				err := r.w.Close()
+				if err != nil {
+					panic(err)
+				}
+				return
 			}
-			return
+			r.Logs = append(r.Logs, s)
+			r.Size++
+			s.Free()
+			r.wg.Done()
+			// 超过上限发送。
+			if r.Size >= config.MaxLog {
+				r.forceWrite()
+			}
+		// 定时发送。
+		case <-r.Ticker.C:
+			if r.Size > 0 {
+				r.forceWrite()
+			}
 		}
-		r.w.Write(s)
-		s.Free()
-		r.wg.Done()
 	}
+}
+func (r *Runtime) forceWrite() {
+	r.w.Write(r.Logs)
+	// 发送完之后清空队列。
+	r.Size = 0
+	r.Logs = make([]field.LogSpan, 0, config.MaxLog+1)
 }

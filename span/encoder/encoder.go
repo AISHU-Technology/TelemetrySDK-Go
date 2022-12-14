@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"log"
 	"reflect"
 	"strconv"
 	"time"
@@ -65,10 +66,17 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 
 // buffer by encoder for output
 func (js *JsonEncoder) Write(f field.Field) error {
-	js.write(f)
+	err := js.write(f)
+	if err != nil {
+		//panic(res)
+		log.Println(err)
+	}
 	// _, res := js.WriteBytes(js.End)
-	js.WriteBytes(js.End)
-
+	_, res := js.WriteBytes(js.End)
+	if res != nil {
+		//panic(res)
+		log.Println(res)
+	}
 	return js.flush()
 
 }
@@ -76,7 +84,8 @@ func (js *JsonEncoder) Write(f field.Field) error {
 func (js *JsonEncoder) flush() error {
 	_, res := js.w.Write(js.bufReal.Bytes())
 	if res != nil {
-		panic(res)
+		//panic(res)
+		log.Println(res)
 	}
 	js.bufReal.Reset()
 	return res
