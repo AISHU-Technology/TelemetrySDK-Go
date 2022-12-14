@@ -2,7 +2,7 @@
  * @Author: Nick.nie Nick.nie@aishu.cn
  * @Date: 2022-12-09 03:07:50
  * @LastEditors: Nick.nie Nick.nie@aishu.cn
- * @LastEditTime: 2022-12-12 04:16:55
+ * @LastEditTime: 2022-12-14 02:56:24
  * @FilePath: /span/open_standard/opentelemetry.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@ import (
 	"net"
 	"time"
 
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/config"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/encoder"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 	"github.com/shirou/gopsutil/v3/host"
@@ -30,7 +31,7 @@ const (
 )
 
 type Writer interface {
-	Write(field.LogSpan) error
+	Write([]field.LogSpan) error
 	Close() error
 }
 
@@ -51,7 +52,7 @@ func NewOpenTelemetry(enc encoder.Encoder, resources field.Field) OpenTelemetry 
 	return res
 }
 
-func (o *OpenTelemetry) Write(t field.LogSpan) error {
+func (o *OpenTelemetry) Write(t []field.LogSpan) error {
 	return o.write(t, rootSpan)
 }
 
@@ -126,30 +127,34 @@ func (o *OpenTelemetry) Close() error {
 	return o.Encoder.Close()
 }
 
-func (o *OpenTelemetry) write(t field.LogSpan, flag int) error {
+func (o *OpenTelemetry) write(logSpans []field.LogSpan, flag int) error {
 	var err error
-	telemetry := field.MallocStructField(8)
+	telemetrys := field.MallocArrayField(config.MaxLog + 1)
+	for _, t := range logSpans {
+		telemetry := field.MallocStructField(8)
 
-	link := field.MallocStructField(2)
-	link.Set("TraceId", field.StringField(t.TraceID()))
-	link.Set("SpanId", field.StringField(t.SpanID()))
+		link := field.MallocStructField(2)
+		link.Set("TraceId", field.StringField(t.TraceID()))
+		link.Set("SpanId", field.StringField(t.SpanID()))
 
-	telemetry.Set("Link", link)
-	telemetry.Set("Timestamp", field.StringField(time.Now().Format(time.RFC3339Nano)))
-	telemetry.Set("SeverityText", t.GetLogLevel())
+		telemetry.Set("Link", link)
+		telemetry.Set("Timestamp", field.StringField(time.Now().Format(time.RFC3339Nano)))
+		telemetry.Set("SeverityText", t.GetLogLevel())
 
-	telemetry.Set("Body", t.GetRecord())
-	attrs := t.GetAttributes()
+		telemetry.Set("Body", t.GetRecord())
+		attrs := t.GetAttributes()
 
-	telemetry.Set("Attributes", attrs)
+		telemetry.Set("Attributes", attrs)
 
-	if o.Resource == nil {
-		o.SetDefaultResources()
+		if o.Resource == nil {
+			o.SetDefaultResources()
+		}
+		o.dealResource()
+		telemetry.Set("Resource", o.Resource)
+		telemetrys.Append(telemetry)
 	}
-	o.dealResource()
-	telemetry.Set("Resource", o.Resource)
 
-	err = o.Encoder.Write(telemetry)
+	err = o.Encoder.Write(telemetrys)
 	if err != nil {
 		return err
 	}
