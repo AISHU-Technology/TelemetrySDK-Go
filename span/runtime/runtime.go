@@ -110,7 +110,6 @@ func (r *Runtime) Run() {
 			}
 			r.Logs = append(r.Logs, s)
 			r.Size++
-			s.Free()
 			r.wg.Done()
 			// 超过上限发送。
 			if r.Size >= config.MaxLog {
@@ -127,6 +126,9 @@ func (r *Runtime) Run() {
 func (r *Runtime) forceWrite() {
 	r.w.Write(r.Logs)
 	// 发送完之后清空队列。
+	for _, v := range r.Logs {
+		v.Free()
+	}
 	r.Size = 0
 	r.Logs = make([]field.LogSpan, 0, config.MaxLog+1)
 }
