@@ -7,7 +7,7 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/encoder"
 )
 
-var _ encoder.Exporter = (*Exporter)(nil)
+var _ encoder.LogExporter = (*Exporter)(nil)
 
 // Exporter 导出数据到AnyRobot Feed Ingester的 log 数据接收器。
 type Exporter struct {
@@ -38,5 +38,5 @@ func (e *Exporter) Write(p []byte) (n int, err error) {
 
 // 返回cancel函数供sdk结束时调用
 func (e *Exporter) GetCancelFunc() context.CancelFunc {
-	return e.GetCancelFunc()
+	return e.cancelFunc
 }
