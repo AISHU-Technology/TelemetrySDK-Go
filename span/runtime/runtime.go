@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/config"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/log_config"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/open_standard"
 )
 
@@ -42,8 +42,8 @@ func NewRuntime(w open_standard.Writer, builder func(func(field.LogSpan), contex
 		runLock: sync.Mutex{},
 		w:       w,
 		once:    sync.Once{},
-		Ticker:  time.NewTicker(config.Internal),
-		Logs:    make([]field.LogSpan, 0, config.MaxLog+1),
+		Ticker:  time.NewTicker(log_config.Internal),
+		Logs:    make([]field.LogSpan, 0, log_config.MaxLog+1),
 	}
 
 	return r
@@ -112,7 +112,7 @@ func (r *Runtime) Run() {
 			r.Size++
 			r.wg.Done()
 			// 超过上限发送。
-			if r.Size >= config.MaxLog {
+			if r.Size >= log_config.MaxLog {
 				r.forceWrite()
 			}
 		// 定时发送。
@@ -130,5 +130,5 @@ func (r *Runtime) forceWrite() {
 		v.Free()
 	}
 	r.Size = 0
-	r.Logs = make([]field.LogSpan, 0, config.MaxLog+1)
+	r.Logs = make([]field.LogSpan, 0, log_config.MaxLog+1)
 }

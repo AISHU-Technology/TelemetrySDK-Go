@@ -2,10 +2,10 @@ package encoder
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"io/ioutil"
-	"log"
 	"reflect"
 	"strconv"
 	"time"
@@ -15,6 +15,8 @@ import (
 )
 
 var (
+	maxWaitExporterTime = 20 * time.Second
+
 	_quotationSafe   = []byte("\\\"")
 	_reverseSafe     = []byte("\\\\")
 	_backspaceSafe   = []byte("\\b")
@@ -42,41 +44,41 @@ type JsonEncoder struct {
 	buf     io.Writer
 	End     []byte
 	bufReal *bytes.Buffer
+	Ctx     context.Context
+	Cancel  context.CancelFunc
 }
 
 func NewJsonEncoder(w io.Writer) Encoder {
+	ctx, cancel := context.WithCancel(context.Background())
 	res := &JsonEncoder{
 		w:       w,
 		End:     _lineFeed,
 		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
+		Ctx:     ctx,
+		Cancel:  cancel,
 	}
 	res.buf = res.bufReal
 	return res
 }
 
 func NewJsonEncoderBench(w io.Writer) Encoder {
+	ctx, cancel := context.WithCancel(context.Background())
 	res := &JsonEncoder{
 		w:       w,
 		End:     _lineFeed,
 		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
 		buf:     ioutil.Discard,
+		Ctx:     ctx,
+		Cancel:  cancel,
 	}
 	return res
 }
 
 // buffer by encoder for output
 func (js *JsonEncoder) Write(f field.Field) error {
-	err := js.write(f)
-	if err != nil {
-		//panic(res)
-		log.Println(err)
-	}
+	js.write(f)
 	// _, res := js.WriteBytes(js.End)
-	_, res := js.WriteBytes(js.End)
-	if res != nil {
-		//panic(res)
-		log.Println(res)
-	}
+	js.WriteBytes(js.End)
 	return js.flush()
 
 }
@@ -84,8 +86,7 @@ func (js *JsonEncoder) Write(f field.Field) error {
 func (js *JsonEncoder) flush() error {
 	_, res := js.w.Write(js.bufReal.Bytes())
 	if res != nil {
-		//panic(res)
-		log.Println(res)
+		panic(res)
 	}
 	js.bufReal.Reset()
 	return res
@@ -95,6 +96,14 @@ func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
 		return js.flush()
 	}
+	go func() {
+		t := time.NewTimer(maxWaitExporterTime)
+		defer t.Stop()
+		select {
+		case <-t.C:
+			js.Cancel()
+		}
+	}()
 	return nil
 }
 
