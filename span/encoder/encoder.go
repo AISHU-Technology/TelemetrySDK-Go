@@ -92,6 +92,10 @@ func (js *JsonEncoder) flush() error {
 	return res
 }
 
+func (js *JsonEncoder) getContext() context.Context {
+	return js.Ctx
+}
+
 func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
 		return js.flush()
