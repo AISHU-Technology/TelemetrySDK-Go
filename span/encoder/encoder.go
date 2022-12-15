@@ -11,6 +11,7 @@ import (
 	"time"
 	"unsafe"
 
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/exporter"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 )
 
@@ -39,47 +40,58 @@ type Encoder interface {
 	Close() error
 }
 
-type LogExporter interface {
-	Write(p []byte) (n int, err error)
-	GetCancelFunc() context.CancelFunc
-}
-
 type JsonEncoder struct {
-	w       io.Writer
-	buf     io.Writer
-	End     []byte
-	bufReal *bytes.Buffer
-	cancel  context.CancelFunc
+	w            io.Writer
+	logExporters map[string]exporter.LogExporter
+	buf          io.Writer
+	End          []byte
+	bufReal      *bytes.Buffer
+	ctx          context.Context
+	cancelFunc   context.CancelFunc
 }
 
 func NewJsonEncoder(w io.Writer) Encoder {
+	ctx, cancel := context.WithCancel(context.Background())
 	res := &JsonEncoder{
-		w:       w,
-		End:     _lineFeed,
-		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
-		cancel:  nil,
+		w:            w,
+		logExporters: nil,
+		End:          _lineFeed,
+		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		ctx:          ctx,
+		cancelFunc:   cancel,
 	}
 	res.buf = res.bufReal
 	return res
 }
 
-func NewJsonEncoderWithExporter(w LogExporter) Encoder {
+func NewJsonEncoderWithExporter(exporters ...exporter.LogExporter) Encoder {
+	ctx, cancel := context.WithCancel(context.Background())
+	eps := make(map[string]exporter.LogExporter)
+	for _, e := range exporters {
+		eps[e.Name()] = e
+	}
 	res := &JsonEncoder{
-		w:       w,
-		End:     _lineFeed,
-		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
-		cancel:  w.GetCancelFunc(),
+		w:            nil,
+		logExporters: eps,
+		End:          _lineFeed,
+		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		ctx:          ctx,
+		cancelFunc:   cancel,
 	}
 	res.buf = res.bufReal
 	return res
 }
 
 func NewJsonEncoderBench(w io.Writer) Encoder {
+	ctx, cancel := context.WithCancel(context.Background())
 	res := &JsonEncoder{
-		w:       w,
-		End:     _lineFeed,
-		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
-		buf:     ioutil.Discard,
+		w:            w,
+		logExporters: nil,
+		End:          _lineFeed,
+		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		buf:          ioutil.Discard,
+		ctx:          ctx,
+		cancelFunc:   cancel,
 	}
 	return res
 }
@@ -94,7 +106,21 @@ func (js *JsonEncoder) Write(f field.Field) error {
 }
 
 func (js *JsonEncoder) flush() error {
-	_, res := js.w.Write(js.bufReal.Bytes())
+	var res error = nil
+	if js.w != nil {
+		_, res = js.w.Write(js.bufReal.Bytes())
+	}
+	if js.logExporters != nil && len(js.logExporters) != 0 {
+		// 往所有发送地址发送相同的数据。
+		for _, e := range js.logExporters {
+			if err := e.ExportLogs(js.ctx, js.bufReal.Bytes()); err != nil {
+				// 如果多余一个错误则记日志。
+				if res == nil {
+					res = err
+				}
+			}
+		}
+	}
 	if res != nil {
 		panic(res)
 	}
@@ -106,16 +132,21 @@ func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
 		return js.flush()
 	}
-	if js.cancel != nil {
-		go func() {
-			t := time.NewTimer(maxWaitExporterTime)
-			defer t.Stop()
-			select {
-			case <-t.C:
-				js.cancel()
+	go func() {
+		t := time.NewTimer(maxWaitExporterTime)
+		defer t.Stop()
+		select {
+		case <-t.C:
+			js.cancelFunc()
+			if js.logExporters != nil && len(js.logExporters) != 0 {
+				for _, exporter := range js.logExporters {
+					if err := exporter.Shutdown(js.ctx); err != nil {
+						panic(err)
+					}
+				}
 			}
-		}()
-	}
+		}
+	}()
 	return nil
 }
 

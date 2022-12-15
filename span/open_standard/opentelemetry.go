@@ -2,7 +2,7 @@
  * @Author: Nick.nie Nick.nie@aishu.cn
  * @Date: 2022-12-09 03:07:50
  * @LastEditors: Nick.nie Nick.nie@aishu.cn
- * @LastEditTime: 2022-12-14 21:28:51
+ * @LastEditTime: 2022-12-15 04:12:24
  * @FilePath: /span/open_standard/opentelemetry.go
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,7 +14,6 @@ import (
 
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/encoder"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/log_config"
 	"github.com/shirou/gopsutil/v3/host"
 )
 
@@ -129,7 +128,7 @@ func (o *OpenTelemetry) Close() error {
 
 func (o *OpenTelemetry) write(logSpans []field.LogSpan, flag int) error {
 	var err error
-	telemetrys := field.MallocArrayField(log_config.MaxLog + 1)
+	telemetrys := field.MallocArrayField(len(logSpans) + 1)
 	for _, t := range logSpans {
 		telemetry := field.MallocStructField(8)
 

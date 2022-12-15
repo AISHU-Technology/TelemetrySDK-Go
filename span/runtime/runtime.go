@@ -6,8 +6,12 @@ import (
 	"time"
 
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/log_config"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/open_standard"
+)
+
+var (
+	defaultInternal = 10 * time.Second
+	defaultMaxLog   = 30
 )
 
 // Runtime read data from channel and write data in a single goroutine
@@ -24,7 +28,8 @@ type Runtime struct {
 	once      sync.Once
 	Logs      []field.LogSpan
 	Size      int
-	Ticker    *time.Ticker
+	MaxLog    int
+	Internal  time.Duration
 }
 
 // NewRuntime return a runtime
@@ -39,11 +44,12 @@ func NewRuntime(w open_standard.Writer, builder func(func(field.LogSpan), contex
 		// protect the close value
 		closeLock: sync.RWMutex{},
 		// represent the state of runtime thread, runtime thread will lock this until thread over
-		runLock: sync.Mutex{},
-		w:       w,
-		once:    sync.Once{},
-		Ticker:  time.NewTicker(log_config.Internal),
-		Logs:    make([]field.LogSpan, 0, log_config.MaxLog+1),
+		runLock:  sync.Mutex{},
+		w:        w,
+		once:     sync.Once{},
+		Logs:     make([]field.LogSpan, 0, defaultMaxLog+1),
+		MaxLog:   defaultMaxLog,
+		Internal: defaultInternal,
 	}
 
 	return r
@@ -96,6 +102,7 @@ func (r *Runtime) transfer(s field.LogSpan) {
 func (r *Runtime) Run() {
 	r.runLock.Lock()
 	defer r.runLock.Unlock()
+	Ticker := time.NewTicker(r.Internal)
 	for {
 		select {
 		case s, ok := <-(r.cache):
@@ -112,11 +119,11 @@ func (r *Runtime) Run() {
 			r.Size++
 			r.wg.Done()
 			// 超过上限发送。
-			if r.Size >= log_config.MaxLog {
+			if r.Size >= r.MaxLog {
 				r.forceWrite()
 			}
 		// 定时发送。
-		case <-r.Ticker.C:
+		case <-Ticker.C:
 			if r.Size > 0 {
 				r.forceWrite()
 			}
@@ -130,5 +137,11 @@ func (r *Runtime) forceWrite() {
 		v.Free()
 	}
 	r.Size = 0
-	r.Logs = make([]field.LogSpan, 0, log_config.MaxLog+1)
+	r.Logs = make([]field.LogSpan, 0, r.MaxLog+1)
+}
+
+func (r *Runtime) SetUploadInternalandMaxLog(Internal time.Duration, MaxLog int) {
+	r.Internal = Internal
+	r.MaxLog = MaxLog
+	r.Logs = make([]field.LogSpan, 0, r.MaxLog+1)
 }
