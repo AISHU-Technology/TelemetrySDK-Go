@@ -26,10 +26,10 @@ type Runtime struct {
 	runLock   sync.Mutex
 	w         open_standard.Writer
 	once      sync.Once
-	Logs      []field.LogSpan
-	Size      int
-	MaxLog    int
-	Internal  time.Duration
+	logs      []field.LogSpan
+	size      int
+	maxLog    int
+	internal  time.Duration
 }
 
 // NewRuntime return a runtime
@@ -47,9 +47,10 @@ func NewRuntime(w open_standard.Writer, builder func(func(field.LogSpan), contex
 		runLock:  sync.Mutex{},
 		w:        w,
 		once:     sync.Once{},
-		Logs:     make([]field.LogSpan, 0, defaultMaxLog+1),
-		MaxLog:   defaultMaxLog,
-		Internal: defaultInternal,
+		size:     0,
+		logs:     make([]field.LogSpan, 0, defaultMaxLog+1),
+		maxLog:   defaultMaxLog,
+		internal: defaultInternal,
 	}
 
 	return r
@@ -76,7 +77,7 @@ func (r *Runtime) Signal() {
 	r.closeLock.Lock()
 	r.close = true
 	r.wg.Wait()
-	if r.Size > 0 {
+	if r.size > 0 {
 		r.forceWrite()
 	}
 	r.once.Do(func() {
@@ -102,7 +103,7 @@ func (r *Runtime) transfer(s field.LogSpan) {
 func (r *Runtime) Run() {
 	r.runLock.Lock()
 	defer r.runLock.Unlock()
-	Ticker := time.NewTicker(r.Internal)
+	Ticker := time.NewTicker(r.internal)
 	for {
 		select {
 		case s, ok := <-(r.cache):
@@ -115,33 +116,33 @@ func (r *Runtime) Run() {
 				}
 				return
 			}
-			r.Logs = append(r.Logs, s)
-			r.Size++
+			r.logs = append(r.logs, s)
+			r.size++
 			r.wg.Done()
 			// 超过上限发送。
-			if r.Size >= r.MaxLog {
+			if r.size >= r.maxLog {
 				r.forceWrite()
 			}
 		// 定时发送。
 		case <-Ticker.C:
-			if r.Size > 0 {
+			if r.size > 0 {
 				r.forceWrite()
 			}
 		}
 	}
 }
 func (r *Runtime) forceWrite() {
-	r.w.Write(r.Logs)
+	r.w.Write(r.logs)
 	// 发送完之后清空队列。
-	for _, v := range r.Logs {
+	for _, v := range r.logs {
 		v.Free()
 	}
-	r.Size = 0
-	r.Logs = make([]field.LogSpan, 0, r.MaxLog+1)
+	r.size = 0
+	r.logs = make([]field.LogSpan, 0, r.maxLog+1)
 }
 
 func (r *Runtime) SetUploadInternalandMaxLog(Internal time.Duration, MaxLog int) {
-	r.Internal = Internal
-	r.MaxLog = MaxLog
-	r.Logs = make([]field.LogSpan, 0, r.MaxLog+1)
+	r.internal = Internal
+	r.maxLog = MaxLog
+	r.logs = make([]field.LogSpan, 0, r.maxLog+1)
 }

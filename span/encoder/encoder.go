@@ -44,7 +44,7 @@ type JsonEncoder struct {
 	w            io.Writer
 	logExporters map[string]exporter.LogExporter
 	buf          io.Writer
-	End          []byte
+	end          []byte
 	bufReal      *bytes.Buffer
 	ctx          context.Context
 	cancelFunc   context.CancelFunc
@@ -55,7 +55,7 @@ func NewJsonEncoder(w io.Writer) Encoder {
 	res := &JsonEncoder{
 		w:            w,
 		logExporters: nil,
-		End:          _lineFeed,
+		end:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
 		ctx:          ctx,
 		cancelFunc:   cancel,
@@ -73,7 +73,7 @@ func NewJsonEncoderWithExporter(exporters ...exporter.LogExporter) Encoder {
 	res := &JsonEncoder{
 		w:            nil,
 		logExporters: eps,
-		End:          _lineFeed,
+		end:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
 		ctx:          ctx,
 		cancelFunc:   cancel,
@@ -87,7 +87,7 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 	res := &JsonEncoder{
 		w:            w,
 		logExporters: nil,
-		End:          _lineFeed,
+		end:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
 		buf:          ioutil.Discard,
 		ctx:          ctx,
@@ -100,7 +100,7 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 func (js *JsonEncoder) Write(f field.Field) error {
 	js.write(f)
 	// _, res := js.WriteBytes(js.End)
-	js.WriteBytes(js.End)
+	js.WriteBytes(js.end)
 	return js.flush()
 
 }
