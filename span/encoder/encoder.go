@@ -57,6 +57,7 @@ func NewJsonEncoder(w io.Writer) Encoder {
 		w:       w,
 		End:     _lineFeed,
 		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
+		cancel:  nil,
 	}
 	res.buf = res.bufReal
 	return res
@@ -105,14 +106,16 @@ func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
 		return js.flush()
 	}
-	go func() {
-		t := time.NewTimer(maxWaitExporterTime)
-		defer t.Stop()
-		select {
-		case <-t.C:
-			js.cancel()
-		}
-	}()
+	if js.cancel != nil {
+		go func() {
+			t := time.NewTimer(maxWaitExporterTime)
+			defer t.Stop()
+			select {
+			case <-t.C:
+				js.cancel()
+			}
+		}()
+	}
 	return nil
 }
 
