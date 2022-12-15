@@ -39,7 +39,7 @@ type Encoder interface {
 	Close() error
 }
 
-type Exporter interface {
+type LogExporter interface {
 	Write(p []byte) (n int, err error)
 	GetCancelFunc() context.CancelFunc
 }
@@ -63,7 +63,7 @@ func NewJsonEncoder(w io.Writer) Encoder {
 	return res
 }
 
-func NewJsonEncoderWithExporter(w Exporter) Encoder {
+func NewJsonEncoderWithExporter(w LogExporter) Encoder {
 	res := &JsonEncoder{
 		w:       w,
 		End:     _lineFeed,
