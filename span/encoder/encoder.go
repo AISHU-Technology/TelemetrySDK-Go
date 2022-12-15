@@ -39,37 +39,46 @@ type Encoder interface {
 	Close() error
 }
 
+type Exporter interface {
+	Write(p []byte) (n int, err error)
+	GetCancelFunc() context.CancelFunc
+}
+
 type JsonEncoder struct {
 	w       io.Writer
 	buf     io.Writer
 	End     []byte
 	bufReal *bytes.Buffer
-	Ctx     context.Context
-	Cancel  context.CancelFunc
+	cancel  context.CancelFunc
 }
 
 func NewJsonEncoder(w io.Writer) Encoder {
-	ctx, cancel := context.WithCancel(context.Background())
 	res := &JsonEncoder{
 		w:       w,
 		End:     _lineFeed,
 		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
-		Ctx:     ctx,
-		Cancel:  cancel,
+	}
+	res.buf = res.bufReal
+	return res
+}
+
+func NewJsonEncoderWithExporter(w Exporter) Encoder {
+	res := &JsonEncoder{
+		w:       w,
+		End:     _lineFeed,
+		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
+		cancel:  w.GetCancelFunc(),
 	}
 	res.buf = res.bufReal
 	return res
 }
 
 func NewJsonEncoderBench(w io.Writer) Encoder {
-	ctx, cancel := context.WithCancel(context.Background())
 	res := &JsonEncoder{
 		w:       w,
 		End:     _lineFeed,
 		bufReal: bytes.NewBuffer(make([]byte, 0, 4096)),
 		buf:     ioutil.Discard,
-		Ctx:     ctx,
-		Cancel:  cancel,
 	}
 	return res
 }
@@ -92,10 +101,6 @@ func (js *JsonEncoder) flush() error {
 	return res
 }
 
-func (js *JsonEncoder) getContext() context.Context {
-	return js.Ctx
-}
-
 func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
 		return js.flush()
@@ -105,7 +110,7 @@ func (js *JsonEncoder) Close() error {
 		defer t.Stop()
 		select {
 		case <-t.C:
-			js.Cancel()
+			js.cancel()
 		}
 	}()
 	return nil
