@@ -5,12 +5,13 @@ import (
 	"context"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/ar_trace/common"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/public"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/version"
 	"encoding/json"
 	"github.com/shirou/gopsutil/v3/host"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/sdk/resource"
+	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
@@ -41,8 +42,8 @@ func (e *Exporter) ExportSpans(ctx context.Context, traces []sdktrace.ReadOnlySp
 	return e.ExportData(ctx, file.Bytes())
 }
 
-// NewTraceExporter 创建已启动的Exporter。
-func NewTraceExporter(c public.Client) *Exporter {
+// NewExporter 创建已启动的Exporter。
+func NewExporter(c public.Client) *Exporter {
 	return &Exporter{
 		public.NewExporter(c),
 	}
@@ -56,7 +57,7 @@ var Tracer = otel.GetTracerProvider().Tracer(
 )
 
 // GetResource 获取内置资源信息，记录客户服务名，需要传入服务名 serviceName ，服务版本 serviceVersion ，服务实例ID。
-func GetResource(serviceName string, serviceVersion string, serviceInstanceID string) *resource.Resource {
+func GetResource(serviceName string, serviceVersion string, serviceInstanceID string) *sdkresource.Resource {
 	//获取主机IP
 	connection, _ := net.Dial("udp", "255.255.255.255:33")
 	ipPort := connection.LocalAddr().(*net.UDPAddr)
@@ -64,7 +65,7 @@ func GetResource(serviceName string, serviceVersion string, serviceInstanceID st
 	//获取主机信息
 	infoState, _ := host.Info()
 
-	return resource.NewWithAttributes(version.TraceInstrumentationURL,
+	return sdkresource.NewWithAttributes(version.TraceInstrumentationURL,
 		//主机信息
 		semconv.HostNameKey.String(infoState.Hostname),
 		semconv.HostArchKey.String(infoState.KernelArch),
@@ -82,4 +83,9 @@ func GetResource(serviceName string, serviceVersion string, serviceInstanceID st
 		semconv.TelemetrySDKNameKey.String(version.TraceInstrumentationName),
 		semconv.TelemetrySDKVersionKey.String(version.TraceInstrumentationVersion),
 	)
+}
+
+// TraceResource 传入 Trace 的默认resource。
+func TraceResource() *sdkresource.Resource {
+	return resource.TraceResource()
 }

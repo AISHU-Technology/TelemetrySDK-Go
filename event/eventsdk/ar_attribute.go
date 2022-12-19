@@ -121,8 +121,8 @@ func copyDefaultAttributes() map[string]interface{} {
 	// 服务信息
 	serviceMap := make(map[string]string, 3)
 	copyMap["service"] = serviceMap
-	serviceMap["name"] = serviceName
-	serviceMap["version"] = serviceVersion
-	serviceMap["instance"] = serviceInstance
+	serviceMap["name"] = globalServiceName
+	serviceMap["version"] = globalServiceVersion
+	serviceMap["instance"] = globalServiceInstance
 	return copyMap
 }

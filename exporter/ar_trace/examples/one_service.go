@@ -67,10 +67,11 @@ func Example() {
 func StdoutExample() {
 	ctx := context.Background()
 	traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
-	traceExporter := ar_trace.NewTraceExporter(traceClient)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.GetResource("YourServiceName", "1.0.0", "")))
-	otel.SetTracerProvider(tracerProvider)
+	traceExporter := ar_trace.NewExporter(traceClient)
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 
+	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
 			log.Println(err)
@@ -83,12 +84,13 @@ func StdoutExample() {
 	log.Println(result, num)
 }
 
-// HTTPExample 通过HTTP发送器输出到Trace接收器。
+// HTTPExample 通过HTTP发送器上报到接收器。
 func HTTPExample() {
 	ctx := context.Background()
 	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/abcd4f634e80d530/events"))
-	traceExporter := ar_trace.NewTraceExporter(traceClient)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.GetResource("YourServiceName", "1.0.0", "")))
+	traceExporter := ar_trace.NewExporter(traceClient)
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 
 	defer func() {
@@ -111,8 +113,9 @@ func WithAllExample() {
 	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
 		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithHeader(header),
 		public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
-	traceExporter := ar_trace.NewTraceExporter(traceClient)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.GetResource("YourServiceName", "1.0.0", "")))
+	traceExporter := ar_trace.NewExporter(traceClient)
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {

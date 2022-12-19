@@ -7,9 +7,11 @@ require (
 	github.com/agiledragon/gomonkey/v2 v2.9.0
 	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/shirou/gopsutil/v3 v3.22.10
-	go.opentelemetry.io/otel v1.11.1
-	go.opentelemetry.io/otel/sdk v1.11.1
-	go.opentelemetry.io/otel/trace v1.11.1
+	go.opentelemetry.io/otel v1.11.2
+	go.opentelemetry.io/otel/metric v0.34.0
+	go.opentelemetry.io/otel/sdk v1.11.2
+	go.opentelemetry.io/otel/sdk/metric v0.34.0
+	go.opentelemetry.io/otel/trace v1.11.2
 )
 
 require (

@@ -17,7 +17,7 @@ func TestStdoutExample(t *testing.T) {
 	}
 }
 
-func TestWithAllExample(t *testing.T) {
+func TestHTTPExample(t *testing.T) {
 	tests := []struct {
 		name string
 	}{

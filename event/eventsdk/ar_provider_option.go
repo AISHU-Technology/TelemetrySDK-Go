@@ -26,13 +26,13 @@ func WithExporters(exporters ...EventExporter) EventProviderOption {
 func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstance string) EventProviderOption {
 	return eventProviderOptionFunc(func(cfg *eventProviderConfig) *eventProviderConfig {
 		if strings.TrimSpace(ServiceName) != "" {
-			serviceName = ServiceName
+			globalServiceName = ServiceName
 		}
-		if strings.TrimSpace(serviceVersion) != "" {
-			serviceVersion = ServiceVersion
+		if strings.TrimSpace(globalServiceVersion) != "" {
+			globalServiceVersion = ServiceVersion
 		}
-		if strings.TrimSpace(serviceInstance) != "" {
-			serviceInstance = ServiceInstance
+		if strings.TrimSpace(globalServiceInstance) != "" {
+			globalServiceInstance = ServiceInstance
 		}
 		return cfg
 	})

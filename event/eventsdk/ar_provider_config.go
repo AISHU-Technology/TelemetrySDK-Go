@@ -10,7 +10,7 @@ type eventProviderConfig struct {
 }
 
 const Internal = 10 * time.Second
-const MaxEvent = 99
+const MaxEvent = 49
 
 func defaultEventProviderConfig() *eventProviderConfig {
 	return &eventProviderConfig{

@@ -25,18 +25,21 @@ type event struct {
 	Data      interface{} `json:"Data"`
 }
 
+// Info 设置 Info 级别的事件并立即发送。
 func Info(data interface{}, opts ...EventStartOption) {
 	opts = append(opts, withData(data))
 	opts = append(opts, withLevel(INFO))
 	NewEvent(opts...).Send()
 }
 
+// Warn 设置 Warn 级别的事件并立即发送。
 func Warn(data interface{}, opts ...EventStartOption) {
 	opts = append(opts, withData(data))
 	opts = append(opts, withLevel(WARN))
 	NewEvent(opts...).Send()
 }
 
+// Error 设置 Error 级别的事件并立即发送。
 func Error(data interface{}, opts ...EventStartOption) {
 	opts = append(opts, withData(data))
 	opts = append(opts, withLevel(ERROR))
@@ -166,15 +169,16 @@ func (e *event) Send() {
 	})
 }
 
+// SetServiceInfo 设置服务信息，包括服务名、版本号、实例ID。
 func SetServiceInfo(ServiceName string, ServiceVersion string, ServiceInstance string) {
 	if strings.TrimSpace(ServiceName) != "" {
-		serviceName = ServiceName
+		globalServiceName = ServiceName
 	}
 	if strings.TrimSpace(ServiceVersion) != "" {
-		serviceVersion = ServiceVersion
+		globalServiceVersion = ServiceVersion
 	}
 	if strings.TrimSpace(ServiceInstance) != "" {
-		serviceInstance = ServiceInstance
+		globalServiceInstance = ServiceInstance
 	}
 }
 

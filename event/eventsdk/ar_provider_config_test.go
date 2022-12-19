@@ -44,7 +44,7 @@ func TestNewEventProviderConfig(t *testing.T) {
 			&eventProviderConfig{
 				Exporters:     make(map[string]EventExporter),
 				FlushInternal: 10 * time.Second,
-				MaxEvent:      99,
+				MaxEvent:      49,
 			},
 		}, {
 			"",
@@ -52,7 +52,7 @@ func TestNewEventProviderConfig(t *testing.T) {
 			WithMaxEvent(19).apply(&eventProviderConfig{
 				Exporters:     make(map[string]EventExporter),
 				FlushInternal: 10 * time.Second,
-				MaxEvent:      99,
+				MaxEvent:      49,
 			}),
 		},
 	}
