@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/exporter"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -114,5 +114,19 @@ func TestNewJsonEncoderBench(t *testing.T) {
 		panic(err)
 	}
 	en.Close()
+
+}
+
+func TestNewJsonEncoderWithExporters(t *testing.T) {
+	defaultExporter := exporter.GetDefaultExporter()
+
+	fields := GetTestFieds()
+
+	enc := NewJsonEncoderWithExporters(defaultExporter)
+	for _, i := range fields {
+		if err := enc.Write(i); err != nil {
+			t.Error(err)
+		}
+	}
 
 }

@@ -213,7 +213,7 @@ func TestSamplerLogger(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	cap := map[string]interface{}{}
+	cap := []map[string]interface{}{}
 	bytes := buf.Bytes()
 	left := 0
 	i := 0
@@ -235,10 +235,10 @@ func TestSamplerLogger(t *testing.T) {
 		if err := json.Unmarshal(bytes[left:i], &cap); err != nil {
 			t.Error(err)
 			t.FailNow()
-		} else {
-			n += 1
-			fmt.Println(string(bytes[left:i]))
-		}
+		} // else {
+		// 	n += 1
+		// 	fmt.Println(string(bytes[left:i]))
+		// }
 	}
 
 	// fmt.Print(buf.String())

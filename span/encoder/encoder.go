@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"log"
 	"reflect"
 	"strconv"
 	"time"
@@ -64,7 +65,7 @@ func NewJsonEncoder(w io.Writer) Encoder {
 	return res
 }
 
-func NewJsonEncoderWithExporter(exporters ...exporter.LogExporter) Encoder {
+func NewJsonEncoderWithExporters(exporters ...exporter.LogExporter) Encoder {
 	ctx, cancel := context.WithCancel(context.Background())
 	eps := make(map[string]exporter.LogExporter)
 	for _, e := range exporters {
@@ -98,34 +99,36 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 
 // buffer by encoder for output
 func (js *JsonEncoder) Write(f field.Field) error {
-	js.write(f)
+	err := js.write(f)
+	if err != nil {
+		log.Println(field.GenerateSpecificError(err))
+	}
 	// _, res := js.WriteBytes(js.End)
-	js.WriteBytes(js.end)
+	_, writeBytesErr := js.WriteBytes(js.end)
+	if writeBytesErr != nil {
+		log.Println(field.GenerateSpecificError(writeBytesErr))
+	}
 	return js.flush()
-
 }
 
 func (js *JsonEncoder) flush() error {
-	var res error = nil
 	if js.w != nil {
-		_, res = js.w.Write(js.bufReal.Bytes())
+		_, res := js.w.Write(js.bufReal.Bytes())
+		if res != nil {
+			log.Println(field.GenerateSpecificError(res))
+		}
 	}
 	if js.logExporters != nil && len(js.logExporters) != 0 {
 		// 往所有发送地址发送相同的数据。
 		for _, e := range js.logExporters {
 			if err := e.ExportLogs(js.ctx, js.bufReal.Bytes()); err != nil {
-				// 如果多余一个错误则记日志。
-				if res == nil {
-					res = err
-				}
+				// 如果错误则记日志。
+				log.Println(field.GenerateSpecificError(err))
 			}
 		}
 	}
-	if res != nil {
-		panic(res)
-	}
 	js.bufReal.Reset()
-	return res
+	return nil
 }
 
 func (js *JsonEncoder) Close() error {
@@ -141,7 +144,7 @@ func (js *JsonEncoder) Close() error {
 			if js.logExporters != nil && len(js.logExporters) != 0 {
 				for _, exporter := range js.logExporters {
 					if err := exporter.Shutdown(js.ctx); err != nil {
-						panic(err)
+						log.Println(field.GenerateSpecificError(err))
 					}
 				}
 			}

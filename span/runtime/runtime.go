@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"log"
 	"sync"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 
 var (
 	defaultInternal = 10 * time.Second
-	defaultMaxLog   = 30
+	defaultMaxLog   = 40
 )
 
 // Runtime read data from channel and write data in a single goroutine
@@ -112,7 +113,7 @@ func (r *Runtime) Run() {
 				// 发完最后的数据关闭Exporter。
 				err := r.w.Close()
 				if err != nil {
-					panic(err)
+					log.Println(field.GenerateSpecificError(err))
 				}
 				return
 			}
@@ -131,8 +132,12 @@ func (r *Runtime) Run() {
 		}
 	}
 }
+
 func (r *Runtime) forceWrite() {
-	r.w.Write(r.logs)
+	err := r.w.Write(r.logs)
+	if err != nil {
+		log.Println(field.GenerateSpecificError(err))
+	}
 	// 发送完之后清空队列。
 	for _, v := range r.logs {
 		v.Free()
@@ -141,7 +146,7 @@ func (r *Runtime) forceWrite() {
 	r.logs = make([]field.LogSpan, 0, r.maxLog+1)
 }
 
-func (r *Runtime) SetUploadInternalandMaxLog(Internal time.Duration, MaxLog int) {
+func (r *Runtime) SetUploadInternalAndMaxLog(Internal time.Duration, MaxLog int) {
 	r.internal = Internal
 	r.maxLog = MaxLog
 	r.logs = make([]field.LogSpan, 0, r.maxLog+1)

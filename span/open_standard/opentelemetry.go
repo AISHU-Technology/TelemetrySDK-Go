@@ -1,30 +1,25 @@
-/*
- * @Author: Nick.nie Nick.nie@aishu.cn
- * @Date: 2022-12-09 03:07:50
- * @LastEditors: Nick.nie Nick.nie@aishu.cn
- * @LastEditTime: 2022-12-15 04:12:24
- * @FilePath: /span/open_standard/opentelemetry.go
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 package open_standard
 
 import (
 	"net"
+	"strings"
 	"time"
 
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/encoder"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 	"github.com/shirou/gopsutil/v3/host"
+	environment "go.opentelemetry.io/otel/sdk/resource"
 )
 
-const (
-	rootSpan = iota
+const rootSpan = iota
+
+var (
 	//OpenTelemetrySDKVersion = "v1.6.1"
 	sdkName     = "TelemetrySDK-Go/span"
-	sdkVersion  = "2.0.1"
+	sdkVersion  = "2.5.0"
 	sdkLanguage = "go"
 
-	serviceName     = "UnknownServiceName"
+	serviceName     = defaultServiceName()
 	serviceVersion  = "UnknownServiceVersion"
 	serviceInstance = "UnknownServiceInstance"
 )
@@ -56,7 +51,7 @@ func (o *OpenTelemetry) Write(t []field.LogSpan) error {
 }
 
 func (o *OpenTelemetry) SetDefaultResources() {
-	defaultResource := getDefaultResource()
+	defaultResource := make(map[string]interface{})
 	service := make(map[string]interface{})
 	service["name"] = serviceName
 	service["version"] = serviceVersion
@@ -66,13 +61,25 @@ func (o *OpenTelemetry) SetDefaultResources() {
 }
 
 func (o *OpenTelemetry) SetResourcesWithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstanceID string) {
-	defaultResource := getDefaultResource()
+	defaultResource := make(map[string]interface{})
 	service := make(map[string]interface{})
 	service["name"] = ServiceName
 	service["version"] = ServiceVersion
 	service["instance"] = map[string]string{"id": ServiceInstanceID}
 	defaultResource["service"] = service
 	o.Resource = field.MapField(defaultResource)
+}
+
+func defaultServiceName() string {
+	attributes := environment.Default().Attributes()
+	if len(attributes) > 0 {
+		if attributes[0].Key == "service.name" {
+			if v := strings.Split(attributes[0].Value.AsString(), "___"); len(v) >= 2 {
+				return strings.Split(attributes[0].Value.AsString(), "___")[1]
+			}
+		}
+	}
+	return "UnknownServiceName"
 }
 
 func getHostIP() string {
@@ -165,20 +172,14 @@ func (o *OpenTelemetry) dealResource() {
 	resMap, ok := o.Resource.(field.MapField)
 	if ok {
 		_, serviceInfoOk := resMap["service"]
-		_, telemetryInfoOk := resMap["telemetry"]
-		_, hostInfoOk := resMap["host"]
-		_, osInfoOk := resMap["os"]
 		if serviceInfoOk {
-			if telemetryInfoOk && hostInfoOk && osInfoOk {
-				return
-			} else {
-				defaultResource := getDefaultResource()
-				for k, v := range defaultResource {
-					resMap[k] = v
-				}
-				o.Resource = field.MapField(resMap)
-				return
+			defaultResource := getDefaultResource()
+			for k, v := range defaultResource {
+				resMap[k] = v
 			}
+			o.Resource = field.MapField(resMap)
+			return
+
 		}
 
 	}

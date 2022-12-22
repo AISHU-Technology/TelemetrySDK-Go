@@ -44,12 +44,11 @@ func TestRecord(t *testing.T) {
 	}
 	runtimeSpan := NewRuntime(writer, field.NewSpanFromPool)
 	// go runtimeSpan.Run()
-
+	runtimeSpan.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// task thread0, log quick
 	go func() {
 		// a new web request task
 		root := runtimeSpan.Children(nil)
-
 		// web request complete, wait children span
 		// finally send web's span control to loger runtime
 		defer root.Signal()
@@ -69,7 +68,7 @@ func TestRecord(t *testing.T) {
 
 	// stop runtime after 2s
 	go func() {
-		time.Sleep(2 * time.Second)
+		time.Sleep(4 * time.Second)
 		runtimeSpan.Signal()
 	}()
 
@@ -81,7 +80,7 @@ func TestRecord(t *testing.T) {
 
 	// check result
 	var err error
-	cap := map[string]interface{}{}
+	cap := []map[string]interface{}{}
 	bytes := buf.Bytes()
 	left := 0
 	i := 0
@@ -106,7 +105,7 @@ func TestRecord(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 2, n)
+	assert.Equal(t, 1, n)
 
 }
 
