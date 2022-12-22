@@ -1,11 +1,12 @@
 package public
 
 import (
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/custom_errors"
 	"log"
 	"net/url"
 	"time"
+
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/custom_errors"
 )
 
 // WithAnyRobotURL 设置 httpClient 数据上报地址。

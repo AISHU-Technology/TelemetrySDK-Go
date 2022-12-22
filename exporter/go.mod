@@ -19,7 +19,7 @@ require (
 )
 
 require (
-	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20221215095210-13f0ad778515
+	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20221222015003-db2cabd6c5df
 	// indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

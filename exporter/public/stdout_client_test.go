@@ -2,10 +2,11 @@ package public
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"encoding/json"
 	"reflect"
 	"testing"
+
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 )
 
 func TestNewStdoutClient(t *testing.T) {

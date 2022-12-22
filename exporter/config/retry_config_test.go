@@ -2,15 +2,17 @@ package config
 
 import (
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/custom_errors"
 	"errors"
 	"fmt"
-	"github.com/agiledragon/gomonkey/v2"
-	"github.com/cenkalti/backoff/v4"
 	"log"
 	"reflect"
 	"testing"
 	"time"
+
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/custom_errors"
+	"github.com/agiledragon/gomonkey/v2"
+	"github.com/cenkalti/backoff/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 type key string
@@ -138,8 +140,14 @@ func TestRetryConfigRetryFunc(t *testing.T) {
 				MaxInterval:     tt.fields.MaxInterval,
 				MaxElapsedTime:  tt.fields.MaxElapsedTime,
 			}
-			if got := r.RetryFunc(); !reflect.DeepEqual(got(tt.fields.ctx, deliver), tt.want(tt.fields.ctx, result)) {
-				t.Errorf("RetryFunc() = %v, want %v", got(tt.fields.ctx, deliver), tt.want(tt.fields.ctx, result))
+			// if got := r.RetryFunc(); !reflect.DeepEqual(got(tt.fields.ctx, deliver), tt.want(tt.fields.ctx, result)) {
+			// 	t.Errorf("RetryFunc() = %v, want %v", got(tt.fields.ctx, deliver), tt.want(tt.fields.ctx, result))
+			// }
+			got := r.RetryFunc()
+			if got(tt.fields.ctx, deliver) != nil && tt.want(tt.fields.ctx, result) != nil {
+				assert.Equal(t, tt.want(tt.fields.ctx, result).Error(), got(tt.fields.ctx, deliver).Error())
+			} else {
+				assert.Equal(t, tt.want(tt.fields.ctx, result), got(tt.fields.ctx, deliver))
 			}
 		})
 	}
