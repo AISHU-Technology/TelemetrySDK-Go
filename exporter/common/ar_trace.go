@@ -32,7 +32,22 @@ func AnyRobotSpanFromReadOnlySpan(span sdktrace.ReadOnlySpan) *AnyRobotSpan {
 	if span == nil {
 		return &AnyRobotSpan{}
 	}
-	return &AnyRobotSpan{Name: span.Name(), SpanContext: span.SpanContext(), Parent: span.Parent(), SpanKind: span.SpanKind(), StartTime: span.StartTime(), EndTime: span.EndTime(), Attributes: AnyRobotAttributesFromKeyValues(span.Attributes()), Links: AnyRobotLinksFromLinks(span.Links()), Events: AnyRobotEventsFromEvents(span.Events()), Status: span.Status(), InstrumentationScope: span.InstrumentationScope(), Resource: AnyRobotResourceFromResource(span.Resource()), DroppedAttributes: span.DroppedAttributes(), DroppedEvents: span.DroppedEvents(), DroppedLinks: span.DroppedLinks(), ChildSpanCount: span.ChildSpanCount()}
+	return &AnyRobotSpan{Name: span.Name(),
+		SpanContext:          span.SpanContext(),
+		Parent:               span.Parent(),
+		SpanKind:             span.SpanKind(),
+		StartTime:            span.StartTime(),
+		EndTime:              span.EndTime(),
+		Attributes:           AnyRobotAttributesFromKeyValues(span.Attributes()),
+		Links:                AnyRobotLinksFromLinks(span.Links()),
+		Events:               AnyRobotEventsFromEvents(span.Events()),
+		Status:               span.Status(),
+		InstrumentationScope: span.InstrumentationScope(),
+		Resource:             AnyRobotResourceFromResource(span.Resource()),
+		DroppedAttributes:    span.DroppedAttributes(),
+		DroppedEvents:        span.DroppedEvents(),
+		DroppedLinks:         span.DroppedLinks(),
+		ChildSpanCount:       span.ChildSpanCount()}
 }
 
 // AnyRobotTraceFromReadOnlyTrace 批量trace转换为[]*AnyRobotTrace。

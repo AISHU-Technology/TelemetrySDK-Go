@@ -15,6 +15,7 @@ import (
 )
 
 var _ sdkmetric.Exporter = (*Exporter)(nil)
+var Meter = metric.Meter(nil)
 
 // Exporter 导出数据到AnyRobot Feed Ingester的 Metric 数据接收器。
 type Exporter struct {
@@ -64,5 +65,3 @@ func NewExporter(c public.Client) *Exporter {
 func MetricResource() *sdkresource.Resource {
 	return resource.MetricResource()
 }
-
-var Meter = metric.Meter(nil)

@@ -85,7 +85,7 @@ func StdoutExample() {
 func HTTPExample() {
 	ctx := context.Background()
 	eventClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
-		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
+		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	eventExporter := ar_event.NewExporter(eventClient)
 	public.SetServiceInfo("YourServiceName", "1.0.0", "")
 	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventExporter, eventsdk.GetDefaultExporter()), ar_event.EventResource())

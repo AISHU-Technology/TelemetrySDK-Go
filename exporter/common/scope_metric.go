@@ -7,11 +7,13 @@ import (
 	"time"
 )
 
+// ScopeMetric 自定义 ScopeMetric，改造了Metrics。
 type ScopeMetric struct {
 	Scope   *instrumentation.Scope `json:"Scope"`
 	Metrics []*Metrics             `json:"Metrics"`
 }
 
+// AnyRobotScopeMetricFromScopeMetric 单条 *metricdata.ScopeMetrics 转换为 *ScopeMetric 。
 func AnyRobotScopeMetricFromScopeMetric(scopeMetric *metricdata.ScopeMetrics) *ScopeMetric {
 	return &ScopeMetric{
 		Scope:   &scopeMetric.Scope,
@@ -19,6 +21,7 @@ func AnyRobotScopeMetricFromScopeMetric(scopeMetric *metricdata.ScopeMetrics) *S
 	}
 }
 
+// AnyRobotScopeMetricsFromScopeMetrics 批量 []metricdata.ScopeMetrics 转换为 []*ScopeMetric 。
 func AnyRobotScopeMetricsFromScopeMetrics(scopeMetrics []metricdata.ScopeMetrics) []*ScopeMetric {
 	if scopeMetrics == nil {
 		return make([]*ScopeMetric, 0)
@@ -30,24 +33,24 @@ func AnyRobotScopeMetricsFromScopeMetrics(scopeMetrics []metricdata.ScopeMetrics
 	return arScopeMetrics
 }
 
+// Metrics 自定义 Metrics，改造了Data->Gauge/Sum/Histogram。
 type Metrics struct {
-	Name        string          `json:"Name"`
-	Description string          `json:"Description"`
-	Unit        string          `json:"Unit"`
-	GaugeInt    *Gauge[int64]   `json:"Gauge,omitempty"`
-	GaugeFloat  *Gauge[float64] `json:"Gauge,omitempty"`
-	SumInt      *Sum[int64]     `json:"Sum,omitempty"`
-	SumFloat    *Sum[float64]   `json:"Sum,omitempty"`
-	Histogram   *Histogram      `json:"Histogram,omitempty"`
+	Name        string     `json:"Name"`
+	Description string     `json:"Description"`
+	Unit        string     `json:"Unit"`
+	Gauge       *Gauge     `json:"Gauge,omitempty"`
+	Sum         *Sum       `json:"Sum,omitempty"`
+	Histogram   *Histogram `json:"Histogram,omitempty"`
 }
 
+// AnyRobotMetricFromMetric 单条 *metricdata.Metrics 转换为 *Metrics 。
 func AnyRobotMetricFromMetric(metric *metricdata.Metrics) *Metrics {
 	if gauge, ok := metric.Data.(metricdata.Gauge[int64]); ok {
 		return &Metrics{
 			Name:        metric.Name,
 			Description: metric.Description,
 			Unit:        string(metric.Unit),
-			GaugeInt:    AnyRobotGaugeFromGaugeInt(gauge),
+			Gauge:       AnyRobotGaugeFromGaugeInt(gauge),
 		}
 	}
 	if gauge, ok := metric.Data.(metricdata.Gauge[float64]); ok {
@@ -55,7 +58,7 @@ func AnyRobotMetricFromMetric(metric *metricdata.Metrics) *Metrics {
 			Name:        metric.Name,
 			Description: metric.Description,
 			Unit:        string(metric.Unit),
-			GaugeFloat:  AnyRobotGaugeFromGaugeFloat(gauge),
+			Gauge:       AnyRobotGaugeFromGaugeFloat(gauge),
 		}
 	}
 	if sum, ok := metric.Data.(metricdata.Sum[int64]); ok {
@@ -63,7 +66,7 @@ func AnyRobotMetricFromMetric(metric *metricdata.Metrics) *Metrics {
 			Name:        metric.Name,
 			Description: metric.Description,
 			Unit:        string(metric.Unit),
-			SumInt:      AnyRobotSumFromSumInt(sum),
+			Sum:         AnyRobotSumFromSumInt(sum),
 		}
 	}
 	if sum, ok := metric.Data.(metricdata.Sum[float64]); ok {
@@ -71,7 +74,7 @@ func AnyRobotMetricFromMetric(metric *metricdata.Metrics) *Metrics {
 			Name:        metric.Name,
 			Description: metric.Description,
 			Unit:        string(metric.Unit),
-			SumFloat:    AnyRobotSumFromSumFloat(sum),
+			Sum:         AnyRobotSumFromSumFloat(sum),
 		}
 	}
 	if histogram, ok := metric.Data.(metricdata.Histogram); ok {
@@ -85,6 +88,7 @@ func AnyRobotMetricFromMetric(metric *metricdata.Metrics) *Metrics {
 	return nil
 }
 
+// AnyRobotMetricsFromMetrics 批量 []metricdata.Metrics 转换为 []*Metrics 。
 func AnyRobotMetricsFromMetrics(metrics []metricdata.Metrics) []*Metrics {
 	arMetrics := make([]*Metrics, 0, len(metrics))
 	for _, value := range metrics {
@@ -95,26 +99,34 @@ func AnyRobotMetricsFromMetrics(metrics []metricdata.Metrics) []*Metrics {
 	return arMetrics
 }
 
-type Gauge[N int64 | float64] struct {
-	DataPoints []*DataPoint[N] `json:"DataPoints"`
+// Gauge 自定义 Gauge，改造了DataPoints。
+type Gauge struct {
+	DataPoints []*DataPoint `json:"DataPoints"`
 }
-type Sum[N int64 | float64] struct {
-	DataPoints  []*DataPoint[N]        `json:"DataPoints"`
+
+// Sum 自定义 Sum，改造了DataPoints。
+type Sum struct {
+	DataPoints  []*DataPoint           `json:"DataPoints"`
 	Temporality metricdata.Temporality `json:"Temporality"`
 	IsMonotonic bool                   `json:"IsMonotonic"`
 }
 
-type DataPoint[N int64 | float64] struct {
+// DataPoint 自定义 DataPoint，改造了Time->EndTime，Value->Int/Float。
+type DataPoint struct {
 	Attributes attribute.Set `json:"Attributes"`
 	StartTime  time.Time     `json:"StartTime"`
 	EndTime    time.Time     `json:"EndTime"`
-	Int        int64         `json:"Int,omitempty"`
-	Float      float64       `json:"Float,omitempty"`
+	Int        *int64        `json:"Int,omitempty"`
+	Float      *float64      `json:"Float,omitempty"`
 }
+
+// Histogram 自定义 Histogram，改造了DataPoints。
 type Histogram struct {
 	DataPoints  []*HistogramDataPoint  `json:"DataPoints"`
 	Temporality metricdata.Temporality `json:"Temporality"`
 }
+
+// HistogramDataPoint 自定义 HistogramDataPoint，改造了Time->EndTime。
 type HistogramDataPoint struct {
 	Attributes   attribute.Set `json:"Attributes"`
 	StartTime    time.Time     `json:"StartTime"`
@@ -127,39 +139,45 @@ type HistogramDataPoint struct {
 	Sum          float64       `json:"Sum"`
 }
 
-func IntDataPoint(dp metricdata.DataPoint[int64]) *DataPoint[int64] {
-	return &DataPoint[int64]{
+// IntDataPoint 单条 metricdata.DataPoint[int64] 转换为 *DataPoint 。
+func IntDataPoint(dp metricdata.DataPoint[int64]) *DataPoint {
+	return &DataPoint{
 		Attributes: dp.Attributes,
 		StartTime:  dp.StartTime,
 		EndTime:    dp.Time,
-		Int:        dp.Value,
+		Int:        &dp.Value,
 	}
 }
 
-func FloatDataPoint(dp metricdata.DataPoint[float64]) *DataPoint[float64] {
-	return &DataPoint[float64]{
+// FloatDataPoint 单条 metricdata.DataPoint[float64] 转换为 *DataPoint 。
+func FloatDataPoint(dp metricdata.DataPoint[float64]) *DataPoint {
+	return &DataPoint{
 		Attributes: dp.Attributes,
 		StartTime:  dp.StartTime,
 		EndTime:    dp.Time,
-		Float:      dp.Value,
+		Float:      &dp.Value,
 	}
 }
 
-func IntDataPoints(dps []metricdata.DataPoint[int64]) []*DataPoint[int64] {
-	arDataPoint := make([]*DataPoint[int64], 0, len(dps))
+// IntDataPoints 批量 []metricdata.DataPoint[int64] 转换为 []*DataPoint 。
+func IntDataPoints(dps []metricdata.DataPoint[int64]) []*DataPoint {
+	arDataPoint := make([]*DataPoint, 0, len(dps))
 	for _, value := range dps {
 		arDataPoint = append(arDataPoint, IntDataPoint(value))
 	}
 	return arDataPoint
 }
 
-func FloatDataPoints(dps []metricdata.DataPoint[float64]) []*DataPoint[float64] {
-	arDataPoint := make([]*DataPoint[float64], 0, len(dps))
+// FloatDataPoints 批量 []metricdata.DataPoint[float64] 转换为 []*DataPoint 。
+func FloatDataPoints(dps []metricdata.DataPoint[float64]) []*DataPoint {
+	arDataPoint := make([]*DataPoint, 0, len(dps))
 	for _, value := range dps {
 		arDataPoint = append(arDataPoint, FloatDataPoint(value))
 	}
 	return arDataPoint
 }
+
+// SingleHistogramDataPoint 单条 metricdata.HistogramDataPoint 转换为 *HistogramDataPoint 。
 func SingleHistogramDataPoint(dp metricdata.HistogramDataPoint) *HistogramDataPoint {
 	return &HistogramDataPoint{
 		Attributes:   dp.Attributes,
@@ -173,6 +191,8 @@ func SingleHistogramDataPoint(dp metricdata.HistogramDataPoint) *HistogramDataPo
 		Sum:          dp.Sum,
 	}
 }
+
+// HistogramDataPoints 批量 []metricdata.HistogramDataPoint 转换为 []*HistogramDataPoint 。
 func HistogramDataPoints(dps []metricdata.HistogramDataPoint) []*HistogramDataPoint {
 	arDataPoint := make([]*HistogramDataPoint, 0, len(dps))
 	for _, value := range dps {
@@ -180,32 +200,40 @@ func HistogramDataPoints(dps []metricdata.HistogramDataPoint) []*HistogramDataPo
 	}
 	return arDataPoint
 }
-func AnyRobotGaugeFromGaugeInt(gauge metricdata.Gauge[int64]) *Gauge[int64] {
-	return &Gauge[int64]{
+
+// AnyRobotGaugeFromGaugeInt 单条 metricdata.Gauge[int64] 转换为 *Gauge 。
+func AnyRobotGaugeFromGaugeInt(gauge metricdata.Gauge[int64]) *Gauge {
+	return &Gauge{
 		DataPoints: IntDataPoints(gauge.DataPoints),
 	}
 }
 
-func AnyRobotGaugeFromGaugeFloat(gauge metricdata.Gauge[float64]) *Gauge[float64] {
-	return &Gauge[float64]{
+// AnyRobotGaugeFromGaugeFloat 单条 metricdata.Gauge[float64] 转换为 *Gauge 。
+func AnyRobotGaugeFromGaugeFloat(gauge metricdata.Gauge[float64]) *Gauge {
+	return &Gauge{
 		DataPoints: FloatDataPoints(gauge.DataPoints),
 	}
 }
 
-func AnyRobotSumFromSumInt(sum metricdata.Sum[int64]) *Sum[int64] {
-	return &Sum[int64]{
+// AnyRobotSumFromSumInt 单条 metricdata.Sum[int64] 转换为 *Sum 。
+func AnyRobotSumFromSumInt(sum metricdata.Sum[int64]) *Sum {
+	return &Sum{
 		DataPoints:  IntDataPoints(sum.DataPoints),
 		Temporality: sum.Temporality,
 		IsMonotonic: sum.IsMonotonic,
 	}
 }
-func AnyRobotSumFromSumFloat(sum metricdata.Sum[float64]) *Sum[float64] {
-	return &Sum[float64]{
+
+// AnyRobotSumFromSumFloat 单条 metricdata.Sum[float64] 转换为 *Sum 。
+func AnyRobotSumFromSumFloat(sum metricdata.Sum[float64]) *Sum {
+	return &Sum{
 		DataPoints:  FloatDataPoints(sum.DataPoints),
 		Temporality: sum.Temporality,
 		IsMonotonic: sum.IsMonotonic,
 	}
 }
+
+// AnyRobotHistogramFromHistogram 单条 metricdata.Histogram 转换为 *Histogram 。
 func AnyRobotHistogramFromHistogram(histogram metricdata.Histogram) *Histogram {
 	return &Histogram{
 		DataPoints:  HistogramDataPoints(histogram.DataPoints),

@@ -88,7 +88,6 @@ func StdoutExample() {
 			log.Println(err)
 		}
 	}()
-
 	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.MetricInstrumentationVersion))
 
 	ctx, num := add(ctx, 2, 8)
@@ -99,11 +98,22 @@ func StdoutExample() {
 // HTTPExample 通过HTTP发送器上报到接收器。
 func HTTPExample() {
 	ctx := context.Background()
+	metricClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/metrics"),
+		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
+	metricExporter := ar_metric.NewExporter(metricClient)
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	metricProvider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter, sdkmetric.WithInterval(10*time.Second), sdkmetric.WithTimeout(10*time.Second))),
+		sdkmetric.WithResource(ar_metric.MetricResource()),
+	)
+	defer func() {
+		if err := metricProvider.Shutdown(ctx); err != nil {
+			log.Println(err)
+		}
+	}()
+	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.MetricInstrumentationVersion))
 
-	ctx, num := multiply(ctx, 2, 3)
-	for i := 0; i < 6; i++ {
-		ctx, num = multiply(ctx, 2, 3)
-		ctx, num = add(ctx, 2, 3)
-	}
+	ctx, num := add(ctx, 2, 8)
+	ctx, num = multiply(ctx, num, 7)
 	log.Println(result, num)
 }
