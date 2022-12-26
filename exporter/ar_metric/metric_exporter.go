@@ -3,6 +3,7 @@ package ar_metric
 import (
 	"bytes"
 	"context"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/common"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/public"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 	"encoding/json"
@@ -21,15 +22,16 @@ type Exporter struct {
 }
 
 // ExportMetrics 批量发送 AnyRobotMetrics 到AnyRobot Feed Ingester的 Metric 数据接收器。
-func (e *Exporter) ExportMetrics(ctx context.Context, metrics []interface{}) error {
+func (e *Exporter) ExportMetrics(ctx context.Context, metrics []*metricdata.ResourceMetrics) error {
 	if len(metrics) == 0 {
 		return nil
 	}
+	arMetric := common.AnyRobotMetricsFromResourceMetrics(metrics)
 	file := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(file)
 	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "\t")
-	if err := encoder.Encode(metrics); err != nil {
+	if err := encoder.Encode(arMetric); err != nil {
 		return err
 	}
 	return e.ExportData(ctx, file.Bytes())
@@ -38,12 +40,15 @@ func (e *Exporter) ExportMetrics(ctx context.Context, metrics []interface{}) err
 func (e *Exporter) Temporality(k sdkmetric.InstrumentKind) metricdata.Temporality {
 	return sdkmetric.DefaultTemporalitySelector(k)
 }
+
 func (e *Exporter) Aggregation(k sdkmetric.InstrumentKind) aggregation.Aggregation {
 	return sdkmetric.DefaultAggregationSelector(k)
 }
+
 func (e *Exporter) Export(ctx context.Context, data metricdata.ResourceMetrics) error {
-	return e.ExportMetrics(ctx, []interface{}{data})
+	return e.ExportMetrics(ctx, []*metricdata.ResourceMetrics{&data})
 }
+
 func (e *Exporter) ForceFlush(ctx context.Context) error {
 	return ctx.Err()
 }

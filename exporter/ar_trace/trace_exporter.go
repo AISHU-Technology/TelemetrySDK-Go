@@ -3,7 +3,7 @@ package ar_trace
 import (
 	"bytes"
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/ar_trace/common"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/common"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/public"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/version"
@@ -31,7 +31,7 @@ func (e *Exporter) ExportSpans(ctx context.Context, traces []sdktrace.ReadOnlySp
 	if len(traces) == 0 {
 		return nil
 	}
-	arTrace := common.AnyRobotSpansFromReadOnlySpans(traces)
+	arTrace := common.AnyRobotTraceFromReadOnlyTrace(traces)
 	file := bytes.NewBuffer([]byte{})
 	encoder := json.NewEncoder(file)
 	encoder.SetEscapeHTML(false)

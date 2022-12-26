@@ -26,9 +26,9 @@ func AnyRobotLinksFromLinks(links []sdktrace.Link) []*Link {
 	if links == nil {
 		return make([]*Link, 0)
 	}
-	arlinks := make([]*Link, 0, len(links))
+	arLinks := make([]*Link, 0, len(links))
 	for i := 0; i < len(links); i++ {
-		arlinks = append(arlinks, AnyRobotLinkFromLink(links[i]))
+		arLinks = append(arLinks, AnyRobotLinkFromLink(links[i]))
 	}
-	return arlinks
+	return arLinks
 }

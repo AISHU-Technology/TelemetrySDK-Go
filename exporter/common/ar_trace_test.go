@@ -59,18 +59,18 @@ func TestAnyRobotSpansFromReadOnlySpans(t *testing.T) {
 		{
 			"转换空ReadOnlySpan",
 			args{nil},
-			AnyRobotSpansFromReadOnlySpans(nil),
+			AnyRobotTraceFromReadOnlyTrace(nil),
 		},
 		{
 			"转换非空ReadOnlySpans",
 			args{MockReadOnlySpans()},
-			AnyRobotSpansFromReadOnlySpans(MockReadOnlySpans()),
+			AnyRobotTraceFromReadOnlyTrace(MockReadOnlySpans()),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := AnyRobotSpansFromReadOnlySpans(tt.args.ross); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AnyRobotSpansFromReadOnlySpans() = %v, want %v", got, tt.want)
+			if got := AnyRobotTraceFromReadOnlyTrace(tt.args.ross); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("AnyRobotTraceFromReadOnlyTrace() = %v, want %v", got, tt.want)
 			}
 		})
 	}

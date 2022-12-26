@@ -15,26 +15,26 @@ type Value struct {
 }
 
 // AnyRobotAttributeFromKeyValue 单条KeyValue转换为*Attribute。
-func AnyRobotAttributeFromKeyValue(attribute attribute.KeyValue) *Attribute {
+func AnyRobotAttributeFromKeyValue(keyValue attribute.KeyValue) *Attribute {
 	return &Attribute{
-		Key: string(attribute.Key),
+		Key: string(keyValue.Key),
 		Value: Value{
-			Type:  standardizeValueType(attribute.Value.Type().String()),
-			Value: attribute.Value.AsInterface(),
+			Type:  standardizeValueType(keyValue.Value.Type().String()),
+			Value: keyValue.Value.AsInterface(),
 		},
 	}
 }
 
 // AnyRobotAttributesFromKeyValues 批量KeyValue转换为[]*Attribute。
-func AnyRobotAttributesFromKeyValues(attributes []attribute.KeyValue) []*Attribute {
-	if attributes == nil {
+func AnyRobotAttributesFromKeyValues(keyValues []attribute.KeyValue) []*Attribute {
+	if keyValues == nil {
 		return make([]*Attribute, 0)
 	}
-	arattributes := make([]*Attribute, 0, len(attributes))
-	for i := 0; i < len(attributes); i++ {
-		arattributes = append(arattributes, AnyRobotAttributeFromKeyValue(attributes[i]))
+	arAttributes := make([]*Attribute, 0, len(keyValues))
+	for i := 0; i < len(keyValues); i++ {
+		arAttributes = append(arAttributes, AnyRobotAttributeFromKeyValue(keyValues[i]))
 	}
-	return arattributes
+	return arAttributes
 }
 
 // standardizeValueType 标准化统一 ValueType 为各语言统一格式。
