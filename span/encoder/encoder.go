@@ -143,6 +143,7 @@ func (js *JsonEncoder) Write(f field.Field) error {
 					if exportLogsErr != nil {
 						log.Println(field.GenerateSpecificError(exportLogsErr))
 					}
+					js.bufReal.Reset()
 				}
 			}
 		}
