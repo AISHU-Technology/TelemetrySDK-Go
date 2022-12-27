@@ -45,7 +45,7 @@ type JsonEncoder struct {
 	w            io.Writer
 	logExporters map[string]exporter.LogExporter
 	buf          io.Writer
-	end          []byte
+	End          []byte
 	bufReal      *bytes.Buffer
 	ctx          context.Context
 	cancelFunc   context.CancelFunc
@@ -56,7 +56,7 @@ func NewJsonEncoder(w io.Writer) Encoder {
 	res := &JsonEncoder{
 		w:            w,
 		logExporters: nil,
-		end:          _lineFeed,
+		End:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
 		ctx:          ctx,
 		cancelFunc:   cancel,
@@ -74,7 +74,7 @@ func NewJsonEncoderWithExporters(exporters ...exporter.LogExporter) Encoder {
 	res := &JsonEncoder{
 		w:            nil,
 		logExporters: eps,
-		end:          _lineFeed,
+		End:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
 		ctx:          ctx,
 		cancelFunc:   cancel,
@@ -88,7 +88,7 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 	res := &JsonEncoder{
 		w:            w,
 		logExporters: nil,
-		end:          _lineFeed,
+		End:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
 		buf:          ioutil.Discard,
 		ctx:          ctx,
@@ -99,16 +99,68 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 
 // buffer by encoder for output
 func (js *JsonEncoder) Write(f field.Field) error {
-	err := js.write(f)
-	if err != nil {
-		log.Println(field.GenerateSpecificError(err))
+	if js.w != nil {
+		fieldArr, ok := f.(*field.ArrayField)
+		if ok {
+			for i := 0; i < fieldArr.Length(); i++ {
+				oneField, errArr := fieldArr.At(i)
+				if errArr != nil {
+					log.Println(field.GenerateSpecificError(errArr))
+				}
+				err := js.write(oneField)
+				if err != nil {
+					log.Println(field.GenerateSpecificError(err))
+				}
+				// _, res := js.WriteBytes(js.End)
+				_, writeBytesErr := js.WriteBytes(js.End)
+				if writeBytesErr != nil {
+					log.Println(field.GenerateSpecificError(writeBytesErr))
+				}
+				js.flush()
+			}
+		}
 	}
-	// _, res := js.WriteBytes(js.End)
-	_, writeBytesErr := js.WriteBytes(js.end)
-	if writeBytesErr != nil {
-		log.Println(field.GenerateSpecificError(writeBytesErr))
+	if js.logExporters != nil && len(js.logExporters) != 0 {
+		defaultExporter, ok := js.logExporters["DefaultExporter"]
+		if ok {
+			fieldArr, fieldArrOk := f.(*field.ArrayField)
+			if fieldArrOk {
+				for i := 0; i < fieldArr.Length(); i++ {
+					oneField, errArr := fieldArr.At(i)
+					if errArr != nil {
+						log.Println(field.GenerateSpecificError(errArr))
+					}
+					err := js.write(oneField)
+					if err != nil {
+						log.Println(field.GenerateSpecificError(err))
+					}
+					// _, res := js.WriteBytes(js.End)
+					_, writeBytesErr := js.WriteBytes(js.End)
+					if writeBytesErr != nil {
+						log.Println(field.GenerateSpecificError(writeBytesErr))
+					}
+					exportLogsErr := defaultExporter.ExportLogs(js.ctx, js.bufReal.Bytes())
+					if exportLogsErr != nil {
+						log.Println(field.GenerateSpecificError(exportLogsErr))
+					}
+				}
+			}
+		}
+		err := js.write(f)
+		if err != nil {
+			log.Println(field.GenerateSpecificError(err))
+		}
+		// _, res := js.WriteBytes(js.End)
+		_, writeBytesErr := js.WriteBytes(js.End)
+		if writeBytesErr != nil {
+			log.Println(field.GenerateSpecificError(writeBytesErr))
+		}
+		flushWithExportersErr := js.flushWithExporters()
+		if flushWithExportersErr != nil {
+			log.Println(field.GenerateSpecificError(flushWithExportersErr))
+		}
 	}
-	return js.flush()
+	return nil
 }
 
 func (js *JsonEncoder) flush() error {
@@ -117,23 +169,33 @@ func (js *JsonEncoder) flush() error {
 		if res != nil {
 			log.Println(field.GenerateSpecificError(res))
 		}
+		js.bufReal.Reset()
 	}
+	return nil
+}
+
+func (js *JsonEncoder) flushWithExporters() error {
 	if js.logExporters != nil && len(js.logExporters) != 0 {
 		// 往所有发送地址发送相同的数据。
 		for _, e := range js.logExporters {
+			if e.Name() == "DefaultExporter" {
+				continue
+			}
 			if err := e.ExportLogs(js.ctx, js.bufReal.Bytes()); err != nil {
 				// 如果错误则记日志。
 				log.Println(field.GenerateSpecificError(err))
 			}
 		}
+		js.bufReal.Reset()
 	}
-	js.bufReal.Reset()
 	return nil
 }
 
 func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
-		return js.flush()
+		js.flush()
+		js.flushWithExporters()
+		return nil
 	}
 	go func() {
 		t := time.NewTimer(maxWaitExporterTime)
