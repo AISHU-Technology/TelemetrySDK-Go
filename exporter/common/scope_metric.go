@@ -35,12 +35,12 @@ func AnyRobotScopeMetricsFromScopeMetrics(scopeMetrics []metricdata.ScopeMetrics
 
 // Metrics 自定义 Metrics，改造了Data->Gauge/Sum/Histogram。
 type Metrics struct {
-	Name        string     `json:"Name"`
-	Description string     `json:"Description"`
-	Unit        string     `json:"Unit"`
-	Gauge       *Gauge     `json:"Gauge,omitempty"`
-	Sum         *Sum       `json:"Sum,omitempty"`
-	Histogram   *Histogram `json:"Histogram,omitempty"`
+	Name        string                `json:"Name"`
+	Description string                `json:"Description"`
+	Unit        string                `json:"Unit"`
+	Gauge       *Gauge                `json:"Gauge,omitempty"`
+	Sum         *Sum                  `json:"Sum,omitempty"`
+	Histogram   *metricdata.Histogram `json:"Histogram,omitempty"`
 }
 
 // AnyRobotMetricFromMetric 单条 *metricdata.Metrics 转换为 *Metrics 。
@@ -82,7 +82,7 @@ func AnyRobotMetricFromMetric(metric *metricdata.Metrics) *Metrics {
 			Name:        metric.Name,
 			Description: metric.Description,
 			Unit:        string(metric.Unit),
-			Histogram:   AnyRobotHistogramFromHistogram(histogram),
+			Histogram:   &histogram,
 		}
 	}
 	return nil
@@ -111,32 +111,13 @@ type Sum struct {
 	IsMonotonic bool                   `json:"IsMonotonic"`
 }
 
-// DataPoint 自定义 DataPoint，改造了Time->EndTime，Value->Int/Float。
+// DataPoint 自定义 DataPoint，改造了Value->Int/Float。
 type DataPoint struct {
 	Attributes attribute.Set `json:"Attributes"`
 	StartTime  time.Time     `json:"StartTime"`
-	EndTime    time.Time     `json:"EndTime"`
+	Time       time.Time     `json:"Time"`
 	Int        *int64        `json:"Int,omitempty"`
 	Float      *float64      `json:"Float,omitempty"`
-}
-
-// Histogram 自定义 Histogram，改造了DataPoints。
-type Histogram struct {
-	DataPoints  []*HistogramDataPoint  `json:"DataPoints"`
-	Temporality metricdata.Temporality `json:"Temporality"`
-}
-
-// HistogramDataPoint 自定义 HistogramDataPoint，改造了Time->EndTime。
-type HistogramDataPoint struct {
-	Attributes   attribute.Set `json:"Attributes"`
-	StartTime    time.Time     `json:"StartTime"`
-	EndTime      time.Time     `json:"EndTime"`
-	Count        uint64        `json:"Count"`
-	Bounds       []float64     `json:"Bounds"`
-	BucketCounts []uint64      `json:"BucketCounts"`
-	Min          *float64      `json:"Min,omitempty"`
-	Max          *float64      `json:"Max,omitempty"`
-	Sum          float64       `json:"Sum"`
 }
 
 // IntDataPoint 单条 metricdata.DataPoint[int64] 转换为 *DataPoint 。
@@ -144,7 +125,7 @@ func IntDataPoint(dp metricdata.DataPoint[int64]) *DataPoint {
 	return &DataPoint{
 		Attributes: dp.Attributes,
 		StartTime:  dp.StartTime,
-		EndTime:    dp.Time,
+		Time:       dp.Time,
 		Int:        &dp.Value,
 	}
 }
@@ -154,7 +135,7 @@ func FloatDataPoint(dp metricdata.DataPoint[float64]) *DataPoint {
 	return &DataPoint{
 		Attributes: dp.Attributes,
 		StartTime:  dp.StartTime,
-		EndTime:    dp.Time,
+		Time:       dp.Time,
 		Float:      &dp.Value,
 	}
 }
@@ -173,30 +154,6 @@ func FloatDataPoints(dps []metricdata.DataPoint[float64]) []*DataPoint {
 	arDataPoint := make([]*DataPoint, 0, len(dps))
 	for _, value := range dps {
 		arDataPoint = append(arDataPoint, FloatDataPoint(value))
-	}
-	return arDataPoint
-}
-
-// SingleHistogramDataPoint 单条 metricdata.HistogramDataPoint 转换为 *HistogramDataPoint 。
-func SingleHistogramDataPoint(dp metricdata.HistogramDataPoint) *HistogramDataPoint {
-	return &HistogramDataPoint{
-		Attributes:   dp.Attributes,
-		StartTime:    dp.StartTime,
-		EndTime:      dp.Time,
-		Count:        dp.Count,
-		Bounds:       dp.Bounds,
-		BucketCounts: dp.BucketCounts,
-		Min:          dp.Min,
-		Max:          dp.Max,
-		Sum:          dp.Sum,
-	}
-}
-
-// HistogramDataPoints 批量 []metricdata.HistogramDataPoint 转换为 []*HistogramDataPoint 。
-func HistogramDataPoints(dps []metricdata.HistogramDataPoint) []*HistogramDataPoint {
-	arDataPoint := make([]*HistogramDataPoint, 0, len(dps))
-	for _, value := range dps {
-		arDataPoint = append(arDataPoint, SingleHistogramDataPoint(value))
 	}
 	return arDataPoint
 }
@@ -230,13 +187,5 @@ func AnyRobotSumFromSumFloat(sum metricdata.Sum[float64]) *Sum {
 		DataPoints:  FloatDataPoints(sum.DataPoints),
 		Temporality: sum.Temporality,
 		IsMonotonic: sum.IsMonotonic,
-	}
-}
-
-// AnyRobotHistogramFromHistogram 单条 metricdata.Histogram 转换为 *Histogram 。
-func AnyRobotHistogramFromHistogram(histogram metricdata.Histogram) *Histogram {
-	return &Histogram{
-		DataPoints:  HistogramDataPoints(histogram.DataPoints),
-		Temporality: histogram.Temporality,
 	}
 }
