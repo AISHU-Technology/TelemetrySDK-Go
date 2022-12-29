@@ -79,47 +79,16 @@ func Example() {
 	log.Println(result, num)
 }
 
-// StdoutExample 输出到控制台和本地文件。
-func StdoutExporterExample() {
-	sampleLog = spanLog.NewDefaultSamplerLogger()
-	// // 此处demo output为标准输出
-	stdoutLogClient := public.NewStdoutClient("./AnyRobotLog.txt")
-	stdoutLogExporter := ar_span.NewExporter(stdoutLogClient)
-	writer := &open_standard.OpenTelemetry{
-		Encoder:  encoder.NewJsonEncoderWithExporters(stdoutLogExporter),
-		Resource: field.WithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID"),
-	}
-	//writer.SetDefaultResources()
-	//writer.SetResourcesWithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID")
-	run := runtime.NewRuntime(writer, field.NewSpanFromPool)
-
-	run.SetUploadInternalAndMaxLog(3*time.Second, 10)
-
-	sampleLog.SetRuntime(run)
-
-	// start runtime
-	go run.Run()
-	sampleLog.SetLevel(spanLog.AllLevel)
-
-	ctx := context.Background()
-	otel.SetTracerProvider(sdktrace.NewTracerProvider())
-	sampleLog.Info("this is a test", field.WithContext(ctx))
-	ctx, num := multiply(ctx, 1, 7)
-	_, _ = add(ctx, num, 8)
-	sampleLog.Close()
-}
-
 // HTTPExample 修改client所有入参。
 func HTTPExample() {
 	sampleLog = spanLog.NewDefaultSamplerLogger()
-	defaultExporter := exporter.GetDefaultExporter()
+	stdoutExporter := exporter.GetStdoutExporter()
 	logClient := public.NewHTTPClient(public.WithAnyRobotURL("http://10.4.130.68:13048/api/feed_ingester/v1/jobs/Kitty1/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	logExporter := ar_span.NewExporter(logClient)
-	//defaultExporter := exporter.GetDefaultExporter()
 	//	output := os.Stdout
 	writer := &open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoderWithExporters(logExporter, defaultExporter),
+		Encoder: encoder.NewJsonEncoderWithExporters(logExporter, stdoutExporter),
 		//Resource: field.WithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID"),
 	}
 	//writer.SetDefaultResources()
@@ -142,12 +111,12 @@ func HTTPExample() {
 	sampleLog.Close()
 }
 
-func DefaultExporterExample() {
+func StdoutExporterExample() {
 	sampleLog = spanLog.NewDefaultSamplerLogger()
-	defaultExporter := exporter.GetDefaultExporter()
+	stdoutExporter := exporter.GetStdoutExporter()
 	//	output := os.Stdout
 	writer := &open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoderWithExporters(defaultExporter),
+		Encoder: encoder.NewJsonEncoderWithExporters(stdoutExporter),
 		//Resource: field.WithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID"),
 	}
 	writer.SetDefaultResources()
@@ -170,7 +139,7 @@ func DefaultExporterExample() {
 	sampleLog.Close()
 }
 
-func StdoutExample() {
+func OldStdoutExample() {
 	sampleLog = spanLog.NewDefaultSamplerLogger()
 	output := os.Stdout
 	writer := &open_standard.OpenTelemetry{

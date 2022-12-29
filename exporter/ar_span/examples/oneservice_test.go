@@ -2,20 +2,6 @@ package examples
 
 import "testing"
 
-func TestStdoutExporterExample(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{
-			"StdoutExporterExample",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			StdoutExporterExample()
-		})
-	}
-}
 func TestHTTPExample(t *testing.T) {
 	tests := []struct {
 		name string
@@ -31,32 +17,32 @@ func TestHTTPExample(t *testing.T) {
 	}
 }
 
-func TestDefaultExporterExample(t *testing.T) {
+func TestStdoutExporterExample(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
 		{
-			"DefaultExporterExample",
+			"StdoutExporterExample",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			DefaultExporterExample()
+			StdoutExporterExample()
 		})
 	}
 }
 
-func TestStdoutExample(t *testing.T) {
+func TestOldStdoutExample(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
 		{
-			"StdoutExample",
+			"OldStdoutExample",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			StdoutExample()
+			OldStdoutExample()
 		})
 	}
 }
