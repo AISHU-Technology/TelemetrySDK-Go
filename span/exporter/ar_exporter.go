@@ -14,9 +14,9 @@ type exporter struct {
 }
 
 // GetDefaultExporter 获取默认的 EventExporter 。
-func GetDefaultExporter() LogExporter {
+func GetStdoutExporter() LogExporter {
 	return &exporter{
-		name:     "DefaultExporter",
+		name:     "StdoutExporter",
 		stopCh:   make(chan struct{}),
 		stopOnce: sync.Once{},
 	}

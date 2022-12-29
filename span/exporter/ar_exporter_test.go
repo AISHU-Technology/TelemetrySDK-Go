@@ -27,7 +27,7 @@ func TestGetDefaultExporter(t *testing.T) {
 		{
 			"",
 			&exporter{
-				name:     "DefaultExporter",
+				name:     "StdoutExporter",
 				stopCh:   make(chan struct{}),
 				stopOnce: sync.Once{},
 			},
@@ -35,7 +35,7 @@ func TestGetDefaultExporter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetDefaultExporter(); !reflect.DeepEqual(got.Name(), tt.want.Name()) {
+			if got := GetStdoutExporter(); !reflect.DeepEqual(got.Name(), tt.want.Name()) {
 				t.Errorf("GetDefaultExporter() = %v, want %v", got, tt.want)
 			}
 		})

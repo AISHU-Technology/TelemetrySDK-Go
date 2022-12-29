@@ -43,6 +43,21 @@ func GetTestFieds() []field.Field {
 	// s.Trace(&t0)
 }
 
+func GetTestFiedsArray() field.Field {
+	fieldArr := field.MallocArrayField(3)
+	r0 := fakeTestStructField()
+
+	r1 := field.MallocStructField(2)
+	r1.Set("Level", field.IntField(1))
+	r1.Set("eventNum", field.IntField(2))
+
+	r3 := getTestJson()
+	fieldArr.Append(r0)
+	fieldArr.Append(r1)
+	fieldArr.Append(r3)
+	return fieldArr
+}
+
 func fakeTestStructField() field.Field {
 	_, msg, line, _ := runtime.Caller(1)
 
@@ -118,15 +133,13 @@ func TestNewJsonEncoderBench(t *testing.T) {
 }
 
 func TestNewJsonEncoderWithExporters(t *testing.T) {
-	defaultExporter := exporter.GetDefaultExporter()
+	defaultExporter := exporter.GetStdoutExporter()
 
-	fields := GetTestFieds()
+	fields := GetTestFiedsArray()
 
 	enc := NewJsonEncoderWithExporters(defaultExporter)
-	for _, i := range fields {
-		if err := enc.Write(i); err != nil {
-			t.Error(err)
-		}
+	if err := enc.Write(fields); err != nil {
+		t.Error(err)
 	}
 
 }

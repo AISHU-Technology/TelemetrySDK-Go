@@ -44,7 +44,7 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	enc.Close()
 
 	// check result
-	cap := []map[string]interface{}{}
+	cap := map[string]interface{}{}
 	bytes := b.Bytes()
 	left := 0
 	i := 0

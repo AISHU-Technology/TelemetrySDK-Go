@@ -99,54 +99,21 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 
 // buffer by encoder for output
 func (js *JsonEncoder) Write(f field.Field) error {
+	//判断用户是否使用原来的io.Writer实现输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
 	if js.w != nil {
-		fieldArr, ok := f.(*field.ArrayField)
-		if ok {
-			for i := 0; i < fieldArr.Length(); i++ {
-				oneField, errArr := fieldArr.At(i)
-				if errArr != nil {
-					log.Println(field.GenerateSpecificError(errArr))
-				}
-				err := js.write(oneField)
-				if err != nil {
-					log.Println(field.GenerateSpecificError(err))
-				}
-				// _, res := js.WriteBytes(js.End)
-				_, writeBytesErr := js.WriteBytes(js.End)
-				if writeBytesErr != nil {
-					log.Println(field.GenerateSpecificError(writeBytesErr))
-				}
-				js.flush()
-			}
-		}
+		//将数组遍历使用io.Writer单个输出
+		js.dealIoWriter(f)
+		return nil
 	}
+	//判断用户是否使用新增exporter实现输出
 	if js.logExporters != nil && len(js.logExporters) != 0 {
-		defaultExporter, ok := js.logExporters["DefaultExporter"]
+		//判断用户是否使s用新增的StdoutExporter实现标准输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
+		stdoutExporter, ok := js.logExporters["StdoutExporter"]
 		if ok {
-			fieldArr, fieldArrOk := f.(*field.ArrayField)
-			if fieldArrOk {
-				for i := 0; i < fieldArr.Length(); i++ {
-					oneField, errArr := fieldArr.At(i)
-					if errArr != nil {
-						log.Println(field.GenerateSpecificError(errArr))
-					}
-					err := js.write(oneField)
-					if err != nil {
-						log.Println(field.GenerateSpecificError(err))
-					}
-					// _, res := js.WriteBytes(js.End)
-					_, writeBytesErr := js.WriteBytes(js.End)
-					if writeBytesErr != nil {
-						log.Println(field.GenerateSpecificError(writeBytesErr))
-					}
-					exportLogsErr := defaultExporter.ExportLogs(js.ctx, js.bufReal.Bytes())
-					if exportLogsErr != nil {
-						log.Println(field.GenerateSpecificError(exportLogsErr))
-					}
-					js.bufReal.Reset()
-				}
-			}
+			//将数组遍历使用StdoutExporter单个输出
+			js.dealStdoutExporter(stdoutExporter, f)
 		}
+		//不是StdoutExporter的剩余exporter比如arExporter将输出整个数组，下面将整个数组转为byte
 		err := js.write(f)
 		if err != nil {
 			log.Println(field.GenerateSpecificError(err))
@@ -156,12 +123,67 @@ func (js *JsonEncoder) Write(f field.Field) error {
 		if writeBytesErr != nil {
 			log.Println(field.GenerateSpecificError(writeBytesErr))
 		}
+		//调用不是StdoutExporter的剩余exporter比如arExporter的输出方法将整个数组进行输出
 		flushWithExportersErr := js.flushWithExporters()
 		if flushWithExportersErr != nil {
 			log.Println(field.GenerateSpecificError(flushWithExportersErr))
 		}
 	}
 	return nil
+}
+
+func (js *JsonEncoder) dealIoWriter(f field.Field) {
+	//断言为数组形式
+	fieldArr, ok := f.(*field.ArrayField)
+	if ok {
+		for i := 0; i < fieldArr.Length(); i++ {
+			oneField, errArr := fieldArr.At(i)
+			if errArr != nil {
+				log.Println(field.GenerateSpecificError(errArr))
+			}
+			//将单个log转为byte数组
+			err := js.write(oneField)
+			if err != nil {
+				log.Println(field.GenerateSpecificError(err))
+			}
+			// _, res := js.WriteBytes(js.End)
+			_, writeBytesErr := js.WriteBytes(js.End)
+			if writeBytesErr != nil {
+				log.Println(field.GenerateSpecificError(writeBytesErr))
+			}
+			//输出
+			js.flush()
+		}
+	}
+}
+
+func (js *JsonEncoder) dealStdoutExporter(stdoutExporter exporter.LogExporter, f field.Field) {
+	//断言为数组形式
+	fieldArr, fieldArrOk := f.(*field.ArrayField)
+	if fieldArrOk {
+		for i := 0; i < fieldArr.Length(); i++ {
+			oneField, errArr := fieldArr.At(i)
+			if errArr != nil {
+				log.Println(field.GenerateSpecificError(errArr))
+			}
+			//将单个log转为byte数组
+			err := js.write(oneField)
+			if err != nil {
+				log.Println(field.GenerateSpecificError(err))
+			}
+			// _, res := js.WriteBytes(js.End)
+			_, writeBytesErr := js.WriteBytes(js.End)
+			if writeBytesErr != nil {
+				log.Println(field.GenerateSpecificError(writeBytesErr))
+			}
+			//调用stdoutExporter的输出方法将单个log输出
+			exportLogsErr := stdoutExporter.ExportLogs(js.ctx, js.bufReal.Bytes())
+			if exportLogsErr != nil {
+				log.Println(field.GenerateSpecificError(exportLogsErr))
+			}
+			js.bufReal.Reset()
+		}
+	}
 }
 
 func (js *JsonEncoder) flush() error {
@@ -177,9 +199,9 @@ func (js *JsonEncoder) flush() error {
 
 func (js *JsonEncoder) flushWithExporters() error {
 	if js.logExporters != nil && len(js.logExporters) != 0 {
-		// 往所有发送地址发送相同的数据。
 		for _, e := range js.logExporters {
-			if e.Name() == "DefaultExporter" {
+			//过滤掉已经输出的StdoutExporter，其他exporter正常输出
+			if e.Name() == "StdoutExporter" {
 				continue
 			}
 			if err := e.ExportLogs(js.ctx, js.bufReal.Bytes()); err != nil {

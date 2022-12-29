@@ -12,7 +12,7 @@ import (
 
 var (
 	defaultInternal = 10 * time.Second
-	defaultMaxLog   = 1
+	defaultMaxLog   = 40
 )
 
 // Runtime read data from channel and write data in a single goroutine

@@ -213,7 +213,7 @@ func TestSamplerLogger(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	cap := []map[string]interface{}{}
+	cap := map[string]interface{}{}
 	bytes := buf.Bytes()
 	left := 0
 	i := 0

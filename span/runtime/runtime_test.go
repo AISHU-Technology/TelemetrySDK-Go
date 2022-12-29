@@ -80,7 +80,7 @@ func TestRecord(t *testing.T) {
 
 	// check result
 	var err error
-	cap := []map[string]interface{}{}
+	cap := map[string]interface{}{}
 	bytes := buf.Bytes()
 	left := 0
 	i := 0
@@ -105,7 +105,7 @@ func TestRecord(t *testing.T) {
 		}
 	}
 
-	assert.Equal(t, 1, n)
+	assert.Equal(t, 2, n)
 
 }
 
