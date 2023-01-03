@@ -101,14 +101,11 @@ func TestLinkPrivate(t *testing.T) {
 func TestNewLink(t *testing.T) {
 	tests := []struct {
 		name string
-		want link
+		want *link
 	}{
 		{
 			"",
-			link{
-				TraceID: "00000000000000000000000000000000",
-				SpanID:  "0000000000000000",
-			},
+			nil,
 		},
 	}
 	for _, tt := range tests {

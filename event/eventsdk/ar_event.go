@@ -12,17 +12,65 @@ import (
 	"time"
 )
 
+// Event 对外暴露的 event 接口。
+type Event interface {
+	// SetEventType 设置非空 EventType 。
+	SetEventType(eventType string)
+	// SetTime 设置 Time 。
+	SetTime(time time.Time)
+	//SetLevel 设置 level 。
+	SetLevel(level Level)
+	// SetAttributes 设置 Attributes 。
+	SetAttributes(kvs ...Attribute)
+	// SetSubject 设置 Subject 。
+	SetSubject(subject string)
+	// SetLink 设置 link 。
+	SetLink(link trace.SpanContext)
+	// SetData 设置 Data 。
+	SetData(data interface{})
+
+	// GetEventID 返回 EventID 。
+	GetEventID() string
+	// GetEventType 返回 EventType 。
+	GetEventType() string
+	// GetTime 返回 Time 。
+	GetTime() time.Time
+	// GetLevel 返回 level 。
+	GetLevel() Level
+	// GetAttributes 返回 attributes 。
+	GetAttributes() map[string]interface{}
+	// GetResource 返回 resource 。
+	GetResource() Resource
+	// GetSubject 返回 Subject 。
+	GetSubject() string
+	// GetLink 返回 link 。
+	GetLink() Link
+	// GetData 返回 Data 。
+	GetData() interface{}
+	// GetEventMap 返回 map[string]interface{} 形式的 event 。
+	GetEventMap() map[string]interface{}
+	// Send 上报 Event 到 AnyRobot Event 数据接收器。
+	Send()
+
+	// private 禁止用户自己实现接口。
+	private()
+	//SetEventID 当前不允许修改 EventID 。
+	//SetEventID(eventID string)
+
+}
+
 // event 自定义 event 统一数据模型。
 type event struct {
-	sent      *sync.Once
-	EventID   string      `json:"EventID"`
-	EventType string      `json:"EventType"`
-	Time      time.Time   `json:"Time"`
-	Level     level       `json:"Level"`
-	Resource  *resource   `json:"Resource"`
-	Subject   string      `json:"Subject"`
-	Link      link        `json:"Link"`
-	Data      interface{} `json:"Data"`
+	sent       *sync.Once
+	EventID    string                 `json:"EventID"`
+	EventType  string                 `json:"EventType"`
+	Time       time.Time              `json:"Time"`
+	Level      level                  `json:"Level"`
+	Attributes map[string]interface{} `json:"Attributes"`
+	Resource   *resource              `json:"Resource"`
+	Subject    string                 `json:"Subject"`
+	Link       *link                  `json:"Link,omitempty"`
+	Data       interface{}            `json:"Data"`
 }
 
 // Info 设置 Info 级别的事件并立即发送。
@@ -50,15 +98,16 @@ func Error(data interface{}, opts ...EventStartOption) {
 func NewEvent(opts ...EventStartOption) Event {
 	cfg := newEventStartConfig(opts...)
 	e := &event{
-		sent:      &sync.Once{},
-		EventID:   cfg.EventID,
-		EventType: cfg.EventType,
-		Time:      cfg.Time,
-		Level:     newLevel(cfg.Level.Self()),
-		Resource:  newResource(),
-		Subject:   cfg.Subject,
-		Link:      newLink(cfg.SpanContext),
-		Data:      cfg.Data,
+		sent:       &sync.Once{},
+		EventID:    cfg.EventID,
+		EventType:  cfg.EventType,
+		Time:       cfg.Time,
+		Level:      newLevel(cfg.Level.Self()),
+		Attributes: make(map[string]interface{}),
+		Resource:   newResource(),
+		Subject:    cfg.Subject,
+		Link:       newLink(cfg.SpanContext),
+		Data:       cfg.Data,
 	}
 	e.SetAttributes(cfg.Attributes...)
 	return e
@@ -96,7 +145,7 @@ func (e *event) SetAttributes(kvs ...Attribute) {
 			log.Println(custom_errors.EmptyKey)
 			continue
 		}
-		e.Resource.AttributesMap[kv.GetKey()] = kv.GetValue().GetData()
+		e.Attributes[kv.GetKey()] = kv.GetValue()
 	}
 }
 
@@ -109,8 +158,7 @@ func (e *event) SetLink(spanContext trace.SpanContext) {
 		log.Println(errors.New(custom_errors.InvalidLink))
 		return
 	}
-	e.Link.TraceID = spanContext.TraceID().String()
-	e.Link.SpanID = spanContext.SpanID().String()
+	e.Link = newLink(spanContext)
 }
 
 func (e *event) SetData(data interface{}) {
@@ -133,6 +181,10 @@ func (e *event) GetLevel() Level {
 	return e.Level
 }
 
+func (e *event) GetAttributes() map[string]interface{} {
+	return e.Attributes
+}
+
 func (e *event) GetResource() Resource {
 	return e.Resource
 }
@@ -142,6 +194,13 @@ func (e *event) GetSubject() string {
 }
 
 func (e *event) GetLink() Link {
+	if e.Link == nil {
+		return &link{
+			TraceID: "",
+			SpanID:  "",
+		}
+
+	}
 	return e.Link
 }
 
@@ -150,14 +209,17 @@ func (e *event) GetData() interface{} {
 }
 
 func (e *event) GetEventMap() map[string]interface{} {
-	result := make(map[string]interface{}, 8)
+	result := make(map[string]interface{}, 9)
 	result["EventID"] = e.EventID
 	result["EventType"] = e.EventType
 	result["Time"] = e.Time
 	result["Level"] = e.Level
+	result["Attributes"] = e.Attributes
 	result["Resource"] = e.Resource
 	result["Subject"] = e.Subject
-	result["Link"] = e.Link
+	if e.Link != nil {
+		result["Link"] = e.Link
+	}
 	result["Data"] = e.Data
 
 	return result
@@ -212,6 +274,5 @@ func (e *event) Valid() bool {
 		strings.TrimSpace(e.GetEventType()) != "" &&
 		e.GetTime().After(time.Time{}) &&
 		e.GetLevel().Valid() &&
-		e.GetResource().Valid() &&
-		e.GetLink().Valid()
+		e.GetResource().Valid()
 }

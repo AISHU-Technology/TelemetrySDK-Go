@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+// EventStartOption Event初始化选项。
+type EventStartOption interface {
+	// apply 更改Event默认配置。
+	apply(*eventStartConfig) *eventStartConfig
+}
+
 // eventStartOptionFunc 执行 EventStartOption 的方法。
 type eventStartOptionFunc func(*eventStartConfig) *eventStartConfig
 
