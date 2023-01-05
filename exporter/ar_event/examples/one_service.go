@@ -67,7 +67,7 @@ func StdoutExample() {
 	eventClient := public.NewStdoutClient("./AnyRobotEvent.txt")
 	eventExporter := ar_event.NewExporter(eventClient)
 	public.SetServiceInfo("YourServiceName", "1.0.0", "")
-	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventExporter), ar_event.EventResource())
+	eventProvider := eventsdk.NewEventProvider(eventsdk.Exporters(eventExporter), ar_event.EventResource())
 	eventsdk.SetEventProvider(eventProvider)
 
 	defer func() {
@@ -88,7 +88,7 @@ func HTTPExample() {
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	eventExporter := ar_event.NewExporter(eventClient)
 	public.SetServiceInfo("YourServiceName", "1.0.0", "")
-	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventExporter, eventsdk.GetDefaultExporter()), ar_event.EventResource())
+	eventProvider := eventsdk.NewEventProvider(eventsdk.Exporters(eventExporter, eventsdk.GetDefaultExporter()), ar_event.EventResource())
 	eventsdk.SetEventProvider(eventProvider)
 
 	defer func() {
