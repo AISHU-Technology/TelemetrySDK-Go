@@ -45,7 +45,10 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, span := ar_trace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
-	eventsdk.Warn(map[string]string{"key": "value", "data": "data"}, eventsdk.WithSpanContext(span.SpanContext()))
+	eventsdk.Warn(map[string]string{"key": "value", "data": "data"},
+		eventsdk.WithSpanContext(span.SpanContext()),
+		eventsdk.WithAttributes(eventsdk.NewAttribute("key", false)),
+		eventsdk.WithSubject("主题"))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)

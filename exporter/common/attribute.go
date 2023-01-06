@@ -60,3 +60,8 @@ func standardizeValueType(valueType string) string {
 		return valueType
 	}
 }
+
+// AnyRobotAttributesFromSet 批量Set转换为[]*Attribute。
+func AnyRobotAttributesFromSet(set attribute.Set) []*Attribute {
+	return AnyRobotAttributesFromKeyValues(set.ToSlice())
+}

@@ -46,7 +46,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	ctx, span := ar_trace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
 	defer span.End()
 	span.SetAttributes(attribute.KeyValue{Key: "multiply", Value: attribute.StringValue("计算两数之积")})
-	span.AddEvent("multiplyEvent", trace.WithAttributes(attribute.String("succeeded", "true"), attribute.String("analyzed", "100ms")))
+	span.AddEvent("multiplyEvent", trace.WithAttributes(attribute.BoolSlice("key", []bool{true, true}), attribute.String("analyzed", "100ms")))
 	span.SetStatus(2, "成功计算乘积")
 
 	//业务代码

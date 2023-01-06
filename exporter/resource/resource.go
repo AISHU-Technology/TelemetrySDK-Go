@@ -106,5 +106,5 @@ func MetricResource() *sdkresource.Resource {
 }
 
 func EventResource() eventsdk.EventProviderOption {
-	return eventsdk.WithServiceInfo(GetServiceName(), GetServiceVersion(), GetServiceInstance())
+	return eventsdk.ServiceInfo(GetServiceName(), GetServiceVersion(), GetServiceInstance())
 }
