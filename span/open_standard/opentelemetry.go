@@ -16,7 +16,7 @@ const rootSpan = iota
 var (
 	//OpenTelemetrySDKVersion = "v1.6.1"
 	sdkName     = "TelemetrySDK-Go/span"
-	sdkVersion  = "2.5.0"
+	sdkVersion  = "2.6.0"
 	sdkLanguage = "go"
 
 	serviceName     = defaultServiceName()
