@@ -6,25 +6,35 @@ import (
 	"net"
 )
 
+// Attribute 对外暴露的 attribute 接口。
+type Attribute interface {
+	// Valid 校验 attribute 是否合法。
+	Valid() bool
+	// GetKey 返回 attribute 的键。
+	GetKey() string
+	// GetValue 返回 attribute 的值。
+	GetValue() interface{}
+
+	// private 禁止用户自己实现接口。
+	private()
+}
+
 // attribute 自定义 event attribute 和 Trace 输出格式一致。
 type attribute struct {
-	Key   string `json:"Key"`
-	Value value  `json:"Data"`
+	Key   string      `json:"Key"`
+	Value interface{} `json:"Data"`
 }
 
 // NewAttribute 创建新的 attribute 。
-func NewAttribute(key string, v Value) Attribute {
+func NewAttribute(key string, v interface{}) Attribute {
 	return &attribute{
-		Key: key,
-		Value: value{
-			Type: v.GetType(),
-			Data: v.GetData(),
-		},
+		Key:   key,
+		Value: v,
 	}
 }
 
 func (a *attribute) Valid() bool {
-	return a.keyNotNil() && a.keyNotCollide()
+	return a.keyNotNil()
 }
 
 // keyNotNil 校验 attribute.Key 不为空，即有含义。
@@ -32,27 +42,11 @@ func (a *attribute) keyNotNil() bool {
 	return len(a.Key) > 0
 }
 
-// keyNotCollide 校验 attribute.Key 不与默认值冲突。
-func (a *attribute) keyNotCollide() bool {
-	switch a.Key {
-	case "host":
-		return false
-	case "os":
-		return false
-	case "telemetry":
-		return false
-	case "service":
-		return false
-	default:
-		return true
-	}
-}
-
 func (a *attribute) GetKey() string {
 	return a.Key
 }
 
-func (a *attribute) GetValue() Value {
+func (a *attribute) GetValue() interface{} {
 	return a.Value
 }
 
@@ -104,9 +98,9 @@ func getDefaultAttributes() map[string]interface{} {
 	result["telemetry"] = telemetryMap
 	sdkLanguage := "go"
 	sdkMap["language"] = sdkLanguage
-	sdkName := "TelemetrySDK-Go/exporter/arevent"
+	sdkName := version.EventInstrumentationName
 	sdkMap["name"] = sdkName
-	sdkVersion := version.VERSION
+	sdkVersion := version.EventInstrumentationVersion
 	sdkMap["version"] = sdkVersion
 	return result
 }
@@ -121,8 +115,8 @@ func copyDefaultAttributes() map[string]interface{} {
 	// 服务信息
 	serviceMap := make(map[string]string, 3)
 	copyMap["service"] = serviceMap
-	serviceMap["name"] = serviceName
-	serviceMap["version"] = serviceVersion
-	serviceMap["instance"] = serviceInstance
+	serviceMap["name"] = globalServiceName
+	serviceMap["version"] = globalServiceVersion
+	serviceMap["instance"] = globalServiceInstance
 	return copyMap
 }

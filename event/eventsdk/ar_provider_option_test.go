@@ -24,13 +24,13 @@ func TestWithExporters(t *testing.T) {
 		{
 			"",
 			args{nil},
-			WithExporters(),
+			Exporters(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithExporters(tt.args.exporters...); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
-				t.Errorf("WithExporters() = %v, want %v", got, tt.want)
+			if got := Exporters(tt.args.exporters...); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
+				t.Errorf("Exporters() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -48,13 +48,13 @@ func TestWithFlushInternal(t *testing.T) {
 		{
 			"",
 			args{time.Minute},
-			WithFlushInternal(time.Minute),
+			FlushInternal(time.Minute),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithFlushInternal(tt.args.flushInternal); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
-				t.Errorf("WithFlushInternal() = %v, want %v", got, tt.want)
+			if got := FlushInternal(tt.args.flushInternal); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
+				t.Errorf("FlushInternal() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -72,13 +72,13 @@ func TestWithMaxEvent(t *testing.T) {
 		{
 			"",
 			args{99},
-			WithMaxEvent(99),
+			MaxEvent(99),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithMaxEvent(tt.args.maxEvent); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
-				t.Errorf("WithMaxEvent() = %v, want %v", got, tt.want)
+			if got := MaxEvent(tt.args.maxEvent); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
+				t.Errorf("MaxEvent() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -102,7 +102,7 @@ func TestWithServiceInfo(t *testing.T) {
 				ServiceVersion:  "",
 				ServiceInstance: "",
 			},
-			WithServiceInfo("", "", ""),
+			ServiceInfo("", "", ""),
 		}, {
 			"",
 			args{
@@ -110,13 +110,13 @@ func TestWithServiceInfo(t *testing.T) {
 				ServiceVersion:  "456",
 				ServiceInstance: "789",
 			},
-			WithServiceInfo("123", "456", "789"),
+			ServiceInfo("123", "456", "789"),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := WithServiceInfo(tt.args.ServiceName, tt.args.ServiceVersion, tt.args.ServiceInstance); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
-				t.Errorf("WithServiceInfo() = %v, want %v", got, tt.want)
+			if got := ServiceInfo(tt.args.ServiceName, tt.args.ServiceVersion, tt.args.ServiceInstance); !reflect.DeepEqual(got.apply(config), tt.want.apply(config)) {
+				t.Errorf("ServiceInfo() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -145,7 +145,7 @@ func TestEventProviderOptionFuncApply(t *testing.T) {
 				providerConfig.MaxEvent = 12
 				return providerConfig
 			}),
-			args{WithMaxEvent(12).apply(config)},
+			args{MaxEvent(12).apply(config)},
 			config,
 		},
 	}

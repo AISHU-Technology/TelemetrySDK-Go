@@ -46,7 +46,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	ctx, span := ar_trace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
 	defer span.End()
 	span.SetAttributes(attribute.KeyValue{Key: "multiply", Value: attribute.StringValue("计算两数之积")})
-	span.AddEvent("multiplyEvent", trace.WithAttributes(attribute.String("succeeded", "true"), attribute.String("analyzed", "100ms")))
+	span.AddEvent("multiplyEvent", trace.WithAttributes(attribute.BoolSlice("key", []bool{true, true}), attribute.String("analyzed", "100ms")))
 	span.SetStatus(2, "成功计算乘积")
 
 	//业务代码
@@ -68,9 +68,10 @@ func StdoutExample() {
 	ctx := context.Background()
 	traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
 	traceExporter := ar_trace.NewExporter(traceClient)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.GetResource("YourServiceName", "1.0.0", "")))
-	otel.SetTracerProvider(tracerProvider)
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 
+	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
 			log.Println(err)
@@ -83,12 +84,13 @@ func StdoutExample() {
 	log.Println(result, num)
 }
 
-// HTTPExample 通过HTTP发送器输出到Trace接收器。
+// HTTPExample 通过HTTP发送器上报到接收器。
 func HTTPExample() {
 	ctx := context.Background()
 	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/abcd4f634e80d530/events"))
 	traceExporter := ar_trace.NewExporter(traceClient)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.GetResource("YourServiceName", "1.0.0", "")))
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 
 	defer func() {
@@ -112,7 +114,8 @@ func WithAllExample() {
 		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithHeader(header),
 		public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	traceExporter := ar_trace.NewExporter(traceClient)
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.GetResource("YourServiceName", "1.0.0", "")))
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {

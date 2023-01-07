@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+// EventStartOption Event初始化选项。
+type EventStartOption interface {
+	// apply 更改Event默认配置。
+	apply(*eventStartConfig) *eventStartConfig
+}
+
 // eventStartOptionFunc 执行 EventStartOption 的方法。
 type eventStartOptionFunc func(*eventStartConfig) *eventStartConfig
 
@@ -23,6 +29,7 @@ func (o eventStartOptionFunc) apply(cfg *eventStartConfig) *eventStartConfig {
 //	})
 //}
 
+// WithEventType 设置事件级别。
 func WithEventType(eventType string) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		if strings.TrimSpace(eventType) != "" {
@@ -32,6 +39,7 @@ func WithEventType(eventType string) EventStartOption {
 	})
 }
 
+// WithTime 设置事件发生时间。
 func WithTime(t time.Time) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		if t.After(time.Time{}) {
@@ -48,6 +56,7 @@ func withLevel(level Level) EventStartOption {
 	})
 }
 
+// WithAttributes 设置资源信息。
 func WithAttributes(attrs ...Attribute) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		cfg.Attributes = attrs
@@ -55,6 +64,7 @@ func WithAttributes(attrs ...Attribute) EventStartOption {
 	})
 }
 
+// WithSubject 设置事件操作对象。
 func WithSubject(subject string) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		cfg.Subject = subject
@@ -62,6 +72,7 @@ func WithSubject(subject string) EventStartOption {
 	})
 }
 
+// WithSpanContext 设置关联的Trace信息。
 func WithSpanContext(spanContext trace.SpanContext) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		cfg.SpanContext = spanContext

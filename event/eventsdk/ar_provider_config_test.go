@@ -15,8 +15,8 @@ func TestDefaultEventProviderConfig(t *testing.T) {
 			"",
 			&eventProviderConfig{
 				Exporters:     make(map[string]EventExporter),
-				FlushInternal: Internal,
-				MaxEvent:      MaxEvent,
+				FlushInternal: DefaultInternal,
+				MaxEvent:      DefaultMaxEvent,
 			},
 		},
 	}
@@ -44,15 +44,15 @@ func TestNewEventProviderConfig(t *testing.T) {
 			&eventProviderConfig{
 				Exporters:     make(map[string]EventExporter),
 				FlushInternal: 10 * time.Second,
-				MaxEvent:      99,
+				MaxEvent:      49,
 			},
 		}, {
 			"",
-			args{[]EventProviderOption{WithMaxEvent(19)}},
-			WithMaxEvent(19).apply(&eventProviderConfig{
+			args{[]EventProviderOption{MaxEvent(19)}},
+			MaxEvent(19).apply(&eventProviderConfig{
 				Exporters:     make(map[string]EventExporter),
 				FlushInternal: 10 * time.Second,
-				MaxEvent:      99,
+				MaxEvent:      49,
 			}),
 		},
 	}

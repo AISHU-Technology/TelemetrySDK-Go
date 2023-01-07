@@ -28,9 +28,9 @@ func AnyRobotEventsFromEvents(events []sdktrace.Event) []*Event {
 	if events == nil {
 		return make([]*Event, 0)
 	}
-	arevents := make([]*Event, 0, len(events))
+	arEvents := make([]*Event, 0, len(events))
 	for i := 0; i < len(events); i++ {
-		arevents = append(arevents, AnyRobotEventFromEvent(events[i]))
+		arEvents = append(arEvents, AnyRobotEventFromEvent(events[i]))
 	}
-	return arevents
+	return arEvents
 }

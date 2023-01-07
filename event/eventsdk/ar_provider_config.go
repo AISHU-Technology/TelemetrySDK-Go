@@ -9,14 +9,14 @@ type eventProviderConfig struct {
 	MaxEvent      int
 }
 
-const Internal = 10 * time.Second
-const MaxEvent = 99
+const DefaultInternal = 10 * time.Second
+const DefaultMaxEvent = 49
 
 func defaultEventProviderConfig() *eventProviderConfig {
 	return &eventProviderConfig{
 		Exporters:     make(map[string]EventExporter),
-		FlushInternal: Internal,
-		MaxEvent:      MaxEvent,
+		FlushInternal: DefaultInternal,
+		MaxEvent:      DefaultMaxEvent,
 	}
 }
 

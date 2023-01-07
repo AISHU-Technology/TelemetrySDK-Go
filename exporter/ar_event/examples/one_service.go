@@ -28,7 +28,7 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	eventsdk.Info(struct {
 		Name string
 		Age  int
-	}{"name", 22}, eventsdk.WithEventType("EventExporter/add"))
+	}{"name", 31}, eventsdk.WithEventType("NewExporter/add"))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
@@ -46,7 +46,10 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, span := ar_trace.Tracer.Start(ctx, "乘法", trace.WithSpanKind(1))
-	eventsdk.Warn(map[string]string{"key": "value", "data": "data"}, eventsdk.WithSpanContext(span.SpanContext()))
+	eventsdk.Warn(map[string]string{"key": "value", "data": "data"},
+		eventsdk.WithSpanContext(span.SpanContext()),
+		eventsdk.WithAttributes(eventsdk.NewAttribute("key", false)),
+		eventsdk.WithSubject("主题"))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
@@ -67,7 +70,8 @@ func StdoutExample() {
 	ctx := context.Background()
 	eventClient := public.NewStdoutClient("./AnyRobotEvent.txt")
 	eventExporter := ar_event.NewExporter(eventClient)
-	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventExporter))
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	eventProvider := eventsdk.NewEventProvider(eventsdk.Exporters(eventExporter), ar_event.EventResource())
 	eventsdk.SetEventProvider(eventProvider)
 
 	defer func() {
@@ -81,13 +85,14 @@ func StdoutExample() {
 	log.Println(result, num)
 }
 
-// HTTPExample 修改client所有入参。
+// HTTPExample 通过HTTP发送器上报到接收器。
 func HTTPExample() {
 	ctx := context.Background()
 	eventClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	eventExporter := ar_event.NewExporter(eventClient)
-	eventProvider := eventsdk.NewEventProvider(eventsdk.WithExporters(eventExporter, eventsdk.GetDefaultExporter()), eventsdk.WithServiceInfo("YourServiceName", "1.0.1", ""))
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	eventProvider := eventsdk.NewEventProvider(eventsdk.Exporters(eventExporter, eventsdk.GetDefaultExporter()), ar_event.EventResource())
 	eventsdk.SetEventProvider(eventProvider)
 
 	defer func() {
@@ -96,7 +101,7 @@ func HTTPExample() {
 		}
 	}()
 
-	ctx, num := multiply(ctx, 2, 3)
+	ctx, num := add(ctx, 2, 3)
 	for i := 0; i < 6; i++ {
 		ctx, num = multiply(ctx, 2, 3)
 		ctx, num = add(ctx, 2, 3)

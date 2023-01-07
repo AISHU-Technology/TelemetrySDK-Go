@@ -7,7 +7,15 @@ import (
 
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/custom_errors"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 )
+
+// SetServiceInfo 设置服务信息，包括服务名、版本号、实例ID。
+func SetServiceInfo(name string, version string, instance string) {
+	resource.SetServiceName(name)
+	resource.SetServiceVersion(version)
+	resource.SetServiceInstance(instance)
+}
 
 // WithAnyRobotURL 设置 httpClient 数据上报地址。
 func WithAnyRobotURL(URL string) config.Option {

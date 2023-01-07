@@ -5,6 +5,7 @@ import (
 	"context"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/public"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 	"encoding/json"
 )
 
@@ -35,4 +36,9 @@ func NewExporter(c public.Client) *Exporter {
 	return &Exporter{
 		public.NewExporter(c),
 	}
+}
+
+// EventResource 传入 Event 的默认resource。
+func EventResource() eventsdk.EventProviderOption {
+	return resource.EventResource()
 }

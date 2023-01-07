@@ -86,7 +86,7 @@ func TestEventGetData(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -103,7 +103,7 @@ func TestEventGetData(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			nil,
@@ -136,7 +136,7 @@ func TestEventGetEventID(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -153,7 +153,7 @@ func TestEventGetEventID(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			"12345",
@@ -186,7 +186,7 @@ func TestEventGetEventMap(t *testing.T) {
 		Level:     WARN,
 		Resource:  nil,
 		Subject:   "",
-		Link:      link{},
+		Link:      &link{},
 		Data:      nil,
 	}
 	type fields struct {
@@ -196,7 +196,7 @@ func TestEventGetEventMap(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -213,7 +213,7 @@ func TestEventGetEventMap(t *testing.T) {
 				Level:     WARN,
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			myEvent.GetEventMap(),
@@ -246,7 +246,7 @@ func TestEventGetEventType(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -263,7 +263,7 @@ func TestEventGetEventType(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			"service.call",
@@ -296,7 +296,7 @@ func TestEventGetLevel(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -313,7 +313,7 @@ func TestEventGetLevel(t *testing.T) {
 				Level:     "ERROR",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			level("ERROR"),
@@ -346,7 +346,7 @@ func TestEventGetLink(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -363,10 +363,10 @@ func TestEventGetLink(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
-			link{
+			&link{
 				TraceID: "",
 				SpanID:  "",
 			},
@@ -399,7 +399,7 @@ func TestEventGetResource(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -416,7 +416,7 @@ func TestEventGetResource(t *testing.T) {
 				Level:     "",
 				Resource:  newResource(),
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			newResource(),
@@ -449,7 +449,7 @@ func TestEventGetSubject(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -466,7 +466,7 @@ func TestEventGetSubject(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "operating.obj",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			"operating.obj",
@@ -499,7 +499,7 @@ func TestEventGetTime(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -516,7 +516,7 @@ func TestEventGetTime(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			time.Time{},
@@ -549,7 +549,7 @@ func TestEventSend(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -565,7 +565,7 @@ func TestEventSend(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 		},
@@ -590,14 +590,15 @@ func TestEventSend(t *testing.T) {
 
 func TestEventSetAttributes(t *testing.T) {
 	type fields struct {
-		EventID   string
-		EventType string
-		Time      time.Time
-		Level     level
-		Resource  *resource
-		Subject   string
-		Link      link
-		Data      interface{}
+		EventID    string
+		EventType  string
+		Time       time.Time
+		Level      level
+		Attributes map[string]interface{}
+		Resource   *resource
+		Subject    string
+		Link       *link
+		Data       interface{}
 	}
 	type args struct {
 		kvs []Attribute
@@ -610,29 +611,31 @@ func TestEventSetAttributes(t *testing.T) {
 		{
 			"",
 			fields{
-				EventID:   "",
-				EventType: "",
-				Time:      time.Time{},
-				Level:     "",
-				Resource:  newResource(),
-				Subject:   "",
-				Link:      link{},
-				Data:      nil,
+				EventID:    "",
+				EventType:  "",
+				Time:       time.Time{},
+				Level:      "",
+				Attributes: make(map[string]interface{}, 0),
+				Resource:   newResource(),
+				Subject:    "",
+				Link:       &link{},
+				Data:       nil,
 			},
-			args{[]Attribute{NewAttribute("key", BoolValue(true))}},
+			args{[]Attribute{NewAttribute("key", "anything")}},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := &event{
-				EventID:   tt.fields.EventID,
-				EventType: tt.fields.EventType,
-				Time:      tt.fields.Time,
-				Level:     tt.fields.Level,
-				Resource:  tt.fields.Resource,
-				Subject:   tt.fields.Subject,
-				Link:      tt.fields.Link,
-				Data:      tt.fields.Data,
+				EventID:    tt.fields.EventID,
+				EventType:  tt.fields.EventType,
+				Time:       tt.fields.Time,
+				Level:      tt.fields.Level,
+				Attributes: tt.fields.Attributes,
+				Resource:   tt.fields.Resource,
+				Subject:    tt.fields.Subject,
+				Link:       tt.fields.Link,
+				Data:       tt.fields.Data,
 			}
 			e.SetAttributes(tt.args.kvs...)
 		})
@@ -647,7 +650,7 @@ func TestEventSetData(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	type args struct {
@@ -667,7 +670,7 @@ func TestEventSetData(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			args{struct{}{}},
@@ -698,7 +701,7 @@ func TestEventSetEventType(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	type args struct {
@@ -718,7 +721,7 @@ func TestEventSetEventType(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			args{"type"},
@@ -749,7 +752,7 @@ func TestEventSetLink(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	type args struct {
@@ -769,7 +772,7 @@ func TestEventSetLink(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			args{trace.SpanContext{}},
@@ -800,7 +803,7 @@ func TestEventSetSubject(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	type args struct {
@@ -820,7 +823,7 @@ func TestEventSetSubject(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			args{"subject"},
@@ -851,7 +854,7 @@ func TestEventSetTime(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	type args struct {
@@ -871,7 +874,7 @@ func TestEventSetTime(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			args{time.Time{}},
@@ -902,7 +905,7 @@ func TestEventPrivate(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -918,7 +921,7 @@ func TestEventPrivate(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 		},
@@ -967,7 +970,7 @@ func TestEventValid(t *testing.T) {
 		Level     level
 		Resource  *resource
 		Subject   string
-		Link      link
+		Link      *link
 		Data      interface{}
 	}
 	tests := []struct {
@@ -984,7 +987,7 @@ func TestEventValid(t *testing.T) {
 				Level:     "INFO",
 				Resource:  &resource{"", getDefaultAttributes()},
 				Subject:   "",
-				Link: link{
+				Link: &link{
 					"5bd0ecc145cc8639007721df27ecda50",
 					"4cbf3e2c1e8517e7",
 				},
@@ -1000,7 +1003,7 @@ func TestEventValid(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
-				Link:      link{},
+				Link:      &link{},
 				Data:      nil,
 			},
 			false,
@@ -1084,6 +1087,32 @@ func TestError(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			Error(tt.args.data, tt.args.opts...)
+		})
+	}
+}
+
+func TestSetServiceInfo(t *testing.T) {
+	type args struct {
+		ServiceName     string
+		ServiceVersion  string
+		ServiceInstance string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			"",
+			args{
+				"MYServiceName",
+				"MYServiceVersion",
+				"MYServiceInstance",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetServiceInfo(tt.args.ServiceName, tt.args.ServiceVersion, tt.args.ServiceInstance)
 		})
 	}
 }

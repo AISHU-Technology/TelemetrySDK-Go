@@ -9,7 +9,7 @@ import (
 func TestNewAttribute(t *testing.T) {
 	type args struct {
 		key string
-		v   Value
+		v   interface{}
 	}
 	tests := []struct {
 		name string
@@ -20,14 +20,11 @@ func TestNewAttribute(t *testing.T) {
 			"",
 			args{
 				key: "key",
-				v:   StringValue("123"),
+				v:   "STRING",
 			},
 			&attribute{
-				Key: "key",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "key",
+				Value: "STRING",
 			},
 		},
 	}
@@ -43,7 +40,7 @@ func TestNewAttribute(t *testing.T) {
 func TestAttributeGetKey(t *testing.T) {
 	type fields struct {
 		Key   string
-		Value value
+		Value interface{}
 	}
 	tests := []struct {
 		name   string
@@ -53,11 +50,8 @@ func TestAttributeGetKey(t *testing.T) {
 		{
 			"",
 			fields{
-				Key: "key",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "key",
+				Value: 123,
 			},
 			"key",
 		},
@@ -78,26 +72,20 @@ func TestAttributeGetKey(t *testing.T) {
 func TestAttributeGetValue(t *testing.T) {
 	type fields struct {
 		Key   string
-		Value value
+		Value interface{}
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   Value
+		want   interface{}
 	}{
 		{
 			"",
 			fields{
-				Key: "key",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "key",
+				Value: 123,
 			},
-			value{
-				Type: "STRING",
-				Data: "123",
-			},
+			123,
 		},
 	}
 	for _, tt := range tests {
@@ -116,7 +104,7 @@ func TestAttributeGetValue(t *testing.T) {
 func TestAttributeValid(t *testing.T) {
 	type fields struct {
 		Key   string
-		Value value
+		Value interface{}
 	}
 	tests := []struct {
 		name   string
@@ -126,33 +114,24 @@ func TestAttributeValid(t *testing.T) {
 		{
 			"",
 			fields{
-				Key: "key",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "key",
+				Value: 123,
 			},
 			true,
 		}, {
 			"",
 			fields{
-				Key: "",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "",
+				Value: 123,
 			},
 			false,
 		}, {
 			"",
 			fields{
-				Key: "os",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "os",
+				Value: 123,
 			},
-			false,
+			true,
 		},
 	}
 	for _, tt := range tests {
@@ -168,85 +147,10 @@ func TestAttributeValid(t *testing.T) {
 	}
 }
 
-func TestAttributeKeyNotCollide(t *testing.T) {
-	type fields struct {
-		Key   string
-		Value value
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   bool
-	}{
-		{
-			"",
-			fields{
-				Key: "key",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
-			},
-			true,
-		}, {
-			"",
-			fields{
-				Key: "host",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
-			},
-			false,
-		}, {
-			"",
-			fields{
-				Key: "os",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
-			},
-			false,
-		}, {
-			"",
-			fields{
-				Key: "telemetry",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
-			},
-			false,
-		}, {
-			"",
-			fields{
-				Key: "service",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
-			},
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			a := &attribute{
-				Key:   tt.fields.Key,
-				Value: tt.fields.Value,
-			}
-			if got := a.keyNotCollide(); got != tt.want {
-				t.Errorf("keyNotCollide() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestAttributeKeyNotNil(t *testing.T) {
 	type fields struct {
 		Key   string
-		Value value
+		Value interface{}
 	}
 	tests := []struct {
 		name   string
@@ -256,21 +160,15 @@ func TestAttributeKeyNotNil(t *testing.T) {
 		{
 			"",
 			fields{
-				Key: "key",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "key",
+				Value: 123,
 			},
 			true,
 		}, {
 			"",
 			fields{
-				Key: "",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "",
+				Value: 123,
 			},
 			false,
 		},
@@ -291,7 +189,7 @@ func TestAttributeKeyNotNil(t *testing.T) {
 func TestAttributePrivate(t *testing.T) {
 	type fields struct {
 		Key   string
-		Value value
+		Value interface{}
 	}
 	tests := []struct {
 		name   string
@@ -300,11 +198,8 @@ func TestAttributePrivate(t *testing.T) {
 		{
 			"",
 			fields{
-				Key: "key",
-				Value: value{
-					Type: "STRING",
-					Data: "123",
-				},
+				Key:   "key",
+				Value: 123,
 			},
 		},
 	}
