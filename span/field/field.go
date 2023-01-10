@@ -33,49 +33,63 @@ func (f IntField) Type() FieldTpye {
 	return IntType
 }
 
-func (f IntField) protect() {}
+func (f IntField) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func (f Float64Field) Type() FieldTpye {
 	return Float64Type
 }
 
 // Avoiding irrelevant personnel to implement Field interface
-func (f Float64Field) protect() {}
+func (f Float64Field) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func (f StringField) Type() FieldTpye {
 	return StringType
 }
 
 // Avoiding irrelevant personnel to implement Field interface
-func (f StringField) protect() {}
+func (f StringField) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func (f TimeField) Type() FieldTpye {
 	return TimeType
 }
 
 // Avoiding irrelevant personnel to implement Field interface
-func (f TimeField) protect() {}
+func (f TimeField) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func (f *ArrayField) Type() FieldTpye {
 	return ArrayType
 }
 
 // Avoiding irrelevant personnel to implement Field interface
-func (f *ArrayField) protect() {}
+func (f *ArrayField) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func (f *StructField) Type() FieldTpye {
 	return StructType
 }
 
 // Avoiding irrelevant personnel to implement Field interface
-func (f *StructField) protect() {}
+func (f *StructField) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func (f *JsonFiled) Type() FieldTpye {
 	return JsonType
 }
 
 // Avoiding irrelevant personnel to implement Field interface
-func (f *JsonFiled) protect() {}
+func (f *JsonFiled) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func MallocJsonField(data interface{}) *JsonFiled {
 	return &JsonFiled{
@@ -87,7 +101,9 @@ func (f MapField) Type() FieldTpye {
 	return MapType
 }
 
-func (f MapField) protect() {}
+func (f MapField) protect() {
+	// Avoiding irrelevant personnel to implement Field interface
+}
 
 func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstanceID string) Field {
 	service := make(map[string]interface{})

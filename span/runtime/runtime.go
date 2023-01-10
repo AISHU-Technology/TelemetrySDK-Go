@@ -61,7 +61,7 @@ func NewRuntime(w open_standard.Writer, builder func(func(field.LogSpan), contex
 // if Runtime has been close return nil
 // user should return span's onwership after Span is useless by Span.Signal()
 func (r *Runtime) Children(ctx context.Context) field.LogSpan {
-	// TODO: remove read lock
+	//remove read lock
 	r.closeLock.RLock()
 	defer r.closeLock.RUnlock()
 
