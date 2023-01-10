@@ -20,8 +20,6 @@ variables:
     value: "acr.aishu.cn/ar/go.build:1.18.8-20221108"
   - name: SONARQUBE_IMAGE
     value: "acr.aishu.cn/public/sonarsource/sonar-scanner-cli:4.7"
-  - name: SONARQUBE_SERVER
-    value: "http://sonarqube.ar.aishu.cn:9000"
   - name: LintReportName # 此行保持一致
     value: lint_report.xml
   - name: UTReportName # 此行保持一致
@@ -64,7 +62,6 @@ stages:
                   set -ex
 
                   echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
-                  
                   cd /TelemetrySDK-Go/event
                   go mod download
                   mkdir -p /TelemetrySDK-Go/event/report
@@ -201,7 +198,7 @@ stages:
                     cd /TelemetrySDK-Go
                     mv CodeCheckReportFiles1 report
                     sonar-scanner \
-                      -D sonar.host.url=$(SONARQUBE_SERVER) \
+                      -D sonar.host.url=$(sonarqube.server) \
                       -D sonar.projectKey=${APP_NAME} \
                       -D sonar.branch.name=$(Build.SourceBranchName) \
                       -D sonar.sources=. \
@@ -211,7 +208,7 @@ stages:
                       -D sonar.global.exclusions=${GLOBAL_EXCLUSION_DIR} \
                       -D sonar.language=go \
                       -D sonar.go.coverage.reportPaths=report/ut_coverage.out \
-                      -D sonar.login=0012f1bd6a57230227cb9ea57217461fdeb96552
+                      -D sonar.login=$(sonarqube.token)
                     "
           - task: Post-Bash@3
             inputs:
@@ -244,7 +241,6 @@ stages:
                   set -ex
 
                   echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
-                
                   cd /TelemetrySDK-Go/exporter
                   go mod download
                   mkdir -p /TelemetrySDK-Go/exporter/report
@@ -381,7 +377,7 @@ stages:
                     cd /TelemetrySDK-Go
                     mv CodeCheckReportFiles2 report
                     sonar-scanner \
-                      -D sonar.host.url=$(SONARQUBE_SERVER) \
+                      -D sonar.host.url=$(sonarqube.server) \
                       -D sonar.projectKey=${APP_NAME} \
                       -D sonar.branch.name=$(Build.SourceBranchName) \
                       -D sonar.sources=. \
@@ -391,7 +387,7 @@ stages:
                       -D sonar.global.exclusions=${GLOBAL_EXCLUSION_DIR} \
                       -D sonar.language=go \
                       -D sonar.go.coverage.reportPaths=report/ut_coverage.out \
-                      -D sonar.login=0012f1bd6a57230227cb9ea57217461fdeb96552
+                      -D sonar.login=$(sonarqube.token)
                     "
           - task: Post-Bash@3
             inputs:
