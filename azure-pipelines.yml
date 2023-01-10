@@ -444,7 +444,7 @@ stages:
                 rm -rf $(Build.SourcesDirectory)
 
       - job: _8UploadReport
-        displayName: 5.上传检查报告
+        displayName: 8.上传检查报告
         container: dotnet
         dependsOn: _7CodeCheck
         pool:
