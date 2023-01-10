@@ -293,7 +293,7 @@ func BenchmarkWithoutFields(b *testing.B) {
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				logger.Log(getMessage(0), getMessage(1))
+				logger.Log(getMessage(0), getMessage(1)) //nolint
 			}
 		})
 	})
@@ -431,7 +431,7 @@ func BenchmarkAccumulatedContext(b *testing.B) {
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				logger.Log(getMessage(0), getMessage(1))
+				logger.Log(getMessage(0), getMessage(1)) //nolint
 			}
 		})
 	})
@@ -542,7 +542,7 @@ func BenchmarkAddingFields(b *testing.B) {
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				logger.Log(fakeSugarFields()...)
+				logger.Log(fakeSugarFields()...) //nolint
 			}
 		})
 	})

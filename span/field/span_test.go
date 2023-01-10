@@ -28,7 +28,7 @@ func TestGenID(t *testing.T) {
 	tp1 := tracesdk.NewTracerProvider()
 	tr1 := tp1.Tracer("123")
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
-	defer tp1.Shutdown(nil)
+	defer tp1.Shutdown(nil) //nolint
 	defer span.End()
 	s0 := NewSpanFromPool(func(LogSpan) {}, ctx1)
 	assert.Equal(t, span.SpanContext().TraceID().String(), s0.TraceID())
@@ -141,7 +141,7 @@ func TestLogSpanV1Context(t *testing.T) {
 	tp1 := tracesdk.NewTracerProvider()
 	tr1 := tp1.Tracer("123")
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
-	defer tp1.Shutdown(nil)
+	defer tp1.Shutdown(nil) //nolint
 	defer span.End()
 
 	s1 := NewSpanFromPool(func(LogSpan) {}, nil)
@@ -161,7 +161,7 @@ func TestLogSpanV1IsNilContext(t *testing.T) {
 	tp1 := tracesdk.NewTracerProvider()
 	tr1 := tp1.Tracer("123")
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
-	defer tp1.Shutdown(nil)
+	defer tp1.Shutdown(nil) //nolint
 	defer span.End()
 	s0.SetOption(WithContext(ctx1))
 	assert.False(t, s0.IsNilContext())

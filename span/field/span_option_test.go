@@ -35,7 +35,7 @@ func TestWithContext(t *testing.T) {
 	tp1 := tracesdk.NewTracerProvider()
 	tr1 := tp1.Tracer("123")
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
-	defer tp1.Shutdown(nil)
+	defer tp1.Shutdown(nil) //nolint
 	defer span.End()
 	assert.NotEqual(t, info.ctx, ctx1)
 

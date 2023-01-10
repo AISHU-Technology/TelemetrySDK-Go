@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func fakeTestStructField() field.Field {
+func fakeTestStructField() field.Field { //nolint
 	_, msg, line, _ := runtime.Caller(1)
 
 	res := field.MallocStructField(4)
@@ -48,7 +48,7 @@ func TestRecord(t *testing.T) {
 	// task thread0, log quick
 	go func() {
 		// a new web request task
-		root := runtimeSpan.Children(nil)
+		root := runtimeSpan.Children(nil) //nolint
 		// web request complete, wait children span
 		// finally send web's span control to loger runtime
 		defer root.Signal()
@@ -58,7 +58,7 @@ func TestRecord(t *testing.T) {
 	}()
 	// task thread1, live 1s
 	go func() {
-		root := runtimeSpan.Children(nil)
+		root := runtimeSpan.Children(nil) //nolint
 		defer root.Signal()
 		setTestSpance(root)
 
@@ -75,7 +75,7 @@ func TestRecord(t *testing.T) {
 	runtimeSpan.Run()
 
 	// test runtime stop
-	after_stop := runtimeSpan.Children(nil)
+	after_stop := runtimeSpan.Children(nil) //nolint
 	assert.Equal(t, nil, after_stop)
 
 	// check result

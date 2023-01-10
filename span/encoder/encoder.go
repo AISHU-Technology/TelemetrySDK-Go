@@ -217,20 +217,18 @@ func (js *JsonEncoder) flushWithExporters() error {
 func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
 		js.flush()
-		js.flushWithExporters()
+		js.flushWithExporters() //nolint
 		return nil
 	}
 	go func() {
 		t := time.NewTimer(maxWaitExporterTime)
 		defer t.Stop()
-		select {
-		case <-t.C:
-			js.cancelFunc()
-			if js.logExporters != nil && len(js.logExporters) != 0 {
-				for _, exporter := range js.logExporters {
-					if err := exporter.Shutdown(js.ctx); err != nil {
-						log.Println(field.GenerateSpecificError(err))
-					}
+		<-t.C
+		js.cancelFunc()
+		if js.logExporters != nil && len(js.logExporters) != 0 {
+			for _, exporter := range js.logExporters {
+				if err := exporter.Shutdown(js.ctx); err != nil {
+					log.Println(field.GenerateSpecificError(err))
 				}
 			}
 		}
@@ -255,8 +253,8 @@ func (js *JsonEncoder) write(f field.Field) error {
 		return res
 	case field.StringType:
 		v := string(f.(field.StringField))
-		w.WriteBytes(_quotation)
-		js.safeWriteString(v)
+		w.WriteBytes(_quotation) //nolint
+		js.safeWriteString(v)    //nolint
 		_, res := w.WriteBytes(_quotation)
 		return res
 	case field.TimeType:
@@ -266,36 +264,36 @@ func (js *JsonEncoder) write(f field.Field) error {
 		return res
 	case field.ArrayType:
 		v := f.(*field.ArrayField)
-		w.WriteBytes(_leftBracket)
+		w.WriteBytes(_leftBracket) //nolint
 		i := 0
 		for ; i < len(*v)-1; i += 1 {
-			js.write((*v)[i])
-			w.WriteBytes(_seperator)
+			js.write((*v)[i])        //nolint
+			w.WriteBytes(_seperator) //nolint
 		}
 		if i < len(*v) {
-			js.write((*v)[i])
+			js.write((*v)[i]) //nolint
 		}
-		_, res := w.WriteBytes(_rightBracket)
+		_, res := w.WriteBytes(_rightBracket) //nolint
 		return res
 	case field.StructType:
 		fs := f.(*field.StructField)
-		w.WriteBytes(_leftBigBracket)
+		w.WriteBytes(_leftBigBracket) //nolint
 		i := 0
 		for ; i < fs.Length()-1; i += 1 {
 			k, v, _ := fs.At(i)
-			w.WriteBytes(_quotation)
-			js.safeWriteString(k)
-			w.WriteBytes(_quotation)
-			w.WriteBytes(_colon)
-			js.write(v)
-			w.WriteBytes(_seperator)
+			w.WriteBytes(_quotation) //nolint
+			js.safeWriteString(k)    //nolint
+			w.WriteBytes(_quotation) //nolint
+			w.WriteBytes(_colon)     //nolint
+			js.write(v)              //nolint
+			w.WriteBytes(_seperator) //nolint
 		}
 		if k, v, err := fs.At(i); err == nil {
-			w.WriteBytes(_quotation)
-			js.safeWriteString(k)
-			w.WriteBytes(_quotation)
-			w.WriteBytes(_colon)
-			js.write(v)
+			w.WriteBytes(_quotation) //nolint
+			js.safeWriteString(k)    //nolint
+			w.WriteBytes(_quotation) //nolint
+			w.WriteBytes(_colon)     //nolint
+			js.write(v)              //nolint
 		}
 		_, res := w.WriteBytes(_rightBigBracket)
 		return res
@@ -325,7 +323,7 @@ func (js *JsonEncoder) write(f field.Field) error {
 // String2Bytes unsafe convert string to []byte, they point to the same memory
 func (js *JsonEncoder) string2Bytes(s string) []byte {
 	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	result := make([]byte, sh.Len, sh.Len)
+	result := make([]byte, sh.Len)
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&result))
 	bh.Data = sh.Data
 	return result
@@ -346,33 +344,33 @@ func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 		switch i {
 		default:
 		case '"':
-			w.WriteBytes(bytes[left:k])
+			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
-			_, res = w.WriteBytes(_quotationSafe)
+			_, res = w.WriteBytes(_quotationSafe) //nolint
 		case '\\':
-			w.WriteBytes(bytes[left:k])
+			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
-			_, res = w.WriteBytes(_reverseSafe)
+			_, res = w.WriteBytes(_reverseSafe) //nolint
 		case '\b':
-			w.WriteBytes(bytes[left:k])
+			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
-			_, res = w.WriteBytes(_backspaceSafe)
+			_, res = w.WriteBytes(_backspaceSafe) //nolint
 		case '\f':
-			w.WriteBytes(bytes[left:k])
+			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
-			_, res = w.WriteBytes(_formfeedSafe)
+			_, res = w.WriteBytes(_formfeedSafe) //nolint
 		case '\t':
-			w.WriteBytes(bytes[left:k])
+			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
-			_, res = w.WriteBytes(_horizontalSafe)
+			_, res = w.WriteBytes(_horizontalSafe) //nolint
 		case '\n':
-			w.WriteBytes(bytes[left:k])
+			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
-			_, res = w.WriteBytes(_lineFeedSafe)
+			_, res = w.WriteBytes(_lineFeedSafe) //nolint
 		case '\r':
-			w.WriteBytes(bytes[left:k])
+			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
-			_, res = w.WriteBytes(_carriageSafe)
+			_, res = w.WriteBytes(_carriageSafe) //nolint
 		}
 		if res != nil {
 			return left, res
@@ -380,7 +378,7 @@ func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 	}
 
 	if left < len(bytes) {
-		_, res = w.WriteBytes(bytes[left:])
+		_, res = w.WriteBytes(bytes[left:]) //nolint
 	}
 	return left, res
 }

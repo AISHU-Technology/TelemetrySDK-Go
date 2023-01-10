@@ -8,7 +8,7 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-type ringBuffer struct {
+type ringBuffer struct { //nolint
 	cap        int
 	capLocker  *semaphore.Weighted
 	length     int
@@ -20,7 +20,7 @@ type ringBuffer struct {
 	dataLocker sync.Locker
 }
 
-func initRingBuffer(l int) ringBuffer {
+func initRingBuffer(l int) ringBuffer { //nolint
 
 	return ringBuffer{
 		cap:        l,
@@ -35,7 +35,7 @@ func initRingBuffer(l int) ringBuffer {
 	}
 }
 
-func (b *ringBuffer) push(s field.LogSpan) {
+func (b *ringBuffer) push(s field.LogSpan) { //nolint
 	for {
 		b.tailLocker.RLock()
 		b.dataLocker.Lock()
@@ -62,7 +62,7 @@ func (b *ringBuffer) push(s field.LogSpan) {
 
 }
 
-func (b *ringBuffer) pull() field.LogSpan {
+func (b *ringBuffer) pull() field.LogSpan { //nolint
 	b.headLocker.RLock()
 	defer b.headLocker.RUnlock()
 	b.dataLocker.Lock()

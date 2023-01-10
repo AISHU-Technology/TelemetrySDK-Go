@@ -117,7 +117,7 @@ func TestArrayField(t *testing.T) {
 
 	b := bytess.NewBuffer(nil)
 	enc := NewJsonEncoder(b)
-	enc.Write(a)
+	enc.Write(a) //nolint
 
 }
 

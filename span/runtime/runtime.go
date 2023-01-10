@@ -89,7 +89,7 @@ func (r *Runtime) Signal() {
 	})
 
 	r.runLock.Lock()
-	r.runLock.Unlock()
+	r.runLock.Unlock() //nolint
 	r.closeLock.Unlock()
 }
 

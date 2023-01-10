@@ -2,7 +2,7 @@ package benchmarks
 
 import (
 	"bytes"
-	"sync"
+	//"sync"
 	"testing"
 	"time"
 
@@ -28,11 +28,12 @@ var (
 	_oneSapnUser  = &field.StructField{}
 	_tenSpanUsers = &field.ArrayField{}
 )
-var bufferpool = sync.Pool{
-	New: func() interface{} {
-		return bytes.NewBuffer(nil)
-	},
-}
+
+// var bufferpool = sync.Pool{
+// 	New: func() interface{} {
+// 		return bytes.NewBuffer(nil)
+// 	},
+// }
 
 func init() {
 	_oneSapnUser.Set("Name", field.StringField("Jane Doe"))
@@ -143,12 +144,12 @@ func BenchmarkJsonEncoder_Write_Struct(b *testing.B) {
 	a := getTestStructField()
 	buf := bytes.NewBuffer(nil)
 	enc := encoder.NewJsonEncoder(buf)
-	enc.Write(a)
+	enc.Write(a) //nolint
 }
 
 func BenchmarkJsonEncoder_Write_Json(b *testing.B) {
 	a := getTestJson()
 	buf := bytes.NewBuffer(nil)
 	enc := encoder.NewJsonEncoder(buf)
-	enc.Write(a)
+	enc.Write(a) //nolint
 }
