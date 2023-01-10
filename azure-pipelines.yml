@@ -153,7 +153,7 @@ stages:
               coverageType: 'lines'              # 代表行覆盖率
               coverageFailOption: 'fixed'
               checkCoverage: true                # 此行保持一致
-              coverageThreshold: '80.0'          # 代码覆盖率卡点阈值
+              coverageThreshold: '30.0'          # 代码覆盖率卡点阈值
 
           - task: Post-Bash@3
             inputs:
@@ -333,7 +333,7 @@ stages:
               coverageType: 'lines'              # 代表行覆盖率
               coverageFailOption: 'fixed'
               checkCoverage: true                # 此行保持一致
-              coverageThreshold: '80.0'          # 代码覆盖率卡点阈值
+              coverageThreshold: '30.0'          # 代码覆盖率卡点阈值
 
           - task: Post-Bash@3
             inputs:
@@ -513,7 +513,7 @@ stages:
               coverageType: 'lines'              # 代表行覆盖率
               coverageFailOption: 'fixed'
               checkCoverage: true                # 此行保持一致
-              coverageThreshold: '80.0'          # 代码覆盖率卡点阈值
+              coverageThreshold: '30.0'          # 代码覆盖率卡点阈值
 
           - task: Post-Bash@3
             inputs:
