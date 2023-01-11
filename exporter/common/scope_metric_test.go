@@ -1,6 +1,7 @@
 package common
 
 import (
+	"go.opentelemetry.io/otel/sdk/instrumentation"
 	"go.opentelemetry.io/otel/sdk/metric/metricdata"
 	"reflect"
 	"testing"
@@ -89,9 +90,29 @@ func TestAnyRobotMetricFromMetric(t *testing.T) {
 		want *Metrics
 	}{
 		{
-			"转换Metric",
-			args{metric: &metricdata.Metrics{}},
-			AnyRobotMetricFromMetric(&metricdata.Metrics{}),
+			"转换Data为Gauge[int64]",
+			args{metric: &metricdata.Metrics{Data: metricdata.Gauge[int64]{}}},
+			AnyRobotMetricFromMetric(&metricdata.Metrics{Data: metricdata.Gauge[int64]{}}),
+		},
+		{
+			"转换Data为Gauge[float64]",
+			args{metric: &metricdata.Metrics{Data: metricdata.Gauge[float64]{}}},
+			AnyRobotMetricFromMetric(&metricdata.Metrics{Data: metricdata.Gauge[float64]{}}),
+		},
+		{
+			"转换Data为Sum[int64]",
+			args{metric: &metricdata.Metrics{Data: metricdata.Sum[int64]{}}},
+			AnyRobotMetricFromMetric(&metricdata.Metrics{Data: metricdata.Sum[int64]{}}),
+		},
+		{
+			"转换Data为Sum[float64]",
+			args{metric: &metricdata.Metrics{Data: metricdata.Sum[float64]{}}},
+			AnyRobotMetricFromMetric(&metricdata.Metrics{Data: metricdata.Sum[float64]{}}),
+		},
+		{
+			"转换Data为Histogram",
+			args{metric: &metricdata.Metrics{Data: metricdata.Histogram{}}},
+			AnyRobotMetricFromMetric(&metricdata.Metrics{Data: metricdata.Histogram{}}),
 		},
 	}
 	for _, tt := range tests {
@@ -114,8 +135,8 @@ func TestAnyRobotMetricsFromMetrics(t *testing.T) {
 	}{
 		{
 			"转换Metrics",
-			args{metrics: []metricdata.Metrics{}},
-			AnyRobotMetricsFromMetrics([]metricdata.Metrics{}),
+			args{metrics: []metricdata.Metrics{{Name: "ar"}}},
+			AnyRobotMetricsFromMetrics([]metricdata.Metrics{{Name: "ar"}}),
 		},
 	}
 	for _, tt := range tests {
@@ -162,8 +183,8 @@ func TestAnyRobotScopeMetricsFromScopeMetrics(t *testing.T) {
 	}{
 		{
 			"转换ScopeMetrics",
-			args{scopeMetrics: []metricdata.ScopeMetrics{}},
-			AnyRobotScopeMetricsFromScopeMetrics([]metricdata.ScopeMetrics{}),
+			args{scopeMetrics: []metricdata.ScopeMetrics{{Scope: instrumentation.Scope{Name: "ar"}}}},
+			AnyRobotScopeMetricsFromScopeMetrics([]metricdata.ScopeMetrics{{Scope: instrumentation.Scope{Name: "ar"}}}),
 		},
 	}
 	for _, tt := range tests {
@@ -258,8 +279,8 @@ func TestFloatDataPoints(t *testing.T) {
 	}{
 		{
 			"转换DataPoints",
-			args{dps: []metricdata.DataPoint[float64]{}},
-			FloatDataPoints([]metricdata.DataPoint[float64]{}),
+			args{dps: []metricdata.DataPoint[float64]{{Value: 1.0}}},
+			FloatDataPoints([]metricdata.DataPoint[float64]{{Value: 1.0}}),
 		},
 	}
 	for _, tt := range tests {
@@ -282,8 +303,8 @@ func TestHistogramDataPoints(t *testing.T) {
 	}{
 		{
 			"转换Histogram_DataPoints",
-			args{hdps: []metricdata.HistogramDataPoint{}},
-			HistogramDataPoints([]metricdata.HistogramDataPoint{}),
+			args{hdps: []metricdata.HistogramDataPoint{{Count: 1}}},
+			HistogramDataPoints([]metricdata.HistogramDataPoint{{Count: 1}}),
 		},
 	}
 	for _, tt := range tests {
@@ -330,8 +351,8 @@ func TestIntDataPoints(t *testing.T) {
 	}{
 		{
 			"转换DataPoints",
-			args{dps: []metricdata.DataPoint[int64]{}},
-			IntDataPoints([]metricdata.DataPoint[int64]{}),
+			args{dps: []metricdata.DataPoint[int64]{{Value: 1}}},
+			IntDataPoints([]metricdata.DataPoint[int64]{{Value: 1}}),
 		},
 	}
 	for _, tt := range tests {

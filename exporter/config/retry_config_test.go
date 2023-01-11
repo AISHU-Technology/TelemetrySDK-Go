@@ -69,7 +69,7 @@ func TestRetryConfigRetryFunc(t *testing.T) {
 		want   RetryFunc
 	}{
 		{
-			"",
+			"关闭重发",
 			fields{
 				Enabled:         false,
 				InitialInterval: 0,
@@ -80,8 +80,9 @@ func TestRetryConfigRetryFunc(t *testing.T) {
 			func(ctx context.Context, fn func(context.Context) error) error {
 				return fn(ctx)
 			},
-		}, {
-			"",
+		},
+		{
+			"开启重发，200不重发",
 			fields{
 				Enabled:         true,
 				InitialInterval: 0,
@@ -92,8 +93,9 @@ func TestRetryConfigRetryFunc(t *testing.T) {
 			func(ctx context.Context, fn func(context.Context) error) error {
 				return fn(ctx)
 			},
-		}, {
-			"",
+		},
+		{
+			"开启重发，413不重发",
 			fields{
 				Enabled:         true,
 				InitialInterval: 0,
@@ -104,8 +106,9 @@ func TestRetryConfigRetryFunc(t *testing.T) {
 			func(ctx context.Context, fn func(context.Context) error) error {
 				return fn(ctx)
 			},
-		}, {
-			"",
+		},
+		{
+			"开启重发，500重发",
 			fields{
 				Enabled:         true,
 				InitialInterval: 0,
@@ -116,8 +119,9 @@ func TestRetryConfigRetryFunc(t *testing.T) {
 			func(ctx context.Context, fn func(context.Context) error) error {
 				return fn(ctx)
 			},
-		}, {
-			"",
+		},
+		{
+			"开启重发，503重发",
 			fields{
 				Enabled:         true,
 				InitialInterval: 0,
@@ -155,7 +159,7 @@ func TestRetryableErrorError(t *testing.T) {
 		want   string
 	}{
 		{
-			"",
+			"可重发错误的报错",
 			fields{0},
 			"TelemetrySDK-Exporter(Go).Error: 数据正在重发",
 		},
@@ -182,7 +186,7 @@ func TestWithRetry(t *testing.T) {
 		want Option
 	}{
 		{
-			"",
+			"配置重发逻辑",
 			args{DefaultRetryConfig()},
 			WithRetry(DefaultRetryConfig()),
 		},
@@ -207,17 +211,19 @@ func TestEvaluate(t *testing.T) {
 		want1 time.Duration
 	}{
 		{
-			"",
+			"不可重发",
 			args{nil},
 			false,
 			0,
-		}, {
-			"",
+		},
+		{
+			"普通error不可重发",
 			args{errors.New("something")},
 			false,
 			0,
-		}, {
-			"",
+		},
+		{
+			"RetryableError可以重发",
 			args{RetryableError{15}},
 			true,
 			15,
@@ -246,7 +252,7 @@ func TestGetBackoff(t *testing.T) {
 		want *backoff.ExponentialBackOff
 	}{
 		{
-			"",
+			"计算重发时间",
 			args{},
 			getBackoff(RetryConfig{}),
 		},
@@ -277,14 +283,15 @@ func TestWait(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"等待重发",
 			args{
 				ctx:   context.Background(),
 				delay: 1 * time.Nanosecond,
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"已关闭Client放弃重发",
 			args{
 				ctx:   contextWithDone(),
 				delay: 100 * time.Nanosecond,

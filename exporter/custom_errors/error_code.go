@@ -1,6 +1,6 @@
 package custom_errors
 
-// custom_errors 定义错误码和错误描述。
+// custom_errors 定义TelemetrySDK-Exporter错误码和错误描述。
 const (
 	ModuleName = "TelemetrySDK-Exporter(Go).Error: "
 

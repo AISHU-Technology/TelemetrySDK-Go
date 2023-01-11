@@ -11,7 +11,7 @@ func TestEmptyOption(t *testing.T) {
 		want Option
 	}{
 		{
-			"",
+			"不改变配置",
 			func(cfg *Config) *Config {
 				return cfg
 			},
@@ -36,14 +36,14 @@ func TestNewConfig(t *testing.T) {
 		want Config
 	}{
 		{
-			"",
+			"没有配置项",
 			args{opts: nil},
 			Config{
 				HTTPConfig:  DefaultHTTPConfig(),
 				RetryConfig: DefaultRetryConfig(),
 			},
 		}, {
-			"",
+			"有配置项",
 			args{opts: []Option{EmptyOption()}},
 			Config{
 				HTTPConfig:  DefaultHTTPConfig(),
@@ -74,7 +74,7 @@ func TestOptionApplyOption(t *testing.T) {
 		want   *Config
 	}{
 		{
-			"",
+			"执行配置更改",
 			fields{EmptyOption()},
 			args{DefaultConfig()},
 			DefaultConfig(),

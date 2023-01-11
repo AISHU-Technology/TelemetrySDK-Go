@@ -1,21 +1,25 @@
 package common
 
 import (
+	"context"
+	"fmt"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"reflect"
 	"testing"
 )
 
-type MySpan struct {
-	ros sdktrace.ReadOnlySpan
+func MockReadOnlySpan() sdktrace.ReadOnlySpan {
+	_, span := sdktrace.NewTracerProvider().Tracer("").Start(context.Background(), "")
+	if ros, ok := span.(sdktrace.ReadWriteSpan); ok {
+		return ros
+	}
+	return nil
 }
 
-func MockReadOnlySpan() sdktrace.ReadOnlySpan {
-	var mySpan = MySpan{}
-	return mySpan.ros
-}
+var ros = MockReadOnlySpan()
+
 func MockReadOnlySpans() []sdktrace.ReadOnlySpan {
-	return []sdktrace.ReadOnlySpan{MockReadOnlySpan(), MockReadOnlySpan()}
+	return []sdktrace.ReadOnlySpan{ros}
 }
 
 func TestAnyRobotSpanFromReadOnlySpan(t *testing.T) {
@@ -34,12 +38,13 @@ func TestAnyRobotSpanFromReadOnlySpan(t *testing.T) {
 		},
 		{
 			"转换非空ReadOnlySpan",
-			args{MockReadOnlySpan()},
-			AnyRobotSpanFromReadOnlySpan(MockReadOnlySpan()),
+			args{ros},
+			AnyRobotSpanFromReadOnlySpan(ros),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			fmt.Println(tt.args.ros)
 			if got := AnyRobotSpanFromReadOnlySpan(tt.args.ros); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("AnyRobotSpanFromReadOnlySpan() = %v, want %v", got, tt.want)
 			}

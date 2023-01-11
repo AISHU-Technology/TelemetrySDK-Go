@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Config Exporter的配置项
+// Config Exporter的配置项。
 type Config struct {
 	HTTPConfig  *HTTPConfig
 	RetryConfig *RetryConfig

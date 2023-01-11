@@ -16,7 +16,7 @@ func TestWithAnyRobotURL(t *testing.T) {
 		want Option
 	}{
 		{
-			"",
+			"通过HTTP上报数据",
 			args{"http://www.rockyrori.cn/1234"},
 			Option(func(cfg *Config) *Config {
 				cfg.HTTPConfig.Insecure = true
@@ -24,8 +24,9 @@ func TestWithAnyRobotURL(t *testing.T) {
 				cfg.HTTPConfig.Path = "/1234"
 				return cfg
 			}),
-		}, {
-			"",
+		},
+		{
+			"通过HTTPS上报数据",
 			args{"https://www.rockyrori.cn:80"},
 			Option(func(cfg *Config) *Config {
 				cfg.HTTPConfig.Insecure = false
@@ -54,7 +55,7 @@ func TestWithCompression(t *testing.T) {
 		want Option
 	}{
 		{
-			"",
+			"不压缩数据",
 			args{0},
 			Option(func(cfg *Config) *Config {
 				cfg.HTTPConfig.Compression = 0
@@ -81,7 +82,7 @@ func TestWithHeader(t *testing.T) {
 		want Option
 	}{
 		{
-			"",
+			"自定义header",
 			args{nil},
 			Option(func(cfg *Config) *Config {
 				cfg.HTTPConfig.Headers = nil
@@ -108,7 +109,7 @@ func TestWithTimeout(t *testing.T) {
 		want Option
 	}{
 		{
-			"",
+			"自定义连接超时时间",
 			args{123},
 			Option(func(cfg *Config) *Config {
 				cfg.HTTPConfig.Timeout = 123
