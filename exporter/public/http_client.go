@@ -28,7 +28,7 @@ type HttpClient struct {
 
 // Path 获取上报地址。
 func (c *HttpClient) Path() string {
-	return c.cfg.Path
+	return c.cfg.Endpoint + c.cfg.Path
 }
 
 // Stop 关闭发送器。
@@ -149,16 +149,14 @@ func (c *HttpClient) newRequest(body []byte) (arRequest, error) {
 			r.Header.Set(ENCODING, "json")
 			return req, err
 		}
-
 		req.bodyReader = bodyReader(b.Bytes())
 	}
-
 	return req, nil
 }
 
-func send(d *HttpClient, req *http.Request) (*http.Response, error) {
-	// resp, err := d.public.Do(request.Request)
-	return d.client.Do(req)
+// send 发送HTTP Request。
+func send(c *HttpClient, req *http.Request) (*http.Response, error) {
+	return c.client.Do(req)
 }
 
 // gzPool Gzip压缩流。
@@ -182,21 +180,6 @@ func (c *HttpClient) contextWithStop(ctx context.Context) (context.Context, cont
 	return ctx, cancel
 }
 
-// ourTransport 根据net/http自定义连接方式。
-var ourTransport = &http.Transport{
-	Proxy: http.ProxyFromEnvironment,
-	DialContext: (&net.Dialer{
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
-	}).DialContext,
-	ForceAttemptHTTP2:     true,
-	MaxIdleConns:          100,
-	IdleConnTimeout:       90 * time.Second,
-	TLSHandshakeTimeout:   10 * time.Second,
-	TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
-	ExpectContinueTimeout: 1 * time.Second,
-}
-
 // getScheme 决定通过http或者https发送。
 func (c *HttpClient) getScheme() string {
 	if c.cfg.Insecure {
@@ -208,7 +191,6 @@ func (c *HttpClient) getScheme() string {
 // arRequest 包了一层可重置的body reader。
 type arRequest struct {
 	*http.Request
-
 	// bodyReader 发送同一请求，用于重发机制。
 	bodyReader func() io.ReadCloser
 }
@@ -222,6 +204,7 @@ func (r *arRequest) reset(ctx context.Context) {
 // newResponseError 返回一个retryableError。
 func newResponseError(header http.Header) error {
 	var rErr config.RetryableError
+	// 首次重发失败后的重发时间计算逻辑。
 	if s, ok := header["Retry-After"]; ok {
 		if t, err := strconv.ParseInt(s[0], 10, 64); err == nil {
 			rErr.Throttle = t
@@ -235,6 +218,22 @@ func bodyReader(buf []byte) func() io.ReadCloser {
 	return func() io.ReadCloser {
 		return ioutil.NopCloser(bytes.NewReader(buf))
 	}
+}
+
+// ourTransport 根据net/http自定义连接方式。
+var ourTransport = &http.Transport{
+	Proxy: http.ProxyFromEnvironment,
+	DialContext: (&net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}).DialContext,
+	ForceAttemptHTTP2:   true,
+	MaxIdleConns:        100,
+	IdleConnTimeout:     90 * time.Second,
+	TLSHandshakeTimeout: 10 * time.Second,
+	// 绕开证书检测。
+	TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
+	ExpectContinueTimeout: 1 * time.Second,
 }
 
 // NewHTTPClient 创建Exporter的HTTP客户端。

@@ -18,11 +18,12 @@ func TestNewStdoutClient(t *testing.T) {
 		want Client
 	}{
 		{
-			"",
+			"创建未指定输出文件名的StdoutClient",
 			args{stdoutPath: ""},
 			NewStdoutClient(""),
-		}, {
-			"",
+		},
+		{
+			"创建指定输出文件名的StdoutClient",
 			args{stdoutPath: "./simple.rst"},
 			NewStdoutClient("./simple.rst"),
 		},
@@ -47,7 +48,7 @@ func TestStdoutClientPath(t *testing.T) {
 		want   string
 	}{
 		{
-			"",
+			"获取上报地址",
 			fields{
 				filepath: "/path",
 				stopCh:   nil,
@@ -83,15 +84,16 @@ func TestStdoutClientStop(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"关闭运行中的StdoutClient",
 			fields{
 				filepath: "",
 				stopCh:   make(chan struct{}),
 			},
 			args{context.Background()},
 			false,
-		}, {
-			"",
+		},
+		{
+			"重复关闭StdoutClient",
 			fields{
 				filepath: "",
 				stopCh:   make(chan struct{}),
@@ -134,7 +136,7 @@ func TestStdoutClientUploadData(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"StdoutClient数据写本地",
 			fields{
 				filepath: "./AnyRobotData.txt",
 				stopCh:   make(chan struct{}),
@@ -144,8 +146,9 @@ func TestStdoutClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"已关闭的StdoutClient_Client写不了数据",
 			fields{
 				filepath: "",
 				stopCh:   make(chan struct{}),

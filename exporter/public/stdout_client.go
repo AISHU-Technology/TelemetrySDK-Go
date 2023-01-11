@@ -39,12 +39,12 @@ func (c *StdoutClient) UploadData(ctx context.Context, data []byte) error {
 	default:
 
 	}
-	//控制台输出
+	// 控制台输出。
 	file1 := os.Stdout
 	if _, err := file1.Write(data); err != nil {
 		return err
 	}
-	//写入本地文件，每次覆盖
+	// 写入本地文件，每次覆盖。
 	file2, Err := os.Create(c.filepath)
 	if Err != nil {
 		return Err

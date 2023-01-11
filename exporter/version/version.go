@@ -1,6 +1,6 @@
 package version
 
-// Instrumentation 只能记录一个工具库。当前版本不支持修改 Instrumentation 。
+// 每次拉release都要修改这里的版本号。
 
 const TraceInstrumentationName = "TelemetrySDK-Go/exporter/ar_trace"
 const TraceInstrumentationVersion = "v2.5.0"

@@ -12,32 +12,39 @@ import (
 	"strings"
 )
 
+// 用户未设置服务信息时的默认值，服务名可以自动获取。
 var (
 	globalServiceName     = defaultServiceName()
 	globalServiceVersion  = "UnknownServiceVersion"
 	globalServiceInstance = "UnknownServiceInstance"
 )
 
+// SetServiceName 设置服务名
 func SetServiceName(serviceName string) {
 	globalServiceName = serviceName
 }
 
+// SetServiceVersion 设置服务版本
 func SetServiceVersion(serviceVersion string) {
 	globalServiceVersion = serviceVersion
 }
 
+// SetServiceInstance 设置服务实例ID
 func SetServiceInstance(serviceInstance string) {
 	globalServiceInstance = serviceInstance
 }
 
+// GetServiceName 获取服务名
 func GetServiceName() string {
 	return globalServiceName
 }
 
+// GetServiceVersion 获取服务版本
 func GetServiceVersion() string {
 	return globalServiceVersion
 }
 
+// GetServiceInstance 获取服务实例ID
 func GetServiceInstance() string {
 	return globalServiceInstance
 }
@@ -89,6 +96,7 @@ func innerAttributes() []attribute.KeyValue {
 	return inner
 }
 
+// TraceResource 填充Trace资源信息
 func TraceResource() *sdkresource.Resource {
 	var attributes = innerAttributes()
 	attributes = append(attributes, semconv.TelemetrySDKLanguageGo)
@@ -97,6 +105,7 @@ func TraceResource() *sdkresource.Resource {
 	return sdkresource.NewWithAttributes(version.TraceInstrumentationURL, attributes...)
 }
 
+// MetricResource 填充Metric资源信息
 func MetricResource() *sdkresource.Resource {
 	var attributes = innerAttributes()
 	attributes = append(attributes, semconv.TelemetrySDKLanguageGo)
@@ -105,6 +114,7 @@ func MetricResource() *sdkresource.Resource {
 	return sdkresource.NewWithAttributes(version.MetricInstrumentationURL, attributes...)
 }
 
+// EventResource 填充Event资源信息
 func EventResource() eventsdk.EventProviderOption {
 	return eventsdk.ServiceInfo(GetServiceName(), GetServiceVersion(), GetServiceInstance())
 }
