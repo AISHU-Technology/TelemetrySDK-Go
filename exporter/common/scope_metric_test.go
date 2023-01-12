@@ -135,8 +135,8 @@ func TestAnyRobotMetricsFromMetrics(t *testing.T) {
 	}{
 		{
 			"转换Metrics",
-			args{metrics: []metricdata.Metrics{{Name: "ar"}}},
-			AnyRobotMetricsFromMetrics([]metricdata.Metrics{{Name: "ar"}}),
+			args{metrics: []metricdata.Metrics{{Data: metricdata.Histogram{}}}},
+			AnyRobotMetricsFromMetrics([]metricdata.Metrics{{Data: metricdata.Histogram{}}}),
 		},
 	}
 	for _, tt := range tests {

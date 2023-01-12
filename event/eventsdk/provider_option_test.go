@@ -23,7 +23,7 @@ func TestWithExporters(t *testing.T) {
 	}{
 		{
 			"",
-			args{nil},
+			args{[]EventExporter{GetDefaultExporter()}},
 			Exporters(),
 		},
 	}

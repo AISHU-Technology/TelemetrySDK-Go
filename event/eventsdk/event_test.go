@@ -363,6 +363,23 @@ func TestEventGetLink(t *testing.T) {
 				Level:     "",
 				Resource:  nil,
 				Subject:   "",
+				Link:      nil,
+				Data:      nil,
+			},
+			&link{
+				TraceID: "",
+				SpanID:  "",
+			},
+		},
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
 				Link:      &link{},
 				Data:      nil,
 			},
@@ -623,6 +640,21 @@ func TestEventSetAttributes(t *testing.T) {
 			},
 			args{[]Attribute{NewAttribute("key", "anything")}},
 		},
+		{
+			"",
+			fields{
+				EventID:    "",
+				EventType:  "",
+				Time:       time.Time{},
+				Level:      "",
+				Attributes: make(map[string]interface{}, 0),
+				Resource:   newResource(),
+				Subject:    "",
+				Link:       &link{},
+				Data:       nil,
+			},
+			args{[]Attribute{NewAttribute("", "anything")}},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -726,6 +758,20 @@ func TestEventSetEventType(t *testing.T) {
 			},
 			args{"type"},
 		},
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      &link{},
+				Data:      nil,
+			},
+			args{""},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -776,6 +822,23 @@ func TestEventSetLink(t *testing.T) {
 				Data:      nil,
 			},
 			args{trace.SpanContext{}},
+		},
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      &link{},
+				Data:      nil,
+			},
+			args{trace.NewSpanContext(trace.SpanContextConfig{
+				TraceID: [16]byte{0x1},
+				SpanID:  [8]byte{0x1},
+			})},
 		},
 	}
 	for _, tt := range tests {
@@ -878,6 +941,20 @@ func TestEventSetTime(t *testing.T) {
 				Data:      nil,
 			},
 			args{time.Time{}},
+		},
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      &link{},
+				Data:      nil,
+			},
+			args{time.Now()},
 		},
 	}
 	for _, tt := range tests {
@@ -1113,6 +1190,117 @@ func TestSetServiceInfo(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			SetServiceInfo(tt.args.ServiceName, tt.args.ServiceVersion, tt.args.ServiceInstance)
+		})
+	}
+}
+
+func TestEventSetLevel(t *testing.T) {
+	type fields struct {
+		sent       *sync.Once
+		EventID    string
+		EventType  string
+		Time       time.Time
+		Level      level
+		Attributes map[string]interface{}
+		Resource   *resource
+		Subject    string
+		Link       *link
+		Data       interface{}
+	}
+	type args struct {
+		level Level
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			"",
+			fields{
+				EventID:   "",
+				EventType: "",
+				Time:      time.Time{},
+				Level:     "",
+				Resource:  nil,
+				Subject:   "",
+				Link:      &link{},
+				Data:      nil,
+			},
+			args{level: newLevel("WARN")},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &event{
+				sent:       tt.fields.sent,
+				EventID:    tt.fields.EventID,
+				EventType:  tt.fields.EventType,
+				Time:       tt.fields.Time,
+				Level:      tt.fields.Level,
+				Attributes: tt.fields.Attributes,
+				Resource:   tt.fields.Resource,
+				Subject:    tt.fields.Subject,
+				Link:       tt.fields.Link,
+				Data:       tt.fields.Data,
+			}
+			e.SetLevel(tt.args.level)
+		})
+	}
+}
+
+func TestEventGetAttributes(t *testing.T) {
+	type fields struct {
+		sent       *sync.Once
+		EventID    string
+		EventType  string
+		Time       time.Time
+		Level      level
+		Attributes map[string]interface{}
+		Resource   *resource
+		Subject    string
+		Link       *link
+		Data       interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   map[string]interface{}
+	}{
+		{
+			"",
+			fields{
+				sent:       nil,
+				EventID:    "",
+				EventType:  "",
+				Time:       time.Time{},
+				Level:      "",
+				Attributes: make(map[string]interface{}),
+				Resource:   nil,
+				Subject:    "",
+				Link:       nil,
+				Data:       nil,
+			},
+			map[string]interface{}{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := &event{
+				sent:       tt.fields.sent,
+				EventID:    tt.fields.EventID,
+				EventType:  tt.fields.EventType,
+				Time:       tt.fields.Time,
+				Level:      tt.fields.Level,
+				Attributes: tt.fields.Attributes,
+				Resource:   tt.fields.Resource,
+				Subject:    tt.fields.Subject,
+				Link:       tt.fields.Link,
+				Data:       tt.fields.Data,
+			}
+			if got := e.GetAttributes(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAttributes() = %v, want %v", got, tt.want)
+			}
 		})
 	}
 }

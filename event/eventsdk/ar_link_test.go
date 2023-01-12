@@ -98,25 +98,6 @@ func TestLinkPrivate(t *testing.T) {
 	}
 }
 
-func TestNewLink(t *testing.T) {
-	tests := []struct {
-		name string
-		want *link
-	}{
-		{
-			"",
-			nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := newLink(trace.SpanContext{}); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newLink() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestLinkValid(t *testing.T) {
 	type fields struct {
 		TraceID string
@@ -151,6 +132,42 @@ func TestLinkValid(t *testing.T) {
 			}
 			if got := l.Valid(); got != tt.want {
 				t.Errorf("Valid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewLink(t *testing.T) {
+	type args struct {
+		spanContext trace.SpanContext
+	}
+	tests := []struct {
+		name string
+		args args
+		want *link
+	}{
+		{
+			"",
+			args{spanContext: trace.SpanContext{}},
+			nil,
+		},
+		{
+			"",
+			args{spanContext: trace.NewSpanContext(
+				trace.SpanContextConfig{
+					TraceID: [16]byte{0x1},
+					SpanID:  [8]byte{0x1},
+				})},
+			&link{
+				TraceID: "01000000000000000000000000000000",
+				SpanID:  "0100000000000000",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := newLink(tt.args.spanContext); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newLink() = %v, want %v", got, tt.want)
 			}
 		})
 	}

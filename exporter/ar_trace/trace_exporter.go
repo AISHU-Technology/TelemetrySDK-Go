@@ -8,26 +8,29 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/version"
 	"encoding/json"
-	"github.com/shirou/gopsutil/v3/host"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 	"go.opentelemetry.io/otel/trace"
-	"net"
-	"strings"
 )
 
-var _ sdktrace.SpanExporter = (*Exporter)(nil)
+// 跨包实现接口占位用。
+var _ sdktrace.SpanExporter = (*TraceExporter)(nil)
 
-// Exporter 导出数据到AnyRobot Feed Ingester的 Event 数据接收器。
-type Exporter struct {
+// Tracer 是一个全局变量，用于在业务代码中生产Span。
+var Tracer = otel.GetTracerProvider().Tracer(
+	version.TraceInstrumentationName,
+	trace.WithInstrumentationVersion(version.TraceInstrumentationVersion),
+	trace.WithSchemaURL(version.TraceInstrumentationURL),
+)
+
+// TraceExporter 导出数据到AnyRobot Feed Ingester的 Event 数据接收器。
+type TraceExporter struct {
 	*public.Exporter
 }
 
 // ExportSpans 批量发送AnyRobotSpans到AnyRobot Feed Ingester的Trace数据接收器。
-func (e *Exporter) ExportSpans(ctx context.Context, traces []sdktrace.ReadOnlySpan) error {
+func (e *TraceExporter) ExportSpans(ctx context.Context, traces []sdktrace.ReadOnlySpan) error {
 	if len(traces) == 0 {
 		return nil
 	}
@@ -42,50 +45,14 @@ func (e *Exporter) ExportSpans(ctx context.Context, traces []sdktrace.ReadOnlySp
 	return e.ExportData(ctx, file.Bytes())
 }
 
-// NewExporter 创建已启动的Exporter。
-func NewExporter(c public.Client) *Exporter {
-	return &Exporter{
+// NewExporter 创建已启动的 TraceExporter 。
+func NewExporter(c public.Client) *TraceExporter {
+	return &TraceExporter{
 		public.NewExporter(c),
 	}
 }
 
-// Tracer 是一个全局变量，用于在业务代码中生产Span。
-var Tracer = otel.GetTracerProvider().Tracer(
-	version.TraceInstrumentationName,
-	trace.WithInstrumentationVersion(version.TraceInstrumentationVersion),
-	trace.WithSchemaURL(version.TraceInstrumentationURL),
-)
-
-// GetResource 获取内置资源信息，记录客户服务名，需要传入服务名 serviceName ，服务版本 serviceVersion ，服务实例ID。
-func GetResource(serviceName string, serviceVersion string, serviceInstanceID string) *sdkresource.Resource {
-	//获取主机IP
-	connection, _ := net.Dial("udp", "255.255.255.255:33")
-	ipPort := connection.LocalAddr().(*net.UDPAddr)
-	hostIP := strings.Split(ipPort.String(), ":")[0]
-	//获取主机信息
-	infoState, _ := host.Info()
-
-	return sdkresource.NewWithAttributes(version.TraceInstrumentationURL,
-		//主机信息
-		semconv.HostNameKey.String(infoState.Hostname),
-		semconv.HostArchKey.String(infoState.KernelArch),
-		attribute.String("host.ip", hostIP),
-		//操作系统信息
-		semconv.OSTypeKey.String(infoState.OS),
-		semconv.OSDescriptionKey.String(infoState.Platform),
-		semconv.OSVersionKey.String(infoState.PlatformVersion),
-		//服务信息
-		semconv.ServiceInstanceIDKey.String(serviceInstanceID),
-		semconv.ServiceNameKey.String(serviceName),
-		semconv.ServiceVersionKey.String(serviceVersion),
-		//版本信息
-		semconv.TelemetrySDKLanguageGo,
-		semconv.TelemetrySDKNameKey.String(version.TraceInstrumentationName),
-		semconv.TelemetrySDKVersionKey.String(version.TraceInstrumentationVersion),
-	)
-}
-
-// TraceResource 传入 Trace 的默认resource。
+// TraceResource 传入 Trace 的默认Resource。
 func TraceResource() *sdkresource.Resource {
 	return resource.TraceResource()
 }
