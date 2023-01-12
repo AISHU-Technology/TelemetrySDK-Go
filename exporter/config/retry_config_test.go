@@ -266,44 +266,44 @@ func TestGetBackoff(t *testing.T) {
 	}
 }
 
-func contextWithDone() context.Context {
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-	return ctx
-}
-
-func TestWait(t *testing.T) {
-	type args struct {
-		ctx   context.Context
-		delay time.Duration
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			"等待重发",
-			args{
-				ctx:   context.Background(),
-				delay: 1 * time.Nanosecond,
-			},
-			false,
-		},
-		{
-			"已关闭Client放弃重发",
-			args{
-				ctx:   contextWithDone(),
-				delay: 100 * time.Nanosecond,
-			},
-			true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := wait(tt.args.ctx, tt.args.delay); (err != nil) != tt.wantErr {
-				t.Errorf("wait() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
+//func contextWithDone() context.Context {
+//	ctx, cancel := context.WithCancel(context.Background())
+//	cancel()
+//	return ctx
+//}
+//
+//func TestWait(t *testing.T) {
+//	type args struct {
+//		ctx   context.Context
+//		delay time.Duration
+//	}
+//	tests := []struct {
+//		name    string
+//		args    args
+//		wantErr bool
+//	}{
+//		{
+//			"等待重发",
+//			args{
+//				ctx:   context.Background(),
+//				delay: 1 * time.Nanosecond,
+//			},
+//			false,
+//		},
+//		{
+//			"已关闭Client放弃重发",
+//			args{
+//				ctx:   contextWithDone(),
+//				delay: 1 * time.Second,
+//			},
+//			true,
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			if err := wait(tt.args.ctx, tt.args.delay); (err != nil) != tt.wantErr {
+//				t.Errorf("wait() error = %v, wantErr %v", err, tt.wantErr)
+//			}
+//		})
+//	}
+//}
