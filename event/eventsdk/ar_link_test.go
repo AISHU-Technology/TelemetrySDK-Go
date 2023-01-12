@@ -115,7 +115,8 @@ func TestLinkValid(t *testing.T) {
 				SpanID:  "4cbf3e2c1e8517e7",
 			},
 			true,
-		}, {
+		},
+		{
 			"",
 			fields{
 				TraceID: "",

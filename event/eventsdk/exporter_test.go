@@ -43,7 +43,8 @@ func TestExport(t *testing.T) {
 			"",
 			args{[]Event{}},
 			false,
-		}, {
+		},
+		{
 			"",
 			args{make([]Event, 1)},
 			false,
@@ -86,7 +87,8 @@ func TestExporterExportEvents(t *testing.T) {
 				events: nil,
 			},
 			true,
-		}, {
+		},
+		{
 			"",
 			fields{
 				name:     "",
@@ -98,7 +100,8 @@ func TestExporterExportEvents(t *testing.T) {
 				events: nil,
 			},
 			false,
-		}, {
+		},
+		{
 			"",
 			fields{
 				name:     "",
@@ -185,7 +188,8 @@ func TestExporterShutdown(t *testing.T) {
 			},
 			args{contextWithDone()},
 			true,
-		}, {
+		},
+		{
 			"",
 			fields{
 				name:     "",

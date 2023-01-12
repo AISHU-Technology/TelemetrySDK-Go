@@ -52,12 +52,14 @@ func TestUnmarshalEvents(t *testing.T) {
 			args{array},
 			make([]Event, 1),
 			false,
-		}, {
+		},
+		{
 			"",
 			args{bety},
 			make([]Event, 0),
 			true,
-		}, {
+		},
+		{
 			"",
 			args{[]byte{}},
 			make([]Event, 0),
@@ -1071,7 +1073,8 @@ func TestEventValid(t *testing.T) {
 				Data: nil,
 			},
 			true,
-		}, {
+		},
+		{
 			"",
 			fields{
 				EventID:   "",

@@ -12,11 +12,13 @@ func TestLevelSelf(t *testing.T) {
 			"",
 			ERROR,
 			"ERROR",
-		}, {
+		},
+		{
 			"",
 			WARN,
 			"WARN",
-		}, {
+		},
+		{
 			"",
 			INFO,
 			"INFO",
