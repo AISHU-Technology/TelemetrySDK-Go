@@ -567,6 +567,7 @@ stages:
                       -D sonar.coverage.exclusions=${EXCLUSION_DIR} \
                       -D sonar.cpd.exclusions=${EXCLUSION_DIR} \
                       -D sonar.global.exclusions=${GLOBAL_EXCLUSION_DIR} \
+                      -D sonar.exclusions=${EXCLUSION_DIR} \
                       -D sonar.language=go \
                       -D sonar.go.coverage.reportPaths=report/ut_coverage.out \
                       -D sonar.login=$(sonarqube.token)
