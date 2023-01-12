@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Config Exporter的配置项
+// Config Exporter的配置项。
 type Config struct {
 	HTTPConfig  *HTTPConfig
 	RetryConfig *RetryConfig
@@ -57,6 +57,7 @@ func (o Option) apply(cfg *Config) *Config {
 	return o(cfg)
 }
 
+// EmptyOption 空的配置项，不改变配置，用于配置错误发生时候。
 func EmptyOption() Option {
 	return func(cfg *Config) *Config {
 		return cfg

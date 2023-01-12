@@ -50,17 +50,17 @@ func evaluate(err error) (bool, time.Duration) {
 
 // RetryFunc 带有重发机制的HTTP请求，如果错误为可重发错误则重发AnyRobotSpans，否则丢弃数据。
 func (r RetryConfig) RetryFunc() RetryFunc {
-	//不开启重发，则直接执行内部发送逻辑。内部的fn function(context),error是真正的http请求逻辑，在client处实现。
+	// 不开启重发，则直接执行内部发送逻辑。内部的fn function(context),error是真正的http请求逻辑，在client处实现。
 	if !r.Enabled {
 		return func(ctx context.Context, fn func(context.Context) error) error {
 			return fn(ctx)
 		}
 	}
-	//计算重发时间间隔
+	// 计算重发时间间隔。
 	offset := getBackoff(r)
 	offset.Reset()
 
-	//启用了重发，则返回一个嵌套的函数是为了重发时复用HTTP连接，外部的 retryFunc(context,function)error 是包装了retry的逻辑，内部的fn function(context),error是真正的http请求逻辑，在client处实现。
+	// 启用了重发，则返回一个嵌套的函数是为了重发时复用HTTP连接，外部的 retryFunc(context,function)error 是包装了retry的逻辑，内部的fn function(context),error是真正的http请求逻辑，在client处实现。
 	retryFunc := func(ctx context.Context, fn func(context.Context) error) error {
 		for {
 			err := fn(ctx)

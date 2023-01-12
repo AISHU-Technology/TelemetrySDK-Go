@@ -1,7 +1,13 @@
 package version
 
-// Instrumentation 只能记录一个工具库。当前版本不支持修改 Instrumentation 。
+// 每次拉release都要修改这里的版本号。
 
-const TraceInstrumentationName = "TelemetrySDK-Go/exporter/ar_trace"
-const TraceInstrumentationVersion = "v2.4.0"
-const TraceInstrumentationURL = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporter/ar_trace"
+const (
+	TraceInstrumentationName    = "TelemetrySDK-Go/exporter/ar_trace"
+	TraceInstrumentationVersion = "v2.5.0"
+	TraceInstrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporter/ar_trace"
+
+	MetricInstrumentationName    = "TelemetrySDK-Go/exporter/ar_metric"
+	MetricInstrumentationVersion = "v2.5.0"
+	MetricInstrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporter/ar_metric"
+)
