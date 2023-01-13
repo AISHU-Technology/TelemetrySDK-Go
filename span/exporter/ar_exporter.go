@@ -13,7 +13,7 @@ type exporter struct {
 	stopOnce sync.Once
 }
 
-// GetDefaultExporter 获取默认的 EventExporter 。
+// GetStdoutExporter 获取默认的 EventExporter 。
 func GetStdoutExporter() LogExporter {
 	return &exporter{
 		name:     "StdoutExporter",
