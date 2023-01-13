@@ -17,58 +17,58 @@
 
 一个LogSpan代表一个内部调用产生的线程，通过LogSpan记录数据保证数据上下文的连续性。
 
-| 字段名             | 类型                | 描述                                                         |
-| :----------------- | :------------------ | :----------------------------------------------------------- |
-| Version            | string              | 表示数据内容协议版本，AISHUV0                                |
-| TraceId            | string              | 分布式事务ID，一个trace含有多个span                          |
-| SpanId             | string              | 子分布式事务ID，多个span组成trace。span间的父子关系和兄弟关系可以描述一次事务的内外调用关系 |
-| Timestamp          | unixTime            | span开始时间                                                 |
-| EndTime            | unixTime            | span结束时间                                                 |
-| Body.Events        | Event(Array)        | 数据事件数组，一个event一般代表线程内的一次日志记录行为。events可以组成线程内的日志上下文。详细结构定义见下面的「Event 结构定义」 |
-| Body.Metrics       | Metric(Array)       | 指标数组。代表一次线程执行的指标数据详细结构定义见下面的「Metric 结构定义」 |
-| Body.ExternalSpans | ExternalSpan(Array) | 外部调用追踪数组，表示当前线程发起的多次外部调用             |
+| 字段名                | 类型                  | 描述                                                                          |
+|:-------------------|:--------------------|:----------------------------------------------------------------------------|
+| Version            | string              | 表示数据内容协议版本，AISHUV0                                                          |
+| TraceId            | string              | 分布式事务ID，一个trace含有多个span                                                     |
+| SpanId             | string              | 子分布式事务ID，多个span组成trace。span间的父子关系和兄弟关系可以描述一次事务的内外调用关系                       |
+| Timestamp          | unixTime            | span开始时间                                                                    |
+| EndTime            | unixTime            | span结束时间                                                                    |
+| Body.Events        | Event(Array)        | 数据事件数组，一个event一般代表线程内的一次日志记录行为。events可以组成线程内的日志上下文。详细结构定义见下面的「Event 结构定义」   |
+| Body.Metrics       | Metric(Array)       | 指标数组。代表一次线程执行的指标数据详细结构定义见下面的「Metric 结构定义」                                   |
+| Body.ExternalSpans | ExternalSpan(Array) | 外部调用追踪数组，表示当前线程发起的多次外部调用                                                    |
 | Attributes         | **Attributes**      | 一次内部调用的业务属性，会继承父内部调用的业务属性。与body的区别在于body更倾向于系统内部具体描述，Attributes倾向于对本次事务的描述。 |
-| Resources          | Resources           | 系统进程属性，与Attributes区别在于attributes更倾向于业务信息，resource关注系统或进程上下文 |
+| Resources          | Resources           | 系统进程属性，与Attributes区别在于attributes更倾向于业务信息，resource关注系统或进程上下文                 |
 
 ## Event 结构定义
 
 所有类型的Event应该通过流程严格管理，确保全局唯一
 
-| 字段名             | 类型         | 描述                                                         |
-| :----------------- | :----------- | :----------------------------------------------------------- |
-| SeverityNumber     | Int          | 日志级别，Trace->Fatal对应值为1->6                           |
-| SeverityText       | string       | 日志级别，字符串格式                                         |
-| type               | string       | event类型，默认为空，非空值时由应用定义用于扩展数据类型      |
+| 字段名             | 类型        | 描述                                                                            |
+|:----------------|:----------|:------------------------------------------------------------------------------|
+| SeverityNumber  | Int       | 日志级别，Trace->Fatal对应值为1->6                                                     |
+| SeverityText    | string    | 日志级别，字符串格式                                                                    |
+| type            | string    | event类型，默认为空，非空值时由应用定义用于扩展数据类型                                                |
 | message/type字段值 | string或任意 | type为空时message字段为字符串，type非空时由上层应用定义，由对应定义者提供数据模型此时message字段不存在，同时该字段名为type字段值 |
 
 ## Metric 结构定义
 
-| 字段名     | 类型              | 描述                                                      |
-| :--------- | :---------------- | :-------------------------------------------------------- |
+| 字段名        | 类型                | 描述                                 |
+|:-----------|:------------------|:-----------------------------------|
 | Attributes | map[string]string | 指标属性，为map类型，key值类型为字符串、value同样为字符串 |
-| Labels     | string(array)     | 标签数组，数组内元素为数组                                |
-| 其他字段   | string            | key值为metric名称，value值为metric值                      |
+| Labels     | string(array)     | 标签数组，数组内元素为数组                      |
+| 其他字段       | string            | key值为metric名称，value值为metric值       |
 
 ## Attributes 结构定义
 
 所有类型的Attributes应该通过流程严格管理，确保全局唯一
 
-| 字段名     | 类型   | 描述                                                         |
-| :--------- | :----- | :----------------------------------------------------------- |
-| Type       | string | 指明该Attributes的类型，该类型应该全局唯一，不可重复，避免数据冲突 |
-| Type字段值 | 任意   | 其他字段提供给使用者定义属性信息                             |
+| 字段名     | 类型     | 描述                                     |
+|:--------|:-------|:---------------------------------------|
+| Type    | string | 指明该Attributes的类型，该类型应该全局唯一，不可重复，避免数据冲突 |
+| Type字段值 | 任意     | 其他字段提供给使用者定义属性信息                       |
 
 
 
 ## Resource 结构定义
 
-| 字段名                 | 类型   | 描述        |
-| :--------------------- | :----- | :---------- |
-| Hostname               | string | 节点主机名  |
-| telemetry.sdk.name     | string | sdk名称     |
-| telemetry.sdk.version  | string | sdk版本号   |
+| 字段名                    | 类型     | 描述      |
+|:-----------------------|:-------|:--------|
+| Hostname               | string | 节点主机名   |
+| telemetry.sdk.name     | string | sdk名称   |
+| telemetry.sdk.version  | string | sdk版本号  |
 | telemetry.sdk.language | string | sdk开发语言 |
-| 其他                   | string | 待定        |
+| 其他                     | string | 待定      |
 
 ## 数据样例
 

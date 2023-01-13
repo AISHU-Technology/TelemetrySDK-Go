@@ -2,21 +2,6 @@ package examples
 
 import "testing"
 
-func TestHTTPExample(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{
-			"HTTPExample",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			HTTPExample()
-		})
-	}
-}
-
 func TestStdoutExporterExample(t *testing.T) {
 	tests := []struct {
 		name string
@@ -28,6 +13,21 @@ func TestStdoutExporterExample(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			StdoutExporterExample()
+		})
+	}
+}
+
+func TestHTTPExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"HTTPExample",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			HTTPExample()
 		})
 	}
 }

@@ -7,9 +7,10 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/exporter"
 )
 
+// 跨包实现接口占位用。
 var _ exporter.LogExporter = (*SpanExporter)(nil)
 
-// Exporter 导出数据到AnyRobot Feed Ingester的 log 数据接收器。
+// SpanExporter 导出数据到AnyRobot Feed Ingester的 Log 数据接收器。
 type SpanExporter struct {
 	*public.Exporter
 }
