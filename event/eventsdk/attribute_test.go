@@ -118,14 +118,16 @@ func TestAttributeValid(t *testing.T) {
 				Value: 123,
 			},
 			true,
-		}, {
+		},
+		{
 			"",
 			fields{
 				Key:   "",
 				Value: 123,
 			},
 			false,
-		}, {
+		},
+		{
 			"",
 			fields{
 				Key:   "os",
@@ -164,7 +166,8 @@ func TestAttributeKeyNotNil(t *testing.T) {
 				Value: 123,
 			},
 			true,
-		}, {
+		},
+		{
 			"",
 			fields{
 				Key:   "",

@@ -46,7 +46,8 @@ func TestNewEventProviderConfig(t *testing.T) {
 				FlushInternal: 10 * time.Second,
 				MaxEvent:      49,
 			},
-		}, {
+		},
+		{
 			"",
 			args{[]EventProviderOption{MaxEvent(19)}},
 			MaxEvent(19).apply(&eventProviderConfig{

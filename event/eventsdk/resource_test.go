@@ -152,7 +152,8 @@ func TestResourceUnmarshalJSON(t *testing.T) {
 			},
 			args{bety},
 			false,
-		}, {
+		},
+		{
 			"",
 			fields{
 				SchemaURL:     "",
@@ -220,7 +221,8 @@ func TestResourceValid(t *testing.T) {
 				AttributesMap: getDefaultAttributes(),
 			},
 			true,
-		}, {
+		},
+		{
 			"",
 			fields{
 				SchemaURL:     "",

@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHttpClientPath(t *testing.T) {
+func TestHTTPClientPath(t *testing.T) {
 	type fields struct {
 		cfg       *config.HTTPConfig
 		retryFunc config.RetryFunc
@@ -29,14 +29,14 @@ func TestHttpClientPath(t *testing.T) {
 		want   string
 	}{
 		{
-			"",
+			"获取上报地址",
 			fields{
-				cfg:       &config.HTTPConfig{},
+				cfg:       config.DefaultHTTPConfig(),
 				retryFunc: nil,
 				client:    nil,
 				stopCh:    nil,
 			},
-			"",
+			"localhost:5678/api/feed_ingester/v1/jobs/{jobid}/data",
 		},
 	}
 	for _, tt := range tests {
@@ -54,7 +54,7 @@ func TestHttpClientPath(t *testing.T) {
 	}
 }
 
-func TestHttpClientStop(t *testing.T) {
+func TestHTTPClientStop(t *testing.T) {
 	type fields struct {
 		cfg       *config.HTTPConfig
 		retryFunc config.RetryFunc
@@ -71,7 +71,7 @@ func TestHttpClientStop(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"关闭HTTP Client",
 			fields{
 				config.DefaultHTTPConfig(),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -80,8 +80,9 @@ func TestHttpClientStop(t *testing.T) {
 			},
 			args{context.Background()},
 			false,
-		}, {
-			"",
+		},
+		{
+			"重复关闭HTTP Client",
 			fields{
 				config.DefaultHTTPConfig(),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -116,7 +117,7 @@ func configWithStatusCode(statusCode string) *config.HTTPConfig {
 	return cfg
 }
 
-func TestHttpClientUploadData(t *testing.T) {
+func TestHTTPClientUploadData(t *testing.T) {
 	sth := gomonkey.ApplyFunc(send, func(d *HttpClient, req *http.Request) (*http.Response, error) {
 		if d.cfg.Path == "500" {
 			code := 500
@@ -150,7 +151,7 @@ func TestHttpClientUploadData(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"HTTPClient发送测试数据",
 			fields{
 				config.DefaultHTTPConfig(),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -162,8 +163,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"200_StatusOK",
 			fields{
 				configWithStatusCode("200"),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -175,8 +177,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"400_StatusBadRequest",
 			fields{
 				configWithStatusCode("400"),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -188,8 +191,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"404_StatusNotFound",
 			fields{
 				configWithStatusCode("404"),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -201,8 +205,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"413_StatusRequestEntityTooLarge",
 			fields{
 				configWithStatusCode("413"),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -214,8 +219,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"429_StatusTooManyRequests",
 			fields{
 				configWithStatusCode("429"),
 				config.RetryConfig{
@@ -232,8 +238,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"500_StatusInternalServerError",
 			fields{
 				configWithStatusCode("500"),
 				config.RetryConfig{
@@ -250,8 +257,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"511_StatusNetworkAuthenticationRequired",
 			fields{
 				configWithStatusCode("511"),
 				config.RetryConfig{
@@ -268,8 +276,9 @@ func TestHttpClientUploadData(t *testing.T) {
 				byteData(),
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"已关闭的HTTPClient发送数据",
 			fields{
 				config.DefaultHTTPConfig(),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -309,7 +318,7 @@ func contextWithCancelFunc() context.Context {
 	return ctx
 }
 
-func TestHttpClientContextWithStop(t *testing.T) {
+func TestHTTPClientContextWithStop(t *testing.T) {
 	type fields struct {
 		cfg       *config.HTTPConfig
 		retryFunc config.RetryFunc
@@ -327,7 +336,7 @@ func TestHttpClientContextWithStop(t *testing.T) {
 		want1  context.CancelFunc
 	}{
 		{
-			"",
+			"未关闭的HTTPClient",
 			fields{
 				config.DefaultHTTPConfig(),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -337,8 +346,9 @@ func TestHttpClientContextWithStop(t *testing.T) {
 			args{ctx: context.Background()},
 			contextWithCancelFunc(),
 			cancelFuncWithContext(),
-		}, {
-			"",
+		},
+		{
+			"已关闭的HTTPClient",
 			fields{
 				config.DefaultHTTPConfig(),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -348,8 +358,9 @@ func TestHttpClientContextWithStop(t *testing.T) {
 			args{ctx: contextWithDone()},
 			contextWithDone(),
 			cancelFuncWithContext(),
-		}, {
-			"",
+		},
+		{
+			"已关闭的HTTPClient",
 			fields{
 				config.DefaultHTTPConfig(),
 				config.DefaultRetryConfig().RetryFunc(),
@@ -385,7 +396,7 @@ func TestHttpClientContextWithStop(t *testing.T) {
 	}
 }
 
-func TestHttpClientGetScheme(t *testing.T) {
+func TestHTTPClientGetScheme(t *testing.T) {
 	type fields struct {
 		cfg       *config.HTTPConfig
 		retryFunc config.RetryFunc
@@ -398,7 +409,7 @@ func TestHttpClientGetScheme(t *testing.T) {
 		want   string
 	}{
 		{
-			"",
+			"获取发送方式",
 			fields{
 				cfg:       &config.HTTPConfig{},
 				retryFunc: nil,
@@ -423,7 +434,7 @@ func TestHttpClientGetScheme(t *testing.T) {
 	}
 }
 
-func TestHttpClientNewRequest(t *testing.T) {
+func TestHTTPClientNewRequest(t *testing.T) {
 	r, _ := http.NewRequest(http.MethodPost, "http://localhost:8080", nil)
 	type fields struct {
 		cfg       *config.HTTPConfig
@@ -442,7 +453,7 @@ func TestHttpClientNewRequest(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"创建HTTP请求",
 			fields{
 				cfg:       &config.HTTPConfig{},
 				retryFunc: nil,
@@ -489,7 +500,7 @@ func TestNewHTTPClient(t *testing.T) {
 		want Client
 	}{
 		{
-			"",
+			"创建HTTPClient",
 			args{nil},
 			NewHTTPClient(),
 		},
@@ -518,7 +529,7 @@ func TestARRequestReset(t *testing.T) {
 		args   args
 	}{
 		{
-			"",
+			"重置arRequest",
 			fields{
 				Request:    r,
 				bodyReader: bodyReader([]byte{}),
@@ -549,7 +560,7 @@ func TestBodyReader(t *testing.T) {
 		want func() io.ReadCloser
 	}{
 		{
-			"",
+			"返回Reader",
 			args{
 				[]byte{},
 			},
@@ -575,7 +586,7 @@ func TestNewResponseError(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"可重发错误",
 			args{},
 			true,
 		},
@@ -603,7 +614,7 @@ func TestSend(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"发送HTTP请求",
 			args{
 				d: &HttpClient{
 					cfg:       config.DefaultConfig().HTTPConfig,

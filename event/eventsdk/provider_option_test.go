@@ -23,7 +23,7 @@ func TestWithExporters(t *testing.T) {
 	}{
 		{
 			"",
-			args{nil},
+			args{[]EventExporter{GetDefaultExporter()}},
 			Exporters(),
 		},
 	}
@@ -103,7 +103,8 @@ func TestWithServiceInfo(t *testing.T) {
 				ServiceInstance: "",
 			},
 			ServiceInfo("", "", ""),
-		}, {
+		},
+		{
 			"",
 			args{
 				ServiceName:     "123",
@@ -139,7 +140,8 @@ func TestEventProviderOptionFuncApply(t *testing.T) {
 			}),
 			args{config},
 			config,
-		}, {
+		},
+		{
 			"",
 			eventProviderOptionFunc(func(providerConfig *eventProviderConfig) *eventProviderConfig {
 				providerConfig.MaxEvent = 12

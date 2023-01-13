@@ -123,7 +123,23 @@ func TestEventProviderForceFlush(t *testing.T) {
 				Exporters: cfg.Exporters,
 			},
 			false,
-		}, {
+		},
+		{
+			"",
+			fields{
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        make(chan Event, 10),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: map[string]EventExporter{"DefaultExporter": GetDefaultExporter()},
+			},
+			false,
+		},
+		{
 			"",
 			fields{
 				Ctx:       contextWithDone(),
@@ -134,9 +150,9 @@ func TestEventProviderForceFlush(t *testing.T) {
 				StopOnce:  &sync.Once{},
 				Ticker:    time.NewTicker(cfg.FlushInternal),
 				MaxEvent:  cfg.MaxEvent,
-				Exporters: cfg.Exporters,
+				Exporters: map[string]EventExporter{"DefaultExporter": GetDefaultExporter()},
 			},
-			false,
+			true,
 		},
 	}
 	for _, tt := range tests {
@@ -192,7 +208,8 @@ func TestEventProviderShutdown(t *testing.T) {
 				Exporters: cfg.Exporters,
 			},
 			false,
-		}, {
+		},
+		{
 			"",
 			fields{
 				Ctx:       contextWithDone(),
@@ -263,6 +280,21 @@ func TestEventProvideLoadEvent(t *testing.T) {
 				Exporters: cfg.Exporters,
 			},
 			args{nil},
+		},
+		{
+			"",
+			fields{
+				Ctx:       context.Background(),
+				Cancel:    cancel,
+				In:        make(chan Event),
+				Events:    make([]Event, 0, cfg.MaxEvent+1),
+				Size:      0,
+				StopOnce:  &sync.Once{},
+				Ticker:    time.NewTicker(cfg.FlushInternal),
+				MaxEvent:  cfg.MaxEvent,
+				Exporters: cfg.Exporters,
+			},
+			args{NewEvent()},
 		},
 	}
 	for _, tt := range tests {

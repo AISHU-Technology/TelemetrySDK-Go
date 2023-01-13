@@ -9,15 +9,16 @@ import (
 	"encoding/json"
 )
 
-var _ eventsdk.EventExporter = (*Exporter)(nil)
+// 跨包实现接口占位用。
+var _ eventsdk.EventExporter = (*EventExporter)(nil)
 
-// Exporter 导出数据到AnyRobot Feed Ingester的 Event 数据接收器。
-type Exporter struct {
+// EventExporter 导出数据到AnyRobot Feed Ingester的 Event 数据接收器。
+type EventExporter struct {
 	*public.Exporter
 }
 
 // ExportEvents 批量发送 AnyRobotEvents 到AnyRobot Feed Ingester的 Event 数据接收器。
-func (e *Exporter) ExportEvents(ctx context.Context, events []eventsdk.Event) error {
+func (e *EventExporter) ExportEvents(ctx context.Context, events []eventsdk.Event) error {
 	if len(events) == 0 {
 		return nil
 	}
@@ -31,9 +32,9 @@ func (e *Exporter) ExportEvents(ctx context.Context, events []eventsdk.Event) er
 	return e.ExportData(ctx, file.Bytes())
 }
 
-// NewExporter 创建已启动的Exporter。
-func NewExporter(c public.Client) *Exporter {
-	return &Exporter{
+// NewExporter 创建已启动的 EventExporter 。
+func NewExporter(c public.Client) *EventExporter {
+	return &EventExporter{
 		public.NewExporter(c),
 	}
 }

@@ -12,11 +12,13 @@ func TestLevelSelf(t *testing.T) {
 			"",
 			ERROR,
 			"ERROR",
-		}, {
+		},
+		{
 			"",
 			WARN,
 			"WARN",
-		}, {
+		},
+		{
 			"",
 			INFO,
 			"INFO",
@@ -80,12 +82,23 @@ func TestLevelValid(t *testing.T) {
 	}{
 		{
 			"",
-			level("WARN"),
-			true,
-		}, {
-			"",
 			level(""),
 			false,
+		},
+		{
+			"",
+			level("ERROR"),
+			true,
+		},
+		{
+			"",
+			level("WARN"),
+			true,
+		},
+		{
+			"",
+			level("INFO"),
+			true,
 		},
 	}
 	for _, tt := range tests {

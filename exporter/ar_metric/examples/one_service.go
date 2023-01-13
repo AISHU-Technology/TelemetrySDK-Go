@@ -26,12 +26,11 @@ func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 // add 增加了 Metric 的计算两数之和。
 func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	attrs := []attribute.KeyValue{
-		attribute.Key("keyA").String("valueB"),
-		attribute.Key("keyC").StringSlice([]string{"valueD", "valueE"}),
+		attribute.Key("用户信息").String("在线用户数"),
 	}
-	gauge, _ := ar_metric.Meter.AsyncInt64().Gauge("test_gauge")
+	gauge, _ := ar_metric.Meter.AsyncInt64().Gauge("gauge：用户数峰值", instrument.WithUnit(unit.Dimensionless), instrument.WithDescription("a simple gauge"))
 	gaugeTest := func(ctx context.Context) {
-		gauge.Observe(ctx, 3.0, attrs...)
+		gauge.Observe(ctx, 12, attrs...)
 	}
 	_ = ar_metric.Meter.RegisterCallback([]instrument.Asynchronous{gauge}, gaugeTest)
 
@@ -50,15 +49,21 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 // multiply 增加了 Metric 的计算两数之积。
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	attrs := []attribute.KeyValue{
-		attribute.Key("keyA").String("valueB"),
-		attribute.Key("keyC").StringSlice([]string{"valueD", "valueE"}),
+		attribute.Key("用户信息").StringSlice([]string{"在线用户数"}),
 	}
-	histogram, _ := ar_metric.Meter.SyncFloat64().Histogram("test_histogram", instrument.WithUnit(unit.Dimensionless), instrument.WithDescription("a histogram with custom buckets and rename"))
+	histogram, _ := ar_metric.Meter.SyncFloat64().Histogram("histogram：当前用户数", instrument.WithUnit(unit.Dimensionless), instrument.WithDescription("a histogram with custom buckets and name"))
 	histogram.Record(ctx, 136, attrs...)
 	histogram.Record(ctx, 64, attrs...)
+	histogram.Record(ctx, 340, attrs...)
+	histogram.Record(ctx, 600, attrs...)
 
-	sum, _ := ar_metric.Meter.SyncFloat64().Counter("test_sum", instrument.WithUnit(unit.Milliseconds), instrument.WithDescription("a simple counter"))
-	sum.Add(ctx, 5, attrs...)
+	attrs = []attribute.KeyValue{
+		attribute.Key("用户信息").String("登录DAU"),
+	}
+	sum, _ := ar_metric.Meter.SyncFloat64().Counter("sum：用户数日活", instrument.WithUnit(unit.Milliseconds), instrument.WithDescription("a simple counter"))
+	sum.Add(ctx, 25, attrs...)
+	sum.Add(ctx, 315, attrs...)
+	sum.Add(ctx, 628, attrs...)
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x * y

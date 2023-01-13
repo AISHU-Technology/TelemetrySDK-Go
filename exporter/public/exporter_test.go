@@ -37,7 +37,7 @@ func TestExporterExportData(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"空数据发本地",
 			fields{
 				"",
 				NewStdoutClient(""),
@@ -49,8 +49,9 @@ func TestExporterExportData(t *testing.T) {
 				nil,
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"测试数据发本地",
 			fields{
 				"",
 				NewStdoutClient(""),
@@ -62,8 +63,9 @@ func TestExporterExportData(t *testing.T) {
 				byteData(),
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"已停止的Exporter不能发数据",
 			fields{
 				"",
 				NewStdoutClient(""),
@@ -75,8 +77,9 @@ func TestExporterExportData(t *testing.T) {
 				nil,
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"已关闭的Exporter不能发数据",
 			fields{
 				"",
 				NewStdoutClient(""),
@@ -88,8 +91,9 @@ func TestExporterExportData(t *testing.T) {
 				nil,
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"空数据发HTTP",
 			fields{
 				"",
 				NewHTTPClient(),
@@ -101,8 +105,9 @@ func TestExporterExportData(t *testing.T) {
 				nil,
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"测试数据发HTTP",
 			fields{
 				"",
 				NewHTTPClient(),
@@ -113,9 +118,11 @@ func TestExporterExportData(t *testing.T) {
 				context.Background(),
 				byteData(),
 			},
+			// 目标地址正确时不报错。
 			true,
-		}, {
-			"",
+		},
+		{
+			"已停止的Exporter不能发数据",
 			fields{
 				"",
 				NewHTTPClient(),
@@ -127,8 +134,9 @@ func TestExporterExportData(t *testing.T) {
 				nil,
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"已关闭的Exporter不能发数据",
 			fields{
 				"",
 				NewHTTPClient(),
@@ -170,7 +178,7 @@ func TestExporterName(t *testing.T) {
 		want   string
 	}{
 		{
-			"",
+			"读取Exporter名字",
 			fields{
 				name:     "NAME",
 				client:   nil,
@@ -212,7 +220,7 @@ func TestExporterShutdown(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"",
+			"关闭本地Exporter",
 			fields{
 				name:     "",
 				client:   NewStdoutClient(""),
@@ -223,8 +231,9 @@ func TestExporterShutdown(t *testing.T) {
 				context.Background(),
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"重复关闭本地Exporter",
 			fields{
 				name:     "",
 				client:   NewStdoutClient(""),
@@ -235,8 +244,9 @@ func TestExporterShutdown(t *testing.T) {
 				contextWithDone(),
 			},
 			true,
-		}, {
-			"",
+		},
+		{
+			"关闭HTTPExporter",
 			fields{
 				name:     "",
 				client:   NewHTTPClient(),
@@ -247,8 +257,9 @@ func TestExporterShutdown(t *testing.T) {
 				context.Background(),
 			},
 			false,
-		}, {
-			"",
+		},
+		{
+			"重复关闭HTTPExporter",
 			fields{
 				name:     "",
 				client:   NewHTTPClient(),
@@ -286,11 +297,12 @@ func TestNewExporter(t *testing.T) {
 		want *Exporter
 	}{
 		{
-			"",
+			"创建本地Exporter",
 			args{NewStdoutClient("")},
 			NewExporter(NewStdoutClient("")),
-		}, {
-			"",
+		},
+		{
+			"创建HTTPExporter",
 			args{NewHTTPClient()},
 			NewExporter(NewHTTPClient()),
 		},

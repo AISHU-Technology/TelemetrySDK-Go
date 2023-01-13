@@ -43,6 +43,7 @@ type Metrics struct {
 }
 
 // AnyRobotMetricFromMetric 单条 *metricdata.Metrics 转换为 *Metrics 。
+// 原来的 Metrics 是用 DataPoint 同时存储3种数据，现在判断 DataPoint 的实际类型，改变JSON输出字段名。
 func AnyRobotMetricFromMetric(metric *metricdata.Metrics) *Metrics {
 	if gauge, ok := metric.Data.(metricdata.Gauge[int64]); ok {
 		return &Metrics{
@@ -117,9 +118,10 @@ type Histogram struct {
 }
 
 // DataPoint 自定义 DataPoint，改造了Value->Int/Float，Set->[]*Attribute。
+// omitempty不能判断struct的默认零值，因此需要用指针类型通过默认值nil判空。
 type DataPoint struct {
 	Attributes []*Attribute `json:"Attributes"`
-	StartTime  time.Time    `json:"StartTime"`
+	StartTime  *time.Time   `json:"StartTime,omitempty"`
 	Time       time.Time    `json:"Time"`
 	Int        *int64       `json:"Int,omitempty"`
 	Float      *float64     `json:"Float,omitempty"`
@@ -142,7 +144,7 @@ type HistogramDataPoint struct {
 func IntDataPoint(dp metricdata.DataPoint[int64]) *DataPoint {
 	return &DataPoint{
 		Attributes: AnyRobotAttributesFromSet(dp.Attributes),
-		StartTime:  dp.StartTime,
+		StartTime:  OmitZeroTime(dp.StartTime),
 		Time:       dp.Time,
 		Int:        &dp.Value,
 	}
@@ -152,10 +154,18 @@ func IntDataPoint(dp metricdata.DataPoint[int64]) *DataPoint {
 func FloatDataPoint(dp metricdata.DataPoint[float64]) *DataPoint {
 	return &DataPoint{
 		Attributes: AnyRobotAttributesFromSet(dp.Attributes),
-		StartTime:  dp.StartTime,
+		StartTime:  OmitZeroTime(dp.StartTime),
 		Time:       dp.Time,
 		Float:      &dp.Value,
 	}
+}
+
+// OmitZeroTime 如果时间为零值则不显示 。
+func OmitZeroTime(startTime time.Time) *time.Time {
+	if startTime.IsZero() {
+		return nil
+	}
+	return &startTime
 }
 
 // IntDataPoints 批量 []metricdata.DataPoint[int64] 转换为 []*DataPoint 。

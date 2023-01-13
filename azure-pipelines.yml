@@ -62,7 +62,6 @@ stages:
                   set -ex
 
                   echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
-
                   cd /TelemetrySDK-Go/event
                   go mod download
                   mkdir -p /TelemetrySDK-Go/event/report
@@ -242,7 +241,6 @@ stages:
                   set -ex
 
                   echo machine devops.aishu.cn login AnyRobot password $(System.AccessToken) > ~/.netrc
-
                   cd /TelemetrySDK-Go/exporter
                   go mod download
                   mkdir -p /TelemetrySDK-Go/exporter/report

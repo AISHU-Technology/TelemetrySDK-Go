@@ -10,6 +10,32 @@ import (
 	"time"
 )
 
+func TestSetServiceInfo(t *testing.T) {
+	type args struct {
+		name     string
+		version  string
+		instance string
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			"设置service信息",
+			args{
+				name:     "name",
+				version:  "2.5.0",
+				instance: "abcd1234",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetServiceInfo(tt.args.name, tt.args.version, tt.args.instance)
+		})
+	}
+}
+
 func TestWithAnyRobotURL(t *testing.T) {
 	sth := gomonkey.ApplyFunc(log.Fatalln, func(v ...interface{}) {
 		fmt.Println(v)
@@ -28,7 +54,8 @@ func TestWithAnyRobotURL(t *testing.T) {
 			"设置正确的上报地址",
 			args{"https://www.baidu.com/"},
 			WithAnyRobotURL("https://www.baidu.com/"),
-		}, {
+		},
+		{
 			"设置错误的上报地址",
 			args{"1:2:3:4:5"},
 			config.EmptyOption(),
@@ -37,7 +64,7 @@ func TestWithAnyRobotURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := WithAnyRobotURL(tt.args.URL); !reflect.DeepEqual(got(config.DefaultConfig()), tt.want(config.DefaultConfig())) {
-				t.Errorf("WithAnyRobotURL() = %v, want %v", got, tt.want)
+				t.Errorf("WithAnyRobotURL() = %v, want %v", got(config.DefaultConfig()), tt.want(config.DefaultConfig()))
 			}
 		})
 	}
@@ -64,13 +91,15 @@ func TestWithCompression(t *testing.T) {
 				0,
 			},
 			WithCompression(0),
-		}, {
+		},
+		{
 			"设置压缩方式为GZIP",
 			args{
 				1,
 			},
 			WithCompression(1),
-		}, {
+		},
+		{
 			"设置压缩方式为非法",
 			args{
 				2,
@@ -81,7 +110,7 @@ func TestWithCompression(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := WithCompression(tt.args.compression); !reflect.DeepEqual(got(config.DefaultConfig()), tt.want(config.DefaultConfig())) {
-				t.Errorf("WithCompression() = %v, want %v", got, tt.want)
+				t.Errorf("WithCompression() = %v, want %v", got(config.DefaultConfig()), tt.want(config.DefaultConfig()))
 			}
 		})
 	}
@@ -102,7 +131,8 @@ func TestWithHeader(t *testing.T) {
 				nil,
 			},
 			WithHeader(nil),
-		}, {
+		},
+		{
 			"设置自定义请求头信息",
 			args{
 				map[string]string{"key": "value"},
@@ -113,7 +143,7 @@ func TestWithHeader(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := WithHeader(tt.args.headers); !reflect.DeepEqual(got(config.DefaultConfig()), tt.want(config.DefaultConfig())) {
-				t.Errorf("WithHeader() = %v, want %v", got, tt.want)
+				t.Errorf("WithHeader() = %v, want %v", got(config.DefaultConfig()), tt.want(config.DefaultConfig()))
 			}
 		})
 	}
@@ -145,7 +175,8 @@ func TestWithRetry(t *testing.T) {
 				maxElapsedTime: 3,
 			},
 			WithRetry(false, 1, 2, 3),
-		}, {
+		},
+		{
 			"开启重发机制",
 			args{
 				enabled:        true,
@@ -154,7 +185,8 @@ func TestWithRetry(t *testing.T) {
 				maxElapsedTime: 6,
 			},
 			WithRetry(true, 4, 5, 6),
-		}, {
+		},
+		{
 			"重发机制超时",
 			args{
 				enabled:        true,
@@ -168,7 +200,7 @@ func TestWithRetry(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := WithRetry(tt.args.enabled, tt.args.internal, tt.args.maxInterval, tt.args.maxElapsedTime); !reflect.DeepEqual(got(config.DefaultConfig()), tt.want(config.DefaultConfig())) {
-				t.Errorf("WithRetry() = %v, want %v", got, tt.want)
+				t.Errorf("WithRetry() = %v, want %v", got(config.DefaultConfig()), tt.want(config.DefaultConfig()))
 			}
 		})
 	}
@@ -192,7 +224,8 @@ func TestWithTimeout(t *testing.T) {
 			"设置超时时间",
 			args{2 * time.Second},
 			WithTimeout(2 * time.Second),
-		}, {
+		},
+		{
 			"超时时间非法",
 			args{61 * time.Second},
 			config.EmptyOption(),
@@ -201,7 +234,7 @@ func TestWithTimeout(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := WithTimeout(tt.args.duration); !reflect.DeepEqual(got(config.DefaultConfig()), tt.want(config.DefaultConfig())) {
-				t.Errorf("WithTimeout() = %v, want %v", got, tt.want)
+				t.Errorf("WithTimeout() = %v, want %v", got(config.DefaultConfig()), tt.want(config.DefaultConfig()))
 			}
 		})
 	}

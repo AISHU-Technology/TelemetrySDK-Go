@@ -22,7 +22,7 @@ type link struct {
 
 // newLink 创建新的 link 。
 func newLink(spanContext trace.SpanContext) *link {
-	if spanContext.HasTraceID() && spanContext.HasSpanID() {
+	if spanContext.IsValid() {
 		return &link{
 			TraceID: spanContext.TraceID().String(),
 			SpanID:  spanContext.SpanID().String(),
