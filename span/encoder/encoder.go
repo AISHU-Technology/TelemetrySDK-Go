@@ -227,9 +227,7 @@ func (js *JsonEncoder) Close() error {
 		js.cancelFunc()
 		if js.logExporters != nil && len(js.logExporters) != 0 {
 			for _, exporter := range js.logExporters {
-				if err := exporter.Shutdown(js.ctx); err != nil {
-					log.Println(field.GenerateSpecificError(err))
-				}
+				exporter.Shutdown(js.ctx) //nolint
 			}
 		}
 	}()
