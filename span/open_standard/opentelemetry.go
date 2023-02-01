@@ -97,8 +97,8 @@ func getHostIP() string {
 // getHostInfo 获取主机信息。
 func getHostInfo() *host.InfoStat {
 	if info == nil {
-		info, _ := host.Info()
-		return info
+		hostInfo, _ := host.Info()
+		info = hostInfo
 	}
 	return info
 }
