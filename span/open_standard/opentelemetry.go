@@ -23,8 +23,8 @@ var (
 	serviceVersion  = "UnknownServiceVersion"
 	serviceInstance = "UnknownServiceInstance"
 
-	info *host.InfoStat = nil
-	ip                  = ""
+	allHostInfo *host.InfoStat = nil
+	allHostIp                  = ""
 )
 
 type Writer interface {
@@ -86,21 +86,21 @@ func defaultServiceName() string {
 }
 
 func getHostIP() string {
-	if ip == "" {
+	if allHostIp == "" {
 		connection, _ := net.Dial("udp", "255.255.255.255:33")
 		ipPort := connection.LocalAddr().(*net.UDPAddr)
-		ip = ipPort.IP.String()
+		allHostIp = ipPort.IP.String()
 	}
-	return ip
+	return allHostIp
 }
 
 // getHostInfo 获取主机信息。
 func getHostInfo() *host.InfoStat {
-	if info == nil {
+	if allHostInfo == nil {
 		hostInfo, _ := host.Info()
-		info = hostInfo
+		allHostInfo = hostInfo
 	}
-	return info
+	return allHostInfo
 }
 
 // getDefaultAttributes 获取默认资源信息。
