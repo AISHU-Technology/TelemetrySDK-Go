@@ -122,8 +122,8 @@ func TestLogSpanV1Attribute(t *testing.T) {
 
 	s0.SetOption(WithAttribute(attr))
 
-	record := MallocStructField(2)
-	record.Set(attr.Type, attr.Message)
+	record := MallocMapField()
+	record.Append(attr.Type, attr.Message)
 	//record.Set("Type", StringField(attr.Type))
 
 	assert.Equal(t, s0.GetAttributes(), Field(record))

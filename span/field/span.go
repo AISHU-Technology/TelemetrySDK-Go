@@ -56,7 +56,7 @@ type logSpanV1 struct {
 	lock sync.RWMutex
 	//traceID    string
 	ctx        context.Context
-	attributes Field
+	attributes MapField
 }
 
 var Pool = sync.Pool{

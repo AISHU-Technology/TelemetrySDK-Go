@@ -9,10 +9,13 @@ func WithAttribute(attr *attribute) LogOptionFunc {
 		if attr == nil || attr.Message == nil {
 			return
 		}
-		record := MallocStructField(1)
-		record.Set(attr.Type, attr.Message)
+		// record := MallocStructField(1)
+		// record.Set(attr.Type, attr.Message)
 		//record.Set("Type", StringField(attr.Type))
-		l.attributes = record
+		if l.attributes == nil {
+			l.attributes = MallocMapField()
+		}
+		l.attributes.Append(attr.Type, attr.Message)
 	}
 }
 

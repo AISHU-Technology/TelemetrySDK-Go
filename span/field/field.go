@@ -105,6 +105,17 @@ func (f MapField) protect() {
 	// Avoiding irrelevant personnel to implement Field interface
 }
 
+func (f MapField) Append(key string, value Field) {
+	if f == nil {
+		f = MallocMapField()
+	}
+	f[key] = value
+}
+
+func MallocMapField() MapField {
+	return MapField(make(map[string]interface{}))
+}
+
 func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstanceID string) Field {
 	service := make(map[string]interface{})
 	service["name"] = ServiceName
