@@ -4,10 +4,10 @@ package version
 
 const (
 	TraceInstrumentationName    = "TelemetrySDK-Go/exporter/ar_trace"
-	TraceInstrumentationVersion = "v2.5.0"
+	TraceInstrumentationVersion = "v2.6.0"
 	TraceInstrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporter/ar_trace"
 
 	MetricInstrumentationName    = "TelemetrySDK-Go/exporter/ar_metric"
-	MetricInstrumentationVersion = "v2.5.0"
+	MetricInstrumentationVersion = "v2.6.0"
 	MetricInstrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporter/ar_metric"
 )

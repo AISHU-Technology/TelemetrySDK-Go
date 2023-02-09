@@ -49,7 +49,7 @@ func BenchmarkEncodeAndMalloc(b *testing.B) {
 			for pb.Next() {
 				r := fakeMap()
 				bytes, _ := json.Marshal(r)
-				tmp.Write(bytes)
+				tmp.Write(bytes) //nolint
 			}
 		})
 	})
@@ -62,7 +62,7 @@ func BenchmarkEncodeAndMalloc(b *testing.B) {
 			for pb.Next() {
 				r := fakeStruct()
 				bytes, _ := json.Marshal(r)
-				tmp.Write(bytes)
+				tmp.Write(bytes) //nolint
 			}
 		})
 	})
@@ -80,7 +80,7 @@ func BenchmarkEncodeAndMalloc(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				r := fakeSpanStructField()
-				enc.Write(r)
+				enc.Write(r) //nolint
 			}
 		})
 
@@ -111,7 +111,7 @@ func BenchmarkEncodeDiscardWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				bytes, _ := json.Marshal(r)
-				tmp.Write(bytes)
+				tmp.Write(bytes) //nolint
 			}
 		})
 	})
@@ -124,7 +124,7 @@ func BenchmarkEncodeDiscardWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				bytes, _ := json.Marshal(r)
-				tmp.Write(bytes)
+				tmp.Write(bytes) //nolint
 			}
 		})
 	})
@@ -135,7 +135,7 @@ func BenchmarkEncodeDiscardWrite(b *testing.B) {
 		b.ResetTimer()
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				enc.Write(r)
+				enc.Write(r) //nolint
 			}
 		})
 	})
@@ -177,7 +177,7 @@ func BenchmarkDiscardWrite(b *testing.B) {
 				r := fakeMap()
 				bytes, _ := json.Marshal(r)
 				locker.Lock()
-				tmp.Write(bytes)
+				tmp.Write(bytes) //nolint
 				locker.Unlock()
 			}
 		})
@@ -193,7 +193,7 @@ func BenchmarkDiscardWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				r := fakeSpanStructField()
-				l := logger.Children(nil)
+				l := logger.Children(nil) //nolint
 				l.SetRecord(r)
 				l.Signal()
 			}
@@ -211,7 +211,7 @@ func BenchmarkDiscardWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				r := fakeSpanStructField()
-				l := logger.Children(nil)
+				l := logger.Children(nil) //nolint
 				l.SetRecord(r)
 				l.Signal()
 			}
@@ -260,7 +260,7 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 			for pb.Next() {
 				bytes, _ := json.Marshal(r)
 				locker.Lock()
-				tmp1.Write(bytes)
+				tmp1.Write(bytes) //nolint
 				locker.Unlock()
 			}
 		})
@@ -281,7 +281,7 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				// r.Write(tmp)
-				l := logger.Children(nil)
+				l := logger.Children(nil) //nolint
 				l.SetRecord(r)
 				l.Signal()
 			}
@@ -306,7 +306,7 @@ func BenchmarkEncodeFileWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				// r.Write(w)
-				l := logger.Children(nil)
+				l := logger.Children(nil) //nolint
 				l.SetRecord(r)
 				l.Signal()
 			}
@@ -360,7 +360,7 @@ func BenchmarkFileWrite(b *testing.B) {
 				r := fakeMap()
 				bytes, _ := json.Marshal(r)
 				locker.Lock()
-				tmp1.Write(bytes)
+				tmp1.Write(bytes) //nolint
 				locker.Unlock()
 			}
 		})
@@ -384,7 +384,7 @@ func BenchmarkFileWrite(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				r := fakeSpanStructField()
-				l := logger.Children(nil)
+				l := logger.Children(nil) //nolint
 				l.SetRecord(r)
 				l.Signal()
 			}
@@ -446,7 +446,7 @@ func BenchmarkMmetrics(b *testing.B) {
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				bytes, _ := json.Marshal(mm)
-				w.Write(bytes)
+				w.Write(bytes) //nolint
 			}
 		})
 	})

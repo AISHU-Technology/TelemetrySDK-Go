@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/exporter"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,6 +41,21 @@ func GetTestFieds() []field.Field {
 	// t0 := TraceSpan{}
 	// setTestTrace(&t0)
 	// s.Trace(&t0)
+}
+
+func GetTestFiedsArray() field.Field {
+	fieldArr := field.MallocArrayField(3)
+	r0 := fakeTestStructField()
+
+	r1 := field.MallocStructField(2)
+	r1.Set("Level", field.IntField(1))
+	r1.Set("eventNum", field.IntField(2))
+
+	r3 := getTestJson()
+	fieldArr.Append(r0)
+	fieldArr.Append(r1)
+	fieldArr.Append(r3)
+	return fieldArr
 }
 
 func fakeTestStructField() field.Field {
@@ -102,7 +117,7 @@ func TestArrayField(t *testing.T) {
 
 	b := bytess.NewBuffer(nil)
 	enc := NewJsonEncoder(b)
-	enc.Write(a)
+	enc.Write(a) //nolint
 
 }
 
@@ -114,5 +129,17 @@ func TestNewJsonEncoderBench(t *testing.T) {
 		panic(err)
 	}
 	en.Close()
+
+}
+
+func TestNewJsonEncoderWithExporters(t *testing.T) {
+	defaultExporter := exporter.GetStdoutExporter()
+
+	fields := GetTestFiedsArray()
+
+	enc := NewJsonEncoderWithExporters(defaultExporter)
+	if err := enc.Write(fields); err != nil {
+		t.Error(err)
+	}
 
 }

@@ -3,8 +3,6 @@ package public
 import (
 	"bytes"
 	"context"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
-	"github.com/agiledragon/gomonkey/v2"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -12,6 +10,10 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
+	"github.com/agiledragon/gomonkey/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHTTPClientPath(t *testing.T) {
@@ -379,9 +381,14 @@ func TestHTTPClientContextWithStop(t *testing.T) {
 				stopCh:    tt.fields.stopCh,
 			}
 			got, got1 := d.contextWithStop(tt.args.ctx)
-			if !reflect.DeepEqual(got.Err(), tt.want.Err()) {
-				t.Errorf("contextWithStop() got = %v, want %v", got, tt.want)
+			if got.Err() != nil && tt.want.Err() != nil {
+				assert.Equal(t, tt.want.Err().Error(), got.Err().Error())
+			} else {
+				assert.Equal(t, tt.want.Err(), got.Err())
 			}
+			// if !reflect.DeepEqual(got.Err(), tt.want.Err()) {
+			// 	t.Errorf("contextWithStop() got = %v, want %v", got, tt.want)
+			// }
 			if got1 == nil || tt.want1 == nil {
 				t.Errorf("contextWithStop() got1 = %v, want %v", &got1, &tt.want1)
 			}

@@ -235,10 +235,10 @@ func TestSamplerLogger(t *testing.T) {
 		if err := json.Unmarshal(bytes[left:i], &cap); err != nil {
 			t.Error(err)
 			t.FailNow()
-		} else {
-			n += 1
-			fmt.Println(string(bytes[left:i]))
-		}
+		} // else {
+		// 	n += 1
+		// 	fmt.Println(string(bytes[left:i]))
+		// }
 	}
 
 	// fmt.Print(buf.String())

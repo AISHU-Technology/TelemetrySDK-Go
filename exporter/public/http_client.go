@@ -5,8 +5,6 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/tls"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/custom_errors"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -16,6 +14,9 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/custom_errors"
 )
 
 // HttpClient 客户端结构体。
