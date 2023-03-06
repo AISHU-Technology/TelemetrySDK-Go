@@ -1,6 +1,6 @@
 module devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span
 
-go 1.18
+go 1.20
 
 require (
 	github.com/apex/log v1.9.0
