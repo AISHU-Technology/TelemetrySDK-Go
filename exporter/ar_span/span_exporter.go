@@ -11,11 +11,11 @@ import (
 // 跨包实现接口占位用。
 var _ exporter.LogExporter = (*SpanExporter)(nil)
 
-// system_logger 程序日志记录器。
-var system_logger *spanLog.SamplerLogger
+// SystemLogger 程序日志记录器。
+var SystemLogger *spanLog.SamplerLogger = spanLog.NewDefaultSamplerLogger()
 
-// service_logger 业务日志记录器。
-var service_logger *spanLog.SamplerLogger
+// ServiceLogger 业务日志记录器。
+var ServiceLogger *spanLog.SamplerLogger = spanLog.NewDefaultSamplerLogger()
 
 // SpanExporter 导出数据到AnyRobot Feed Ingester的 Log 数据接收器。
 type SpanExporter struct {
