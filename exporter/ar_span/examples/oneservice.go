@@ -2,6 +2,7 @@ package examples
 
 import (
 	"context"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 	"log"
 	"os"
 	"time"
@@ -46,6 +47,8 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	attr := field.NewAttribute("test", field.StringField("test"))
 	//结构化日志
 	sampleLog.InfoField(field.MallocJsonField(lm), "test", field.WithContext(ctx), field.WithAttribute(attr))
+	//system_logger.info
+
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x + y
@@ -112,14 +115,17 @@ func HTTPExample() {
 }
 
 func StdoutExporterExample() {
+
 	sampleLog = spanLog.NewDefaultSamplerLogger()
 	stdoutExporter := exporter.GetStdoutExporter()
 	//	output := os.Stdout
+
+	public.SetServiceInfo("YourServiceName", "1.0.0", "")
 	writer := &open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoderWithExporters(stdoutExporter),
-		//Resource: field.WithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID"),
+		Encoder:  encoder.NewJsonEncoderWithExporters(stdoutExporter),
+		Resource: resource.LogResource(),
 	}
-	writer.SetDefaultResources()
+	//writer.SetDefaultResources()
 	//writer.SetResourcesWithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID")
 	run := runtime.NewRuntime(writer, field.NewSpanFromPool)
 

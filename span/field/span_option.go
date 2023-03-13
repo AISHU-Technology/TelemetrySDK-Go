@@ -1,6 +1,8 @@
 package field
 
-import "context"
+import (
+	"context"
+)
 
 type LogOptionFunc func(*logSpanV1)
 

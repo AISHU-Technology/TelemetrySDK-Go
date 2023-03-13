@@ -3,6 +3,7 @@ package resource
 import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/version"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 	"github.com/shirou/gopsutil/v3/host"
 	"go.opentelemetry.io/otel/attribute"
 	environment "go.opentelemetry.io/otel/sdk/resource"
@@ -103,6 +104,11 @@ func TraceResource() *sdkresource.Resource {
 	attributes = append(attributes, semconv.TelemetrySDKNameKey.String(version.TraceInstrumentationName))
 	attributes = append(attributes, semconv.TelemetrySDKVersionKey.String(version.TraceInstrumentationVersion))
 	return sdkresource.NewWithAttributes(version.TraceInstrumentationURL, attributes...)
+}
+
+// LogResource 填充Log资源信息
+func LogResource() field.Field {
+	return field.WithServiceInfo(GetServiceName(), GetServiceVersion(), GetServiceInstance())
 }
 
 // MetricResource 填充Metric资源信息
