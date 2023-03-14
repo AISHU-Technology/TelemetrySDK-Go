@@ -4,7 +4,6 @@ import (
 	"go.opentelemetry.io/otel/sdk/instrumentation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-	"time"
 )
 
 // AnyRobotSpan 实现ReadOnlySpan接口的结构体，属性无增删。
@@ -13,8 +12,8 @@ type AnyRobotSpan struct {
 	SpanContext          trace.SpanContext     `json:"SpanContext"`
 	Parent               trace.SpanContext     `json:"Parent"`
 	SpanKind             trace.SpanKind        `json:"SpanKind"`
-	StartTime            time.Time             `json:"StartTime"`
-	EndTime              time.Time             `json:"EndTime"`
+	StartTime            int64                 `json:"StartTime"`
+	EndTime              int64                 `json:"EndTime"`
 	Attributes           []*Attribute          `json:"Attributes"`
 	Links                []*Link               `json:"Links"`
 	Events               []*Event              `json:"Events"`
@@ -36,8 +35,8 @@ func AnyRobotSpanFromReadOnlySpan(span sdktrace.ReadOnlySpan) *AnyRobotSpan {
 		SpanContext:          span.SpanContext(),
 		Parent:               span.Parent(),
 		SpanKind:             span.SpanKind(),
-		StartTime:            span.StartTime(),
-		EndTime:              span.EndTime(),
+		StartTime:            span.StartTime().UnixNano(),
+		EndTime:              span.EndTime().UnixNano(),
 		Attributes:           AnyRobotAttributesFromKeyValues(span.Attributes()),
 		Links:                AnyRobotLinksFromLinks(span.Links()),
 		Events:               AnyRobotEventsFromEvents(span.Events()),
