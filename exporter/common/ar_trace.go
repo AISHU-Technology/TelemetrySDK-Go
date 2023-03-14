@@ -17,7 +17,7 @@ type AnyRobotSpan struct {
 	Attributes           []*Attribute          `json:"Attributes"`
 	Links                []*Link               `json:"Links"`
 	Events               []*Event              `json:"Events"`
-	Status               sdktrace.Status       `json:"Status"`
+	Status               ArStatus              `json:"Status"`
 	InstrumentationScope instrumentation.Scope `json:"InstrumentationScope"`
 	Resource             *Resource             `json:"Resource"`
 	DroppedAttributes    int                   `json:"DroppedAttributes"`
@@ -40,7 +40,7 @@ func AnyRobotSpanFromReadOnlySpan(span sdktrace.ReadOnlySpan) *AnyRobotSpan {
 		Attributes:           AnyRobotAttributesFromKeyValues(span.Attributes()),
 		Links:                AnyRobotLinksFromLinks(span.Links()),
 		Events:               AnyRobotEventsFromEvents(span.Events()),
-		Status:               span.Status(),
+		Status:               transformStatus(span.Status()),
 		InstrumentationScope: span.InstrumentationScope(),
 		Resource:             AnyRobotResourceFromResource(span.Resource()),
 		DroppedAttributes:    span.DroppedAttributes(),
@@ -59,4 +59,17 @@ func AnyRobotTraceFromReadOnlyTrace(trace []sdktrace.ReadOnlySpan) []*AnyRobotSp
 		arTrace = append(arTrace, AnyRobotSpanFromReadOnlySpan(span))
 	}
 	return arTrace
+}
+
+//用于转换StatusCode的输出格式
+type ArStatus struct {
+	// Code is an identifier of a Spans state classification.
+	Code uint32
+	// Description is a user hint about why that status was set. It is only
+	// applicable when Code is Error.
+	Description string
+}
+
+func transformStatus(s sdktrace.Status) ArStatus {
+	return ArStatus{uint32(s.Code), s.Description}
 }
