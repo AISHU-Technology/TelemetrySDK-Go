@@ -114,6 +114,11 @@ func TestAnyRobotMetricFromMetric(t *testing.T) {
 			args{metric: &metricdata.Metrics{Data: metricdata.Histogram{}}},
 			AnyRobotMetricFromMetric(&metricdata.Metrics{Data: metricdata.Histogram{}}),
 		},
+		{
+			"测试空返回值",
+			args{metric: &metricdata.Metrics{}},
+			nil,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

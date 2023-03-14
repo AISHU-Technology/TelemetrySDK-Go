@@ -32,21 +32,6 @@ func TestHTTPExample(t *testing.T) {
 	}
 }
 
-func TestOldStdoutExample(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{
-			"OldStdoutExample",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			OldStdoutExample()
-		})
-	}
-}
-
 func TestExample(t *testing.T) {
 	tests := []struct {
 		name string
