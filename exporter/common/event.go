@@ -2,7 +2,6 @@ package common
 
 import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"time"
 )
 
 // Event 自定义 Event 统一Attribute。
@@ -10,7 +9,7 @@ type Event struct {
 	Name                  string       `json:"Name"`
 	Attributes            []*Attribute `json:"Attributes"`
 	DroppedAttributeCount int          `json:"DroppedAttributeCount"`
-	Time                  time.Time    `json:"Time"`
+	Time                  int64        `json:"Time"`
 }
 
 // AnyRobotEventFromEvent 单条sdktrace.Event转换为*Event。
@@ -19,7 +18,7 @@ func AnyRobotEventFromEvent(event sdktrace.Event) *Event {
 		Name:                  event.Name,
 		Attributes:            AnyRobotAttributesFromKeyValues(event.Attributes),
 		DroppedAttributeCount: event.DroppedAttributeCount,
-		Time:                  event.Time,
+		Time:                  event.Time.UnixNano(),
 	}
 }
 
