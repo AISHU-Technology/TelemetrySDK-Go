@@ -50,16 +50,16 @@ func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
 	return ctx, x * y
 }
 
-// multiply 增加了 Event 的计算两数之积。
+// multiply 增加了 Log 的计算两数之积。
 func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	ctx, _ = ar_trace.Tracer.Start(ctx, "乘法")
 
 	numbers := []int64{x, y}
 	attr := field.NewAttribute("INTARRAY", field.MallocJsonField(numbers))
 	// ar_span.ServiceLogger 记录业务日志，并且记录自定义的业务属性信息。
-	ar_span.ServiceLogger.Info("multiply two numbers", field.WithAttribute(attr))
-	// ar_span.SystemLogger 记录系统日志。
-	ar_span.SystemLogger.Fatal("This is an fatal message")
+	ar_span.ServiceLogger.Info("multiply two numbers", field.WithAttribute(attr), field.WithContext(ctx))
+	// ar_span.SystemLogger 记录系统日志，同时关联Trace。
+	ar_span.SystemLogger.Fatal("This is an fatal message", field.WithContext(ctx))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
@@ -81,7 +81,7 @@ func HTTPExample() {
 	public.SetServiceInfo("YourServiceName", "1.0.0", "")
 	stdoutExporter := exporter.GetStdoutExporter()
 
-	// 系统日志在控制台输出，同时上报到AnyRobot。
+	// 1.初始化系统日志器，系统日志在控制台输出，同时上报到AnyRobot。
 	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/Kitty1/events1"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	systemLogExporter := ar_span.NewExporter(systemLogClient)
@@ -97,7 +97,7 @@ func HTTPExample() {
 	ar_span.SystemLogger.SetLevel(spanLog.InfoLevel)
 	ar_span.SystemLogger.SetRuntime(systemLogRunner)
 
-	// 业务日志仅上报到AnyRobot，上报地址不同。
+	// 2.初始化业务日志器，业务日志仅上报到AnyRobot，上报地址不同。
 	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:9900/api/feed_ingester/v1/jobs/Kitty2/events2"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	serviceLogExporter := ar_span.NewExporter(serviceLogClient)
@@ -113,7 +113,7 @@ func HTTPExample() {
 	ar_span.ServiceLogger.SetLevel(spanLog.AllLevel)
 	ar_span.ServiceLogger.SetRuntime(serviceLogRunner)
 
-	// 业务代码
+	// 3.运行业务代码
 	ctx := context.Background()
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, num := multiply(ctx, 1, 7)
@@ -124,7 +124,7 @@ func HTTPExample() {
 func StdoutExporterExample() {
 	public.SetServiceInfo("YourServiceName", "1.0.0", "")
 
-	// 系统日志在控制台输出。
+	// 1.初始化系统日志器，系统日志在控制台输出。
 	systemLogExporter := exporter.GetStdoutExporter()
 	systemLogWriter := &open_standard.OpenTelemetry{
 		Encoder:  encoder.NewJsonEncoderWithExporters(systemLogExporter),
@@ -138,7 +138,7 @@ func StdoutExporterExample() {
 	ar_span.SystemLogger.SetLevel(spanLog.InfoLevel)
 	ar_span.SystemLogger.SetRuntime(systemLogRunner)
 
-	// 业务日志仅在控制台输出。
+	// 2.初始化业务日志器，业务日志仅在控制台输出。
 	serviceLogExporter := exporter.GetStdoutExporter()
 	serviceLogWriter := &open_standard.OpenTelemetry{
 		Encoder:  encoder.NewJsonEncoderWithExporters(serviceLogExporter),
@@ -152,7 +152,7 @@ func StdoutExporterExample() {
 	ar_span.ServiceLogger.SetLevel(spanLog.AllLevel)
 	ar_span.ServiceLogger.SetRuntime(serviceLogRunner)
 
-	// 业务代码
+	// 3.运行业务代码
 	ctx := context.Background()
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, num := multiply(ctx, 1, 7)
