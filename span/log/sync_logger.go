@@ -12,6 +12,18 @@ import (
 type SyncLogger interface {
 	SetSample(sample float32)
 	SetLogLevel(logLevel int)
+	TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
+	DebugField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
+	InfoField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
+	WarnField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
+	ErrorField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
+	FatalField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
+	Trace(message string, opts ...field.LogOptionFunc) error
+	Debug(message string, opts ...field.LogOptionFunc) error
+	Info(message string, opts ...field.LogOptionFunc) error
+	Warn(message string, opts ...field.LogOptionFunc) error
+	Error(message string, opts ...field.LogOptionFunc) error
+	Fatal(message string, opts ...field.LogOptionFunc) error
 }
 
 // syncLogger 同步发送模式的日志器。
