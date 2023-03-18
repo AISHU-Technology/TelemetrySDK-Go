@@ -19,8 +19,8 @@ func emptyOption() LoggerStartOption {
 	})
 }
 
-// WithLogLevel 设置日志级别，从0~7，0代表全部输出，7代表关闭输出。
-func WithLogLevel(logLevel int) LoggerStartOption {
+// WithLevel 设置日志级别，从0~7，0代表全部输出，7代表关闭输出。
+func WithLevel(logLevel int) LoggerStartOption {
 	if logLevel < AllLevel || logLevel > OffLevel {
 		return emptyOption()
 	}

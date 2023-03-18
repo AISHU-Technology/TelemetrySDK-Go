@@ -11,7 +11,7 @@ import (
 // SyncLogger 同步发送模式的日志器。
 type SyncLogger interface {
 	SetSample(sample float32)
-	SetLogLevel(logLevel int)
+	SetLevel(level int)
 	SetRuntime(*runtime.Runtime)
 	Close()
 	TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
@@ -45,12 +45,12 @@ func NewSyncLogger(opts ...LoggerStartOption) SyncLogger {
 	}
 }
 
-// SetLogLevel 设置日志级别，从0~7，0代表全部输出，7代表关闭输出。
-func (logger *syncLogger) SetLogLevel(logLevel int) {
-	if logLevel < AllLevel || logLevel > OffLevel {
+// SetLevel 设置日志级别，从0~7，0代表全部输出，7代表关闭输出。
+func (logger *syncLogger) SetLevel(level int) {
+	if level < AllLevel || level > OffLevel {
 		return
 	}
-	logger.logLevel = logLevel
+	logger.logLevel = level
 }
 
 // SetSample 设置采样等级，从0.0~1.0，0.0代表不采样，1.0代表全采样。
