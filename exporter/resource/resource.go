@@ -45,8 +45,8 @@ func GetServiceVersion() string {
 	return globalServiceVersion
 }
 
-// GetServiceInstance 获取服务实例ID
-func GetServiceInstance() string {
+// GetServiceInstanceID 获取服务实例ID
+func GetServiceInstanceID() string {
 	return globalServiceInstance
 }
 
@@ -76,7 +76,7 @@ func getHostInfo() *host.InfoStat {
 	return info
 }
 
-// innerAttributes 记录Resource中的公共部分。
+// innerAttributes 记录Trace、Metric的Resource中的公共部分。
 func innerAttributes() []attribute.KeyValue {
 	// 获取本机IP。
 	ip := getHostIP()
@@ -93,8 +93,44 @@ func innerAttributes() []attribute.KeyValue {
 	// 服务信息。
 	inner = append(inner, semconv.ServiceNameKey.String(GetServiceName()))
 	inner = append(inner, semconv.ServiceVersionKey.String(GetServiceVersion()))
-	inner = append(inner, semconv.ServiceInstanceIDKey.String(GetServiceInstance()))
+	inner = append(inner, semconv.ServiceInstanceIDKey.String(GetServiceInstanceID()))
 	return inner
+}
+
+// defaultAttributes 记录Log、Event的Resource中的公共部分。
+func defaultAttributes() map[string]interface{} {
+	// 获取本机IP
+	ip := getHostIP()
+	info := getHostInfo()
+	result := make(map[string]interface{})
+	// 主机信息
+	hostMap := make(map[string]string, 3)
+	result["host"] = hostMap
+	hostIP := ip
+	hostMap["ip"] = hostIP
+	hostArch := info.KernelArch
+	hostMap["arch"] = hostArch
+	hostName := info.Hostname
+	hostMap["name"] = hostName
+	// 操作系统信息
+	osMap := make(map[string]string, 3)
+	result["os"] = osMap
+	osType := info.OS
+	osMap["type"] = osType
+	osVersion := info.PlatformVersion
+	osMap["version"] = osVersion
+	osDescription := info.Platform
+	osMap["description"] = osDescription
+	// 服务信息。
+	serviceMap := make(map[string]interface{}, 3)
+	result["service"] = serviceMap
+	serviceName := GetServiceName()
+	serviceMap["name"] = serviceName
+	serviceVersion := GetServiceVersion()
+	serviceMap["version"] = serviceVersion
+	serviceInstanceID := GetServiceInstanceID()
+	serviceMap["instance"] = map[string]string{"id": serviceInstanceID}
+	return result
 }
 
 // TraceResource 填充Trace资源信息
@@ -102,13 +138,24 @@ func TraceResource() *sdkresource.Resource {
 	var attributes = innerAttributes()
 	attributes = append(attributes, semconv.TelemetrySDKLanguageGo)
 	attributes = append(attributes, semconv.TelemetrySDKNameKey.String(version.TraceInstrumentationName))
-	attributes = append(attributes, semconv.TelemetrySDKVersionKey.String(version.TraceInstrumentationVersion))
+	attributes = append(attributes, semconv.TelemetrySDKVersionKey.String(version.TelemetrySDKVersion))
 	return sdkresource.NewWithAttributes(version.TraceInstrumentationURL, attributes...)
 }
 
 // LogResource 填充Log资源信息
 func LogResource() field.Field {
-	return field.WithServiceInfo(GetServiceName(), GetServiceVersion(), GetServiceInstance())
+	res := defaultAttributes()
+	sdkMap := make(map[string]string, 3)
+	telemetryMap := make(map[string]interface{}, 1)
+	telemetryMap["sdk"] = sdkMap
+	res["telemetry"] = telemetryMap
+	sdkLanguage := "go"
+	sdkMap["language"] = sdkLanguage
+	sdkName := version.LogInstrumentationName
+	sdkMap["name"] = sdkName
+	sdkVersion := version.TelemetrySDKVersion
+	sdkMap["version"] = sdkVersion
+	return field.MapField(res)
 }
 
 // MetricResource 填充Metric资源信息
@@ -116,11 +163,11 @@ func MetricResource() *sdkresource.Resource {
 	var attributes = innerAttributes()
 	attributes = append(attributes, semconv.TelemetrySDKLanguageGo)
 	attributes = append(attributes, semconv.TelemetrySDKNameKey.String(version.MetricInstrumentationName))
-	attributes = append(attributes, semconv.TelemetrySDKVersionKey.String(version.MetricInstrumentationVersion))
+	attributes = append(attributes, semconv.TelemetrySDKVersionKey.String(version.TelemetrySDKVersion))
 	return sdkresource.NewWithAttributes(version.MetricInstrumentationURL, attributes...)
 }
 
 // EventResource 填充Event资源信息
 func EventResource() eventsdk.EventProviderOption {
-	return eventsdk.ServiceInfo(GetServiceName(), GetServiceVersion(), GetServiceInstance())
+	return eventsdk.ServiceInfo(GetServiceName(), GetServiceVersion(), GetServiceInstanceID())
 }

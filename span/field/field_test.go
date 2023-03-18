@@ -97,14 +97,3 @@ func TestMallocJsonField(t *testing.T) {
 	j := MallocJsonField(p)
 	assert.Equal(t, FieldTpye(JsonType), j.Type())
 }
-
-func TestWithServiceInfo(t *testing.T) {
-	defaultResource := make(map[string]interface{})
-	service := make(map[string]interface{})
-	service["name"] = "testServiceName"
-	service["version"] = "testServiceVersion"
-	service["instance"] = map[string]string{"id": "testServiceInstanceID"}
-	defaultResource["service"] = service
-	got := WithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID")
-	assert.Equal(t, got, MapField(defaultResource))
-}

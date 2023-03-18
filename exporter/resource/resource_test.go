@@ -40,8 +40,8 @@ func TestGetServiceInstance(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetServiceInstance(); got != tt.want {
-				t.Errorf("GetServiceInstance() = %v, want %v", got, tt.want)
+			if got := GetServiceInstanceID(); got != tt.want {
+				t.Errorf("GetServiceInstanceID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
