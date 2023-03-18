@@ -12,6 +12,8 @@ import (
 type SyncLogger interface {
 	SetSample(sample float32)
 	SetLogLevel(logLevel int)
+	SetRuntime(*runtime.Runtime)
+	Close()
 	TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
 	DebugField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
 	InfoField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
@@ -28,8 +30,8 @@ type SyncLogger interface {
 
 // syncLogger 同步发送模式的日志器。
 type syncLogger struct {
-	Sample   float32
-	LogLevel int
+	logLevel int
+	sample   float32
 	runtime  *runtime.Runtime
 	ctx      context.Context
 }
@@ -38,8 +40,8 @@ type syncLogger struct {
 func NewSyncLogger(opts ...LoggerStartOption) SyncLogger {
 	cfg := newLoggerStartConfig(opts...)
 	return &syncLogger{
-		Sample:   cfg.Sample,
-		LogLevel: cfg.LogLevel,
+		sample:   cfg.Sample,
+		logLevel: cfg.LogLevel,
 	}
 }
 
@@ -48,7 +50,7 @@ func (logger *syncLogger) SetLogLevel(logLevel int) {
 	if logLevel < AllLevel || logLevel > OffLevel {
 		return
 	}
-	logger.LogLevel = logLevel
+	logger.logLevel = logLevel
 }
 
 // SetSample 设置采样等级，从0.0~1.0，0.0代表不采样，1.0代表全采样。
@@ -58,9 +60,24 @@ func (logger *syncLogger) SetSample(sample float32) {
 	}
 }
 
+// SetRuntime 设置日志器运行时。
+func (logger *syncLogger) SetRuntime(run *runtime.Runtime) {
+	if logger.runtime != nil {
+		logger.runtime.Signal()
+	}
+	logger.runtime = run
+}
+
+// Close 释放日志器。
+func (logger *syncLogger) Close() {
+	if logger.runtime != nil {
+		logger.runtime.Signal()
+	}
+}
+
 // TraceField Trace 级别的日志，记录结构体。
 func (logger *syncLogger) TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
-	if TraceLevel < logger.LogLevel || !logger.sampleCheck() {
+	if TraceLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLogField(type_, message, TraceLevelString, opts...)
@@ -68,7 +85,7 @@ func (logger *syncLogger) TraceField(message field.Field, type_ string, opts ...
 
 // DebugField Debug 级别的日志，记录结构体。
 func (logger *syncLogger) DebugField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
-	if DebugLevel < logger.LogLevel || !logger.sampleCheck() {
+	if DebugLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLogField(type_, message, DebugLevelString, opts...)
@@ -76,7 +93,7 @@ func (logger *syncLogger) DebugField(message field.Field, type_ string, opts ...
 
 // InfoField Info 级别的日志，记录结构体。
 func (logger *syncLogger) InfoField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
-	if InfoLevel < logger.LogLevel || !logger.sampleCheck() {
+	if InfoLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLogField(type_, message, InfoLevelString, opts...)
@@ -84,7 +101,7 @@ func (logger *syncLogger) InfoField(message field.Field, type_ string, opts ...f
 
 // WarnField Warn 级别的日志，记录结构体。
 func (logger *syncLogger) WarnField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
-	if WarnLevel < logger.LogLevel || !logger.sampleCheck() {
+	if WarnLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLogField(type_, message, WarnLevelString, opts...)
@@ -92,7 +109,7 @@ func (logger *syncLogger) WarnField(message field.Field, type_ string, opts ...f
 
 // ErrorField Error 级别的日志，记录结构体。
 func (logger *syncLogger) ErrorField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
-	if ErrorLevel < logger.LogLevel || !logger.sampleCheck() {
+	if ErrorLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLogField(type_, message, ErrorLevelString, opts...)
@@ -100,7 +117,7 @@ func (logger *syncLogger) ErrorField(message field.Field, type_ string, opts ...
 
 // FatalField Fatal 级别的日志，记录结构体。
 func (logger *syncLogger) FatalField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
-	if FatalLevel < logger.LogLevel {
+	if FatalLevel < logger.logLevel {
 		return nil
 	}
 	return logger.writeLogField(type_, message, FatalLevelString, opts...)
@@ -108,7 +125,7 @@ func (logger *syncLogger) FatalField(message field.Field, type_ string, opts ...
 
 // Trace Trace 级别的日志，记录字符串。
 func (logger *syncLogger) Trace(message string, opts ...field.LogOptionFunc) error {
-	if TraceLevel < logger.LogLevel || !logger.sampleCheck() {
+	if TraceLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLog(message, TraceLevelString, opts...)
@@ -116,7 +133,7 @@ func (logger *syncLogger) Trace(message string, opts ...field.LogOptionFunc) err
 
 // Debug Debug 级别的日志，记录字符串。
 func (logger *syncLogger) Debug(message string, opts ...field.LogOptionFunc) error {
-	if DebugLevel < logger.LogLevel || !logger.sampleCheck() {
+	if DebugLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLog(message, DebugLevelString, opts...)
@@ -124,7 +141,7 @@ func (logger *syncLogger) Debug(message string, opts ...field.LogOptionFunc) err
 
 // Info Info 级别的日志，记录字符串。
 func (logger *syncLogger) Info(message string, opts ...field.LogOptionFunc) error {
-	if InfoLevel < logger.LogLevel || !logger.sampleCheck() {
+	if InfoLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLog(message, InfoLevelString, opts...)
@@ -132,7 +149,7 @@ func (logger *syncLogger) Info(message string, opts ...field.LogOptionFunc) erro
 
 // Warn Warn 级别的日志，记录字符串。
 func (logger *syncLogger) Warn(message string, opts ...field.LogOptionFunc) error {
-	if WarnLevel < logger.LogLevel || !logger.sampleCheck() {
+	if WarnLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLog(message, WarnLevelString, opts...)
@@ -140,7 +157,7 @@ func (logger *syncLogger) Warn(message string, opts ...field.LogOptionFunc) erro
 
 // Error Error 级别的日志，记录字符串。
 func (logger *syncLogger) Error(message string, opts ...field.LogOptionFunc) error {
-	if ErrorLevel < logger.LogLevel || !logger.sampleCheck() {
+	if ErrorLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
 	return logger.writeLog(message, ErrorLevelString, opts...)
@@ -148,7 +165,7 @@ func (logger *syncLogger) Error(message string, opts ...field.LogOptionFunc) err
 
 // Fatal Fatal 级别的日志，记录字符串。
 func (logger *syncLogger) Fatal(message string, opts ...field.LogOptionFunc) error {
-	if FatalLevel < logger.LogLevel {
+	if FatalLevel < logger.logLevel {
 		return nil
 	}
 	return logger.writeLog(message, FatalLevelString, opts...)
@@ -157,16 +174,16 @@ func (logger *syncLogger) Fatal(message string, opts ...field.LogOptionFunc) err
 // sampleCheck 检查采样率决定是否记录当前日志。
 func (logger *syncLogger) sampleCheck() bool {
 	// 全采样
-	if logger.Sample >= 1.0 {
+	if logger.sample >= 1.0 {
 		return true
 	}
 	// 全丢弃
-	if logger.Sample <= 0 {
+	if logger.sample <= 0 {
 		return false
 	}
 	// 生成0.0~1.0之间的随机数
 	random := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return random.Float32() <= logger.Sample
+	return random.Float32() <= logger.sample
 }
 
 // getLogSpan 获取Log上下文。
