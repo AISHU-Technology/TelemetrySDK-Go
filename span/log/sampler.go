@@ -1,9 +1,7 @@
+// Package log
 // Provide some interfaces of logger
-//
 // looger can use to record string log of any object Log in the form of field
-//
 // logger can use to log internal thread/task with InteranlSpan.
-//
 // A LogSpan use to describe a thread job info or a task info. You can get a thread context info ever recorded.
 // And then aggregation Span by TraceID or describe a Trace tree by SpanID and TraceID
 package log

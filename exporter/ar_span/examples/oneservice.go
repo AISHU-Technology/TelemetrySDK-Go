@@ -18,6 +18,12 @@ import (
 	"time"
 )
 
+// SystemLogger 程序日志记录器。
+var SystemLogger *spanLog.SamplerLogger = spanLog.NewDefaultSamplerLogger()
+
+// ServiceLogger 业务日志记录器。
+var ServiceLogger *spanLog.SamplerLogger = spanLog.NewDefaultSamplerLogger()
+
 const result = "the answer is"
 
 // addBefore 计算两数之和。
@@ -33,10 +39,10 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 
 	numbers := []int64{x, y}
 	attr := field.NewAttribute("INTARRAY", field.MallocJsonField(numbers))
-	// ar_span.ServiceLogger 记录业务日志，并且记录自定义的业务属性信息。
-	ar_span.ServiceLogger.Info("add two numbers", field.WithAttribute(attr))
-	// ar_span.SystemLogger 记录系统日志。
-	ar_span.SystemLogger.Error("This is an error message")
+	// ServiceLogger 记录业务日志，并且记录自定义的业务属性信息。
+	ServiceLogger.Info("add two numbers", field.WithAttribute(attr))
+	// SystemLogger 记录系统日志。
+	SystemLogger.Error("This is an error message")
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
@@ -56,10 +62,10 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 
 	numbers := []int64{x, y}
 	attr := field.NewAttribute("INTARRAY", field.MallocJsonField(numbers))
-	// ar_span.ServiceLogger 记录业务日志，并且记录自定义的业务属性信息。
-	ar_span.ServiceLogger.Info("multiply two numbers", field.WithAttribute(attr), field.WithContext(ctx))
-	// ar_span.SystemLogger 记录系统日志，同时关联Trace。
-	ar_span.SystemLogger.Fatal("This is an fatal message", field.WithContext(ctx))
+	// ServiceLogger 记录业务日志，并且记录自定义的业务属性信息。
+	ServiceLogger.Info("multiply two numbers", field.WithAttribute(attr), field.WithContext(ctx))
+	// SystemLogger 记录系统日志，同时关联Trace。
+	SystemLogger.Fatal("This is an fatal message", field.WithContext(ctx))
 
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
@@ -82,10 +88,11 @@ func HTTPExample() {
 	stdoutExporter := exporter.GetStdoutExporter()
 
 	// 1.初始化系统日志器，系统日志在控制台输出，同时上报到AnyRobot。
-	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/Kitty1/events1"),
+	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	systemLogExporter := ar_span.NewExporter(systemLogClient)
 	systemLogWriter := &open_standard.OpenTelemetry{
+		// 通过传入多个 Exporter ，可以发送到多个地址。
 		Encoder:  encoder.NewJsonEncoderWithExporters(systemLogExporter, stdoutExporter),
 		Resource: resource.LogResource(),
 	}
@@ -93,12 +100,12 @@ func HTTPExample() {
 	systemLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行SystemLogger日志器。
 	go systemLogRunner.Run()
-	defer ar_span.SystemLogger.Close()
-	ar_span.SystemLogger.SetLevel(spanLog.InfoLevel)
-	ar_span.SystemLogger.SetRuntime(systemLogRunner)
+	defer SystemLogger.Close()
+	SystemLogger.SetLevel(spanLog.InfoLevel)
+	SystemLogger.SetRuntime(systemLogRunner)
 
 	// 2.初始化业务日志器，业务日志仅上报到AnyRobot，上报地址不同。
-	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:9900/api/feed_ingester/v1/jobs/Kitty2/events2"),
+	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	serviceLogExporter := ar_span.NewExporter(serviceLogClient)
 	serviceLogWriter := &open_standard.OpenTelemetry{
@@ -109,9 +116,9 @@ func HTTPExample() {
 	serviceLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行ServiceLogger日志器。
 	go serviceLogRunner.Run()
-	defer ar_span.ServiceLogger.Close()
-	ar_span.ServiceLogger.SetLevel(spanLog.AllLevel)
-	ar_span.ServiceLogger.SetRuntime(serviceLogRunner)
+	defer ServiceLogger.Close()
+	ServiceLogger.SetLevel(spanLog.AllLevel)
+	ServiceLogger.SetRuntime(serviceLogRunner)
 
 	// 3.运行业务代码
 	ctx := context.Background()
@@ -134,9 +141,9 @@ func StdoutExporterExample() {
 	systemLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行SystemLogger日志器。
 	go systemLogRunner.Run()
-	defer ar_span.SystemLogger.Close()
-	ar_span.SystemLogger.SetLevel(spanLog.InfoLevel)
-	ar_span.SystemLogger.SetRuntime(systemLogRunner)
+	defer SystemLogger.Close()
+	SystemLogger.SetLevel(spanLog.InfoLevel)
+	SystemLogger.SetRuntime(systemLogRunner)
 
 	// 2.初始化业务日志器，业务日志仅在控制台输出。
 	serviceLogExporter := exporter.GetStdoutExporter()
@@ -148,13 +155,16 @@ func StdoutExporterExample() {
 	serviceLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行ServiceLogger日志器。
 	go serviceLogRunner.Run()
-	defer ar_span.ServiceLogger.Close()
-	ar_span.ServiceLogger.SetLevel(spanLog.AllLevel)
-	ar_span.ServiceLogger.SetRuntime(serviceLogRunner)
+	defer ServiceLogger.Close()
+	ServiceLogger.SetLevel(spanLog.AllLevel)
+	ServiceLogger.SetRuntime(serviceLogRunner)
 
 	// 3.运行业务代码
 	ctx := context.Background()
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, num := multiply(ctx, 1, 7)
-	_, _ = add(ctx, num, 8)
+	ctx, _ = add(ctx, num, 8)
+	for i := 0; i < 100; i++ {
+		ctx, num = multiply(ctx, 1, num)
+	}
 }
