@@ -74,7 +74,6 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	//业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x * y
-
 }
 
 // Example 原始的业务系统入口
@@ -92,7 +91,7 @@ func HTTPExample() {
 	stdoutExporter := exporter.GetStdoutExporter()
 
 	// 1.初始化系统日志器，系统日志在控制台输出，同时上报到AnyRobot。
-	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://10.4.130.68/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
+	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	systemLogExporter := ar_log.NewExporter(systemLogClient)
 	systemLogWriter := open_standard.OpenTelemetryWriter(
@@ -107,7 +106,7 @@ func HTTPExample() {
 	SystemLogger.SetRuntime(systemLogRunner)
 
 	// 2.初始化业务日志器，业务日志仅上报到AnyRobot，上报地址不同。
-	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://10.4.130.68/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
+	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	serviceLogExporter := ar_log.NewExporter(serviceLogClient)
 	serviceLogWriter := open_standard.SyncWriter(
@@ -123,7 +122,6 @@ func HTTPExample() {
 	otel.SetTracerProvider(sdktrace.NewTracerProvider())
 	ctx, num := multiply(ctx, 1, 7)
 	_, _ = add(ctx, num, 8)
-
 }
 
 func StdoutExporterExample() {

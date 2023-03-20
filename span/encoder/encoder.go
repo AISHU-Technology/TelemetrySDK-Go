@@ -393,14 +393,14 @@ func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_formfeedSafe) //nolint
-		//case '\t':
-		//	w.WriteBytes(bytes[left:k]) //nolint
-		//	left = k + 1
-		//	_, res = w.WriteBytes(_horizontalSafe) //nolint
-		//case '\n':
-		//	w.WriteBytes(bytes[left:k]) //nolint
-		//	left = k + 1
-		//	_, res = w.WriteBytes(_lineFeedSafe) //nolint
+		case '\t':
+			w.WriteBytes(bytes[left:k]) //nolint
+			left = k + 1
+			_, res = w.WriteBytes(_horizontalSafe) //nolint
+		case '\n':
+			w.WriteBytes(bytes[left:k]) //nolint
+			left = k + 1
+			_, res = w.WriteBytes(_lineFeedSafe) //nolint
 		case '\r':
 			w.WriteBytes(bytes[left:k]) //nolint
 			left = k + 1
