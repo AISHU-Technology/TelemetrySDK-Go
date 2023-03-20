@@ -68,9 +68,11 @@ func testLogLevel(t *testing.T, l *SamplerLogger, level int) {
 func TestSamplerLoggerSpan(t *testing.T) {
 	buf := ioutil.Discard
 	l := NewDefaultSamplerLogger()
-	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(buf),
-	}, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()
 
@@ -121,9 +123,11 @@ func TestSampleCheck(t *testing.T) {
 func TestSamplerLoggerNil(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	l := NewDefaultSamplerLogger()
-	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(buf),
-	}, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	l.LogLevel = AllLevel
 	go run.Run()
@@ -158,9 +162,11 @@ func TestSamplerLoggerNil(t *testing.T) {
 func TestSamplerLoggerClose(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	l := NewDefaultSamplerLogger()
-	enc := encoder.NewJsonEncoder(buf)
-	ot := open_standard.OpenTelemetryWriter(enc, nil)
-	run := runtime.NewRuntime(ot, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()
 
@@ -187,9 +193,11 @@ func TestSamplerLogger(t *testing.T) {
 	// 0. create logger and start runtime
 	buf := bytes.NewBuffer(nil)
 	l := NewDefaultSamplerLogger()
-	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(buf),
-	}, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	l.LogLevel = AllLevel
 	go run.Run()

@@ -23,10 +23,10 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	setTestSpance(rootSpan)
 	var rootSpans []field.LogSpan
 	rootSpans = append(rootSpans, rootSpan)
-	b := bytes.NewBuffer(nil)
-
-	enc := encoder.NewJsonEncoder(b)
-	open := OpenTelemetryWriter(enc, nil)
+	buf := bytes.NewBuffer(nil)
+	open := OpenTelemetryWriter(
+		encoder.NewJsonEncoder(buf),
+		field.IntField(0))
 
 	defer open.Close()
 
@@ -35,11 +35,10 @@ func TestOpenTelemetryWrite(t *testing.T) {
 		t.Error(err)
 		t.FailNow()
 	}
-	enc.Close()
 
 	// check result
 	cap := map[string]interface{}{}
-	bytes := b.Bytes()
+	bytes := buf.Bytes()
 	left := 0
 	i := 0
 	n := 0
@@ -63,5 +62,5 @@ func TestOpenTelemetryWrite(t *testing.T) {
 		//}
 	}
 
-	fmt.Print(b.String())
+	fmt.Print(buf.String())
 }
