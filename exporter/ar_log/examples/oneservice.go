@@ -89,7 +89,7 @@ func Example() {
 
 // HTTPExample 修改client所有入参。
 func HTTPExample() {
-	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	public.SetServiceInfo("YourServiceName", "2.6.5", "c9a577c302505576")
 	stdoutExporter := exporter.GetStdoutExporter()
 
 	// 1.初始化系统日志器，系统日志在控制台输出，同时上报到AnyRobot。
@@ -99,7 +99,7 @@ func HTTPExample() {
 	systemLogWriter := open_standard.NewOpenTelemetry(
 		encoder.NewJsonEncoderWithExporters(systemLogExporter, stdoutExporter),
 		resource.LogResource())
-	systemLogRunner := runtime.NewRuntime(&systemLogWriter, field.NewSpanFromPool)
+	systemLogRunner := runtime.NewRuntime(systemLogWriter, field.NewSpanFromPool)
 	systemLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行SystemLogger日志器。
 	go systemLogRunner.Run()
@@ -114,7 +114,7 @@ func HTTPExample() {
 	serviceLogWriter := open_standard.NewOpenTelemetry(
 		encoder.NewJsonEncoderWithExporters(serviceLogExporter),
 		resource.LogResource())
-	serviceLogRunner := runtime.NewRuntime(&serviceLogWriter, field.NewSpanFromPool)
+	serviceLogRunner := runtime.NewRuntime(serviceLogWriter, field.NewSpanFromPool)
 	serviceLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行ServiceLogger日志器。
 	go serviceLogRunner.Run()
@@ -131,14 +131,14 @@ func HTTPExample() {
 }
 
 func StdoutExporterExample() {
-	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	public.SetServiceInfo("YourServiceName", "2.6.5", "983d7e1d5e8cda64")
 
 	// 1.初始化系统日志器，系统日志在控制台输出。
 	systemLogExporter := exporter.GetStdoutExporter()
 	systemLogWriter := open_standard.NewOpenTelemetry(
 		encoder.NewJsonEncoderWithExporters(systemLogExporter),
 		resource.LogResource())
-	systemLogRunner := runtime.NewRuntime(&systemLogWriter, field.NewSpanFromPool)
+	systemLogRunner := runtime.NewRuntime(systemLogWriter, field.NewSpanFromPool)
 	systemLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行SystemLogger日志器。
 	go systemLogRunner.Run()
@@ -151,7 +151,7 @@ func StdoutExporterExample() {
 	serviceLogWriter := open_standard.NewOpenTelemetry(
 		encoder.NewJsonEncoderWithExporters(serviceLogExporter),
 		resource.LogResource())
-	serviceLogRunner := runtime.NewRuntime(&serviceLogWriter, field.NewSpanFromPool)
+	serviceLogRunner := runtime.NewRuntime(serviceLogWriter, field.NewSpanFromPool)
 	serviceLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行ServiceLogger日志器。
 	go serviceLogRunner.Run()

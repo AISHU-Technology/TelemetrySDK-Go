@@ -9,16 +9,23 @@ import (
 
 const rootSpan = iota
 
+// Writer 从自定义的runtime中获取并发送日志的写入器抽象类。
 type Writer interface {
+	// Write 写日志。
 	Write([]field.LogSpan) error
+	// Close 关闭 Writer。
 	Close() error
 }
 
+// OpenTelemetry 实现了Writer抽象类的OpenTelemetry规范的日志写入器。
 type OpenTelemetry struct {
-	Encoder  encoder.Encoder
+	// Encoder 包含日志上报地址的编码器。
+	Encoder encoder.Encoder
+	// Resource 统一了数据模型后的资源信息。
 	Resource field.Field
 }
 
+// NewOpenTelemetry 对外暴露的由客户调用的初始化OpenTelemetry规范的日志写入器的方法。
 func NewOpenTelemetry(enc encoder.Encoder, resources field.Field) *OpenTelemetry {
 	open := &OpenTelemetry{
 		Encoder:  enc,
@@ -28,14 +35,14 @@ func NewOpenTelemetry(enc encoder.Encoder, resources field.Field) *OpenTelemetry
 }
 
 func (o *OpenTelemetry) Write(t []field.LogSpan) error {
-	return o.write(t, rootSpan)
+	return o.write(t)
 }
 
 func (o *OpenTelemetry) Close() error {
 	return o.Encoder.Close()
 }
 
-func (o *OpenTelemetry) write(logSpans []field.LogSpan, flag int) error {
+func (o *OpenTelemetry) write(logSpans []field.LogSpan) error {
 	var err error
 	telemetrys := field.MallocArrayField(len(logSpans) + 1)
 	for _, t := range logSpans {

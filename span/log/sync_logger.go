@@ -3,7 +3,7 @@ package log
 import (
 	"context"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/runtime"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/open_standard"
 	"math/rand"
 	"time"
 )
@@ -12,8 +12,8 @@ import (
 type SyncLogger interface {
 	SetSample(sample float32)
 	SetLevel(level int)
-	SetRuntime(*runtime.Runtime)
-	Close()
+	SetWriter(writer open_standard.Writer)
+	Close() error
 	TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
 	DebugField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
 	InfoField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
@@ -32,7 +32,7 @@ type SyncLogger interface {
 type syncLogger struct {
 	logLevel int
 	sample   float32
-	runtime  *runtime.Runtime
+	writer   open_standard.Writer
 	ctx      context.Context
 }
 
@@ -60,19 +60,14 @@ func (logger *syncLogger) SetSample(sample float32) {
 	}
 }
 
-// SetRuntime 设置日志器运行时。
-func (logger *syncLogger) SetRuntime(run *runtime.Runtime) {
-	if logger.runtime != nil {
-		logger.runtime.Signal()
-	}
-	logger.runtime = run
+// SetWriter 设置日志器写入器。
+func (logger *syncLogger) SetWriter(writer open_standard.Writer) {
+	logger.writer = writer
 }
 
-// Close 释放日志器。
-func (logger *syncLogger) Close() {
-	if logger.runtime != nil {
-		logger.runtime.Signal()
-	}
+// Close 释放Writer。
+func (logger *syncLogger) Close() error {
+	return logger.writer.Close()
 }
 
 // TraceField Trace 级别的日志，记录结构体。
@@ -186,39 +181,23 @@ func (logger *syncLogger) sampleCheck() bool {
 	return random.Float32() <= logger.sample
 }
 
-// getLogSpan 获取Log上下文。
-func (logger *syncLogger) getLogSpan() field.LogSpan {
-	if logger.runtime != nil {
-		return logger.runtime.Children(logger.ctx)
-	}
-	return nil
-}
-
-// writeLogField 写非结构化日志。！！！！！！！！！！什么时候发送日志，并且返回错误？
-func (logger *syncLogger) writeLogField(typ string, message, level field.Field, options ...field.LogOptionFunc) error {
-	logSpan := logger.getLogSpan()
-	if logSpan == nil {
-		return nil
-	}
-	defer logSpan.Signal()
+// writeLogField 写非结构化日志。
+func (logger *syncLogger) writeLogField(typ string, message, level field.Field, opts ...field.LogOptionFunc) error {
+	logSpan := field.SyncLog()
 	logSpan.SetLogLevel(level)
 	record := newRecord(typ, message)
 	logSpan.SetRecord(record)
-	logSpan.SetOption(options...)
-	return nil
+	logSpan.SetOption(opts...)
+	return logger.writer.Write([]field.LogSpan{logSpan})
 }
 
-// writeLog 写结构化日志。！！！！！！！！！！什么时候发送日志，并且返回错误？
-func (logger *syncLogger) writeLog(message string, level field.Field, options ...field.LogOptionFunc) error {
-	logSpan := logger.getLogSpan()
-	if logSpan == nil {
-		return nil
-	}
-	defer logSpan.Signal()
+// writeLog 写结构化日志。
+func (logger *syncLogger) writeLog(message string, level field.Field, opts ...field.LogOptionFunc) error {
+	logSpan := field.SyncLog()
 	logSpan.SetLogLevel(level)
 	record := field.MallocStructField(1)
 	record.Set("Message", field.StringField(message))
 	logSpan.SetRecord(record)
-	logSpan.SetOption(options...)
-	return nil
+	logSpan.SetOption(opts...)
+	return logger.writer.Write([]field.LogSpan{logSpan})
 }

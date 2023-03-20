@@ -65,6 +65,10 @@ var Pool = sync.Pool{
 	},
 }
 
+func SyncLog() LogSpan {
+	return &logSpanV1{}
+}
+
 // NewSpan get span from sync.pool
 func NewSpanFromPool(own func(LogSpan), ctx context.Context) LogSpan {
 	s := Pool.Get().(*logSpanV1)
