@@ -19,10 +19,10 @@ import (
 )
 
 // SystemLogger 程序日志记录器，使用异步发送模式，无返回值。
-var SystemLogger = spanLog.NewDefaultSamplerLogger()
+var SystemLogger = spanLog.NewSamplerLogger(spanLog.WithSample(1.0), spanLog.WithLevel(spanLog.InfoLevel))
 
 // ServiceLogger 业务日志记录器，使用同步发送模式，有返回值，返回error=nil代表发送成功，返回error!=nil代表发送失败。
-var ServiceLogger = spanLog.NewSyncLogger(spanLog.WithLevel(spanLog.InfoLevel))
+var ServiceLogger = spanLog.NewSyncLogger(spanLog.WithLevel(spanLog.AllLevel))
 
 const result = "the answer is"
 
