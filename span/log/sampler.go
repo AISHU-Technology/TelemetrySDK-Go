@@ -112,6 +112,14 @@ type SamplerLogger struct {
 	ctx      context.Context
 }
 
+func NewSamplerLogger(opts ...LoggerStartOption) Logger {
+	cfg := newLoggerStartConfig(opts...)
+	return &SamplerLogger{
+		Sample:   cfg.Sample,
+		LogLevel: cfg.LogLevel,
+	}
+}
+
 func NewDefaultSamplerLogger() *SamplerLogger {
 	return &SamplerLogger{
 		Sample:   1.0,

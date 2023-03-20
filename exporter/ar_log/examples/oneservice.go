@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"go.opentelemetry.io/otel"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"log"
 	"time"
 )
 
@@ -23,7 +22,7 @@ import (
 var SystemLogger = spanLog.NewDefaultSamplerLogger()
 
 // ServiceLogger 业务日志记录器，使用同步发送模式，有返回值，返回error=nil代表发送成功，返回error!=nil代表发送失败。
-var ServiceLogger = spanLog.NewSyncLogger()
+var ServiceLogger = spanLog.NewSyncLogger(spanLog.WithLevel(spanLog.InfoLevel))
 
 const result = "the answer is"
 
@@ -84,7 +83,7 @@ func Example() {
 	ctx, num := multiplyBefore(ctx, 2, 3)
 	ctx, num = multiplyBefore(ctx, num, 7)
 	_, num = addBefore(ctx, num, 8)
-	log.Println(result, num)
+	fmt.Println(result, num)
 }
 
 // HTTPExample 修改client所有入参。
@@ -96,7 +95,7 @@ func HTTPExample() {
 	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://10.4.130.68/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	systemLogExporter := ar_log.NewExporter(systemLogClient)
-	systemLogWriter := open_standard.NewOpenTelemetry(
+	systemLogWriter := open_standard.OpenTelemetryWriter(
 		encoder.NewJsonEncoderWithExporters(systemLogExporter, stdoutExporter),
 		resource.LogResource())
 	systemLogRunner := runtime.NewRuntime(systemLogWriter, field.NewSpanFromPool)
@@ -111,8 +110,8 @@ func HTTPExample() {
 	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://10.4.130.68/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	serviceLogExporter := ar_log.NewExporter(serviceLogClient)
-	serviceLogWriter := open_standard.NewOpenTelemetry(
-		encoder.NewJsonEncoderWithExporters(serviceLogExporter),
+	serviceLogWriter := open_standard.SyncWriter(
+		encoder.NewSyncEncoder(serviceLogExporter),
 		resource.LogResource())
 	// 运行ServiceLogger日志器。
 	defer ServiceLogger.Close()
@@ -132,7 +131,7 @@ func StdoutExporterExample() {
 
 	// 1.初始化系统日志器，系统日志在控制台输出。
 	systemLogExporter := exporter.GetStdoutExporter()
-	systemLogWriter := open_standard.NewOpenTelemetry(
+	systemLogWriter := open_standard.OpenTelemetryWriter(
 		encoder.NewJsonEncoderWithExporters(systemLogExporter),
 		resource.LogResource())
 	systemLogRunner := runtime.NewRuntime(systemLogWriter, field.NewSpanFromPool)
@@ -145,8 +144,8 @@ func StdoutExporterExample() {
 
 	// 2.初始化业务日志器，业务日志仅在控制台输出。
 	serviceLogExporter := exporter.GetStdoutExporter()
-	serviceLogWriter := open_standard.NewOpenTelemetry(
-		encoder.NewJsonEncoderWithExporters(serviceLogExporter),
+	serviceLogWriter := open_standard.SyncWriter(
+		encoder.NewSyncEncoder(serviceLogExporter),
 		resource.LogResource())
 	// 运行ServiceLogger日志器。
 	defer ServiceLogger.Close()
