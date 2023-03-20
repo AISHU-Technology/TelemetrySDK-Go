@@ -1,7 +1,6 @@
 package log
 
 import (
-	"context"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/open_standard"
 	"math/rand"
@@ -12,8 +11,8 @@ import (
 type SyncLogger interface {
 	SetSample(sample float32)
 	SetLevel(level int)
-	SetWriter(writer open_standard.Writer)
-	Close() error
+	SetWriter(writer open_standard.SyncWriter_)
+	Close()
 	TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
 	DebugField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
 	InfoField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
@@ -33,7 +32,6 @@ type syncLogger struct {
 	logLevel int
 	sample   float32
 	writer   open_standard.Writer
-	ctx      context.Context
 }
 
 // NewSyncLogger 创建同步发送模式的日志器，创建时可传入参数。记日志的方法有返回值，返回error=nil代表发送成功，返回error!=nil代表发送失败。
@@ -61,13 +59,13 @@ func (logger *syncLogger) SetSample(sample float32) {
 }
 
 // SetWriter 设置日志器写入器。
-func (logger *syncLogger) SetWriter(writer open_standard.Writer) {
+func (logger *syncLogger) SetWriter(writer open_standard.SyncWriter_) {
 	logger.writer = writer
 }
 
 // Close 释放Writer。
-func (logger *syncLogger) Close() error {
-	return logger.writer.Close()
+func (logger *syncLogger) Close() {
+	logger.writer.Close()
 }
 
 // TraceField Trace 级别的日志，记录结构体。

@@ -36,6 +36,30 @@ var (
 	_colon           = []byte(": ")
 )
 
+// SyncEncoder 同步模式专用，只能上报到一个地址。
+type SyncEncoder interface {
+	Write(field.Field) error
+	Close() error
+	sync()
+}
+
+// NewSyncEncoder 使用同步模式发送数据用此函数初始化 Encoder。
+func NewSyncEncoder(exporter_ exporter.LogExporter) SyncEncoder {
+	ctx, cancel := context.WithCancel(context.Background())
+	eps := make(map[string]exporter.LogExporter, 1)
+	eps[exporter_.Name()] = exporter_
+	res := &JsonEncoder{
+		w:            nil,
+		logExporters: eps,
+		End:          _lineFeed,
+		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		ctx:          ctx,
+		cancelFunc:   cancel,
+	}
+	res.buf = res.bufReal
+	return res
+}
+
 type Encoder interface {
 	Write(field.Field) error
 	Close() error
@@ -127,10 +151,33 @@ func (js *JsonEncoder) Write(f field.Field) error {
 		flushWithExportersErr := js.flushWithExporters()
 		if flushWithExportersErr != nil {
 			log.Println(field.GenerateSpecificError(flushWithExportersErr))
+			return flushWithExportersErr
 		}
 	}
 	return nil
 }
+
+func (js *JsonEncoder) Close() error {
+	if js.bufReal.Len() > 0 {
+		js.flush()
+		js.flushWithExporters() //nolint
+		return nil
+	}
+	go func() {
+		t := time.NewTimer(maxWaitExporterTime)
+		defer t.Stop()
+		<-t.C
+		js.cancelFunc()
+		if js.logExporters != nil && len(js.logExporters) != 0 {
+			for _, exporter := range js.logExporters {
+				exporter.Shutdown(js.ctx) //nolint
+			}
+		}
+	}()
+	return nil
+}
+
+func (js *JsonEncoder) sync() {}
 
 func (js *JsonEncoder) dealIoWriter(f field.Field) {
 	//断言为数组形式
@@ -157,9 +204,9 @@ func (js *JsonEncoder) dealIoWriter(f field.Field) {
 	}
 }
 
-func (js *JsonEncoder) dealStdoutExporter(stdoutExporter exporter.LogExporter, f field.Field) {
+func (js *JsonEncoder) dealStdoutExporter(stdoutExporter exporter.LogExporter, logs field.Field) {
 	//断言为数组形式
-	fieldArr, fieldArrOk := f.(*field.ArrayField)
+	fieldArr, fieldArrOk := logs.(*field.ArrayField)
 	if fieldArrOk {
 		for i := 0; i < fieldArr.Length(); i++ {
 			oneField, errArr := fieldArr.At(i)
@@ -198,6 +245,7 @@ func (js *JsonEncoder) flush() error {
 }
 
 func (js *JsonEncoder) flushWithExporters() error {
+	var returnErr error = nil
 	if js.logExporters != nil && len(js.logExporters) != 0 {
 		for _, e := range js.logExporters {
 			//过滤掉已经输出的StdoutExporter，其他exporter正常输出
@@ -207,31 +255,12 @@ func (js *JsonEncoder) flushWithExporters() error {
 			if err := e.ExportLogs(js.ctx, js.bufReal.Bytes()); err != nil {
 				// 如果错误则记日志。
 				log.Println(field.GenerateSpecificError(err))
+				returnErr = err
 			}
 		}
 		js.bufReal.Reset()
 	}
-	return nil
-}
-
-func (js *JsonEncoder) Close() error {
-	if js.bufReal.Len() > 0 {
-		js.flush()
-		js.flushWithExporters() //nolint
-		return nil
-	}
-	go func() {
-		t := time.NewTimer(maxWaitExporterTime)
-		defer t.Stop()
-		<-t.C
-		js.cancelFunc()
-		if js.logExporters != nil && len(js.logExporters) != 0 {
-			for _, exporter := range js.logExporters {
-				exporter.Shutdown(js.ctx) //nolint
-			}
-		}
-	}()
-	return nil
+	return returnErr
 }
 
 func (js *JsonEncoder) write(f field.Field) error {

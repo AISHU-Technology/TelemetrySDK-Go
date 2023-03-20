@@ -93,7 +93,7 @@ func HTTPExample() {
 	stdoutExporter := exporter.GetStdoutExporter()
 
 	// 1.初始化系统日志器，系统日志在控制台输出，同时上报到AnyRobot。
-	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
+	systemLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://10.4.130.68/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	systemLogExporter := ar_log.NewExporter(systemLogClient)
 	systemLogWriter := open_standard.NewOpenTelemetry(
@@ -108,19 +108,16 @@ func HTTPExample() {
 	SystemLogger.SetRuntime(systemLogRunner)
 
 	// 2.初始化业务日志器，业务日志仅上报到AnyRobot，上报地址不同。
-	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
+	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://10.4.130.68/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	serviceLogExporter := ar_log.NewExporter(serviceLogClient)
 	serviceLogWriter := open_standard.NewOpenTelemetry(
 		encoder.NewJsonEncoderWithExporters(serviceLogExporter),
 		resource.LogResource())
-	serviceLogRunner := runtime.NewRuntime(serviceLogWriter, field.NewSpanFromPool)
-	serviceLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行ServiceLogger日志器。
-	go serviceLogRunner.Run()
 	defer ServiceLogger.Close()
 	ServiceLogger.SetLevel(spanLog.AllLevel)
-	ServiceLogger.SetRuntime(serviceLogRunner)
+	ServiceLogger.SetWriter(serviceLogWriter)
 
 	// 3.运行业务代码
 	ctx := context.Background()
@@ -151,13 +148,10 @@ func StdoutExporterExample() {
 	serviceLogWriter := open_standard.NewOpenTelemetry(
 		encoder.NewJsonEncoderWithExporters(serviceLogExporter),
 		resource.LogResource())
-	serviceLogRunner := runtime.NewRuntime(serviceLogWriter, field.NewSpanFromPool)
-	serviceLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行ServiceLogger日志器。
-	go serviceLogRunner.Run()
 	defer ServiceLogger.Close()
 	ServiceLogger.SetLevel(spanLog.AllLevel)
-	ServiceLogger.SetRuntime(serviceLogRunner)
+	ServiceLogger.SetWriter(serviceLogWriter)
 
 	// 3.运行业务代码
 	ctx := context.Background()

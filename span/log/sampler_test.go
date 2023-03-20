@@ -159,7 +159,7 @@ func TestSamplerLoggerClose(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	l := NewDefaultSamplerLogger()
 	enc := encoder.NewJsonEncoder(buf)
-	ot := open_standard.NewOpenTelemetry(enc, nil)
+	ot := open_standard.OpenTelemetryWriter(enc, nil)
 	run := runtime.NewRuntime(ot, field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()

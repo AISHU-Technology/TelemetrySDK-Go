@@ -9,6 +9,13 @@ import (
 
 const rootSpan = iota
 
+// SyncWriter_ 同步模式专用，同步上报数据且由返回值error判断是否发送成功。
+type SyncWriter_ interface {
+	Write([]field.LogSpan) error
+	Close() error
+	sync()
+}
+
 // Writer 从自定义的runtime中获取并发送日志的写入器抽象类。
 type Writer interface {
 	// Write 写日志。
@@ -25,49 +32,49 @@ type OpenTelemetry struct {
 	Resource field.Field
 }
 
-// NewOpenTelemetry 对外暴露的由客户调用的初始化OpenTelemetry规范的日志写入器的方法。
-func NewOpenTelemetry(enc encoder.Encoder, resources field.Field) *OpenTelemetry {
-	open := &OpenTelemetry{
+// OpenTelemetryWriter 对外暴露的由客户调用的初始化OpenTelemetry规范的日志写入器的方法。
+func OpenTelemetryWriter(enc encoder.Encoder, resources field.Field) Writer {
+	writer := &OpenTelemetry{
 		Encoder:  enc,
 		Resource: resources,
 	}
-	return open
+	return writer
+}
+
+// SyncWriter SyncLogger专用的初始化OpenTelemetry规范的日志写入器的方法。
+func SyncWriter(enc encoder.SyncEncoder, resources field.Field) SyncWriter_ {
+	writer := &OpenTelemetry{
+		Encoder:  enc,
+		Resource: resources,
+	}
+	return writer
 }
 
 func (o *OpenTelemetry) Write(t []field.LogSpan) error {
-	return o.write(t)
+	return o.write(t, rootSpan)
 }
 
 func (o *OpenTelemetry) Close() error {
 	return o.Encoder.Close()
 }
 
-func (o *OpenTelemetry) write(logSpans []field.LogSpan) error {
-	var err error
+func (o *OpenTelemetry) sync() {}
+
+func (o *OpenTelemetry) write(logSpans []field.LogSpan, flag int) error {
 	telemetrys := field.MallocArrayField(len(logSpans) + 1)
 	for _, t := range logSpans {
 		telemetry := field.MallocStructField(8)
-
 		link := field.MallocStructField(2)
 		link.Set("TraceId", field.StringField(t.TraceID()))
 		link.Set("SpanId", field.StringField(t.SpanID()))
-
 		telemetry.Set("Link", link)
 		telemetry.Set("Timestamp", field.StringField(time.Now().Format(time.RFC3339Nano)))
 		telemetry.Set("SeverityText", t.GetLogLevel())
-
 		telemetry.Set("Body", t.GetRecord())
 		attrs := t.GetAttributes()
-
 		telemetry.Set("Attributes", attrs)
 		telemetry.Set("Resource", o.Resource)
 		telemetrys.Append(telemetry)
 	}
-
-	err = o.Encoder.Write(telemetrys)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return o.Encoder.Write(telemetrys)
 }

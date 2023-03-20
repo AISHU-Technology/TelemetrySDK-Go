@@ -2,14 +2,11 @@ package open_standard
 
 import (
 	"bytes"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/encoder"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 	"encoding/json"
 	"fmt"
 	"testing"
-
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/encoder"
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func setTestSpance(s field.LogSpan) {
@@ -29,10 +26,7 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	b := bytes.NewBuffer(nil)
 
 	enc := encoder.NewJsonEncoder(b)
-	open := OpenTelemetry{
-		Encoder:  enc,
-		Resource: nil,
-	}
+	open := OpenTelemetryWriter(enc, nil)
 
 	defer open.Close()
 
@@ -70,55 +64,4 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	}
 
 	fmt.Print(b.String())
-}
-
-func TestOpenTelemetrySetDefaultResources(t *testing.T) {
-	b := bytes.NewBuffer(nil)
-	enc := encoder.NewJsonEncoder(b)
-	open := NewOpenTelemetry(enc, nil)
-	defaultResource := make(map[string]interface{})
-	service := make(map[string]interface{})
-	service["name"] = serviceName
-	service["version"] = serviceVersion
-	service["instance"] = map[string]string{"id": serviceInstance}
-	defaultResource["service"] = service
-	// o.Resource = field.MapField(defaultResource)
-	// os.Setenv("HOSTNAME", "test")
-	// f := field.MallocStructField(10)
-	// f.Set("HOSTNAME", field.StringField("test"))
-	// f.Set("Telemetry.SDK.Name", field.StringField(sdkName))
-	// f.Set("Telemetry.SDK.Version", field.StringField(sdkVersion))
-	// f.Set("Telemetry.SDK.Language", field.StringField(sdkLanguage))
-
-	open.SetDefaultResources()
-	assert.Equal(t, open.Resource, field.MapField(defaultResource))
-}
-
-func TestOpenTelemetrySetDefaultResourcesWithServiceInfo(t *testing.T) {
-	b := bytes.NewBuffer(nil)
-	enc := encoder.NewJsonEncoder(b)
-	open := NewOpenTelemetry(enc, nil)
-	defaultResource := make(map[string]interface{})
-	service := make(map[string]interface{})
-	service["name"] = "testServiceName"
-	service["version"] = "testServiceVersion"
-	service["instance"] = map[string]string{"id": "testServiceInstanceID"}
-	defaultResource["service"] = service
-	open.SetResourcesWithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID")
-	assert.Equal(t, open.Resource, field.MapField(defaultResource))
-}
-
-func TestDealResource(t *testing.T) {
-	b := bytes.NewBuffer(nil)
-	enc := encoder.NewJsonEncoder(b)
-	open := NewOpenTelemetry(enc, field.IntField(1))
-	open.dealResource()
-	defaultResource := getDefaultResource()
-	service := make(map[string]interface{})
-	service["name"] = serviceName
-	service["version"] = serviceVersion
-	service["instance"] = map[string]string{"id": serviceInstance}
-	defaultResource["service"] = service
-	defaultResource["customer"] = field.IntField(1)
-	assert.Equal(t, open.Resource, field.MapField(defaultResource))
 }
