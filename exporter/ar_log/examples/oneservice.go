@@ -101,7 +101,7 @@ func HTTPExample() {
 	systemLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行SystemLogger日志器。
 	go systemLogRunner.Run()
-	defer SystemLogger.Close()
+	//defer SystemLogger.Close()
 	SystemLogger.SetLevel(spanLog.InfoLevel)
 	SystemLogger.SetRuntime(systemLogRunner)
 
@@ -113,7 +113,7 @@ func HTTPExample() {
 		encoder.NewSyncEncoder(serviceLogExporter),
 		resource.LogResource())
 	// 运行ServiceLogger日志器。
-	defer ServiceLogger.Close()
+	//defer ServiceLogger.Close()
 	ServiceLogger.SetLevel(spanLog.AllLevel)
 	ServiceLogger.SetWriter(serviceLogWriter)
 
@@ -136,7 +136,7 @@ func StdoutExporterExample() {
 	systemLogRunner.SetUploadInternalAndMaxLog(3*time.Second, 10)
 	// 运行SystemLogger日志器。
 	go systemLogRunner.Run()
-	defer SystemLogger.Close()
+	//defer SystemLogger.Close()
 	SystemLogger.SetLevel(spanLog.InfoLevel)
 	SystemLogger.SetRuntime(systemLogRunner)
 
@@ -146,7 +146,7 @@ func StdoutExporterExample() {
 		encoder.NewSyncEncoder(serviceLogExporter),
 		resource.LogResource())
 	// 运行ServiceLogger日志器。
-	defer ServiceLogger.Close()
+	//defer ServiceLogger.Close()
 	ServiceLogger.SetLevel(spanLog.AllLevel)
 	ServiceLogger.SetWriter(serviceLogWriter)
 
