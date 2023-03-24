@@ -545,7 +545,7 @@ stages:
 
                 APP_NAME="TelemetrySDK-Span-Go"
                 INCLUSION_DIR=""
-                EXCLUSION_DIR="**/errors/**,**/*_test.go,**/examples/**"
+                EXCLUSION_DIR="**/errors/**,**/*_test.go,**/examples/**,**/benchmarks/**"
                 GLOBAL_EXCLUSION_DIR="**/report/**"
 
                 docker run --rm \
