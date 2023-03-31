@@ -188,17 +188,25 @@ func FloatDataPoints(dps []metricdata.DataPoint[float64]) []*DataPoint {
 
 // SingleHistogramDataPoint 单条 metricdata.HistogramDataPoint 转换为 *HistogramDataPoint 。
 func SingleHistogramDataPoint(hdp metricdata.HistogramDataPoint) *HistogramDataPoint {
-	return &HistogramDataPoint{
+	var min float64
+	var max float64
+	var isDefined bool
+	res := HistogramDataPoint{
 		Attributes:   AnyRobotAttributesFromSet(hdp.Attributes),
 		StartTime:    hdp.StartTime,
 		Time:         hdp.Time,
 		Count:        hdp.Count,
 		Bounds:       hdp.Bounds,
 		BucketCounts: hdp.BucketCounts,
-		Min:          hdp.Min,
-		Max:          hdp.Max,
 		Sum:          hdp.Sum,
 	}
+	if min, isDefined = hdp.Min.Value(); isDefined {
+		res.Min = &min
+	}
+	if max, isDefined = hdp.Max.Value(); isDefined {
+		res.Max = &max
+	}
+	return &res
 }
 
 // HistogramDataPoints 批量 []metricdata.HistogramDataPoint 转换为 []*HistogramDataPoint 。
