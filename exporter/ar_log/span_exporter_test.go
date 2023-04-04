@@ -1,4 +1,4 @@
-package ar_span
+package ar_log
 
 import (
 	"context"

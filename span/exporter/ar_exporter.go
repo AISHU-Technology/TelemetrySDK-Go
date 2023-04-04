@@ -6,14 +6,14 @@ import (
 	"sync"
 )
 
-// exporter 导出数据到AnyRobot Feed Ingester的 Event 数据接收器。
+// exporter 导出数据到AnyRobot Feed Ingester的 Log 数据接收器。
 type exporter struct {
 	name     string
 	stopCh   chan struct{}
 	stopOnce sync.Once
 }
 
-// GetStdoutExporter 获取默认的 EventExporter 。
+// GetStdoutExporter 获取默认的 LogExporter 。
 func GetStdoutExporter() LogExporter {
 	return &exporter{
 		name:     "StdoutExporter",
@@ -62,4 +62,16 @@ func export(p []byte) error {
 	file := os.Stdout
 	_, err := file.Write(p)
 	return err
+}
+
+func (e *exporter) Sync() {
+	// 仅用于实现接口，无功能。
+}
+
+func SyncStdoutExporter() SyncExporter {
+	return &exporter{
+		name:     "StdoutExporter",
+		stopCh:   make(chan struct{}),
+		stopOnce: sync.Once{},
+	}
 }

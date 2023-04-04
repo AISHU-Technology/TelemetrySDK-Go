@@ -93,7 +93,7 @@ func StdoutExample() {
 			log.Println(err)
 		}
 	}()
-	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.MetricInstrumentationVersion))
+	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.TelemetrySDKVersion))
 
 	ctx, num := add(ctx, 2, 8)
 	ctx, num = multiply(ctx, num, 7)
@@ -116,7 +116,7 @@ func HTTPExample() {
 			log.Println(err)
 		}
 	}()
-	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.MetricInstrumentationVersion))
+	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.TelemetrySDKVersion))
 
 	ctx, num := add(ctx, 2, 8)
 	ctx, num = multiply(ctx, num, 7)

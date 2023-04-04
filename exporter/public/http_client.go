@@ -124,6 +124,11 @@ func (c *HttpClient) newRequest(body []byte) (arRequest, error) {
 	// 设置来源记录。
 	r.Header.Set("Service-Language", "Golang")
 
+	// 判断是否使用同步模式。
+	if c.cfg.IsSync {
+		r.Header.Set("sync-mode", "sync")
+	}
+
 	req := arRequest{Request: r}
 	// 是否使用压缩。
 	switch c.cfg.Compression {
@@ -189,6 +194,11 @@ func (c *HttpClient) getScheme() string {
 	return "https"
 }
 
+// Sync 设置为同步模式。
+func (c *HttpClient) Sync() {
+	// 在初始化的地方修改了 NewSyncHTTPClient()。
+}
+
 // arRequest 包了一层可重置的body reader。
 type arRequest struct {
 	*http.Request
@@ -240,6 +250,24 @@ var ourTransport = &http.Transport{
 // NewHTTPClient 创建Exporter的HTTP客户端。
 func NewHTTPClient(opts ...config.Option) Client {
 	cfg := config.NewConfig(opts...)
+
+	client := &http.Client{
+		Transport: ourTransport,
+		Timeout:   cfg.HTTPConfig.Timeout,
+	}
+
+	return &HttpClient{
+		cfg:       cfg.HTTPConfig,
+		retryFunc: cfg.RetryConfig.RetryFunc(),
+		stopCh:    make(chan struct{}),
+		client:    client,
+	}
+}
+
+// NewSyncHTTPClient 创建Exporter的HTTP客户端。
+func NewSyncHTTPClient(opts ...config.Option) SyncClient {
+	cfg := config.NewConfig(opts...)
+	cfg.HTTPConfig.IsSync = true
 
 	client := &http.Client{
 		Transport: ourTransport,

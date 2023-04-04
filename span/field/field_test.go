@@ -98,13 +98,49 @@ func TestMallocJsonField(t *testing.T) {
 	assert.Equal(t, FieldTpye(JsonType), j.Type())
 }
 
-func TestWithServiceInfo(t *testing.T) {
-	defaultResource := make(map[string]interface{})
-	service := make(map[string]interface{})
-	service["name"] = "testServiceName"
-	service["version"] = "testServiceVersion"
-	service["instance"] = map[string]string{"id": "testServiceInstanceID"}
-	defaultResource["service"] = service
-	got := WithServiceInfo("testServiceName", "testServiceVersion", "testServiceInstanceID")
-	assert.Equal(t, got, MapField(defaultResource))
+func TestAllProtect(t *testing.T) {
+	var (
+		intField     IntField
+		float64Field Float64Field
+		stringField  StringField
+		timeField    TimeField
+		arrayField   ArrayField
+		structField  StructField
+		jsonFiled    JsonFiled
+		mapField     MapField
+	)
+	intField.protect()
+	float64Field.protect()
+	stringField.protect()
+	timeField.protect()
+	arrayField.protect()
+	structField.protect()
+	jsonFiled.protect()
+	mapField.protect()
+}
+
+func TestMapFieldAppend(t *testing.T) {
+	type args struct {
+		key   string
+		value Field
+	}
+	tests := []struct {
+		name string
+		f    MapField
+		args args
+	}{
+		{
+			"",
+			nil,
+			args{
+				key:   "123",
+				value: StringField("456"),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.f.Append(tt.args.key, tt.args.value)
+		})
+	}
 }

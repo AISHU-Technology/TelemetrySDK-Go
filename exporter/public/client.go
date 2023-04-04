@@ -13,3 +13,9 @@ type Client interface {
 	// UploadData 用来发送任意数据，可能会并发调用。
 	UploadData(ctx context.Context, data []byte) error
 }
+
+type SyncClient interface {
+	Client
+	// Sync 修改发送方式为同步发送。
+	Sync()
+}

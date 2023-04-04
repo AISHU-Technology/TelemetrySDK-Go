@@ -41,6 +41,13 @@ type Encoder interface {
 	Close() error
 }
 
+// SyncEncoder 同步模式专用，只能上报到一个地址。
+type SyncEncoder interface {
+	Encoder
+	sync()
+}
+
+// JsonEncoder JSON编码器。
 type JsonEncoder struct {
 	w            io.Writer
 	logExporters map[string]exporter.LogExporter
@@ -51,6 +58,7 @@ type JsonEncoder struct {
 	cancelFunc   context.CancelFunc
 }
 
+// NewJsonEncoder 创建2.5.0及之前的版本的JSON编码器。
 func NewJsonEncoder(w io.Writer) Encoder {
 	ctx, cancel := context.WithCancel(context.Background())
 	res := &JsonEncoder{
@@ -65,6 +73,22 @@ func NewJsonEncoder(w io.Writer) Encoder {
 	return res
 }
 
+// NewJsonEncoderBench 创建2.5.0及之前的版本的JSON编码器。
+func NewJsonEncoderBench(w io.Writer) Encoder {
+	ctx, cancel := context.WithCancel(context.Background())
+	res := &JsonEncoder{
+		w:            w,
+		logExporters: nil,
+		End:          _lineFeed,
+		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		buf:          ioutil.Discard,
+		ctx:          ctx,
+		cancelFunc:   cancel,
+	}
+	return res
+}
+
+// NewJsonEncoderWithExporters 创建2.6.0后的异步发送模式JSON编码器。
 func NewJsonEncoderWithExporters(exporters ...exporter.LogExporter) Encoder {
 	ctx, cancel := context.WithCancel(context.Background())
 	eps := make(map[string]exporter.LogExporter)
@@ -83,34 +107,37 @@ func NewJsonEncoderWithExporters(exporters ...exporter.LogExporter) Encoder {
 	return res
 }
 
-func NewJsonEncoderBench(w io.Writer) Encoder {
+// NewSyncEncoder 创建2.6.0后的同步发送模式JSON编码器。
+func NewSyncEncoder(e exporter.SyncExporter) SyncEncoder {
 	ctx, cancel := context.WithCancel(context.Background())
+	eps := make(map[string]exporter.LogExporter, 1)
+	eps[e.Name()] = e
 	res := &JsonEncoder{
-		w:            w,
-		logExporters: nil,
+		w:            nil,
+		logExporters: eps,
 		End:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
-		buf:          ioutil.Discard,
 		ctx:          ctx,
 		cancelFunc:   cancel,
 	}
+	res.buf = res.bufReal
 	return res
 }
 
-// buffer by encoder for output
+// Write 区分本地输出和上报AnyRobot，本地输出仅提取关键信息输出，上报AnyRobot为数组形式，有返回值error判断是否发送成功。
 func (js *JsonEncoder) Write(f field.Field) error {
-	//判断用户是否使用原来的io.Writer实现输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
+	//判断用户是否使用原来2.5.0之前的io.Writer实现输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
 	if js.w != nil {
 		//将数组遍历使用io.Writer单个输出
 		js.dealIoWriter(f)
 		return nil
 	}
-	//判断用户是否使用新增exporter实现输出
+	//判断用户是否使用2.6.0之后的exporter实现输出
 	if js.logExporters != nil && len(js.logExporters) != 0 {
-		//判断用户是否使s用新增的StdoutExporter实现标准输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
+		//判断用户是否使用新增的StdoutExporter实现标准输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
 		stdoutExporter, ok := js.logExporters["StdoutExporter"]
 		if ok {
-			//将数组遍历使用StdoutExporter单个输出
+			//将数组遍历使用StdoutExporter单个输出，并提取关键信息输出。
 			js.dealStdoutExporter(stdoutExporter, f)
 		}
 		//不是StdoutExporter的剩余exporter比如arExporter将输出整个数组，下面将整个数组转为byte
@@ -127,10 +154,34 @@ func (js *JsonEncoder) Write(f field.Field) error {
 		flushWithExportersErr := js.flushWithExporters()
 		if flushWithExportersErr != nil {
 			log.Println(field.GenerateSpecificError(flushWithExportersErr))
+			return flushWithExportersErr
 		}
 	}
 	return nil
 }
+
+// Close 关闭JSON编码器。
+func (js *JsonEncoder) Close() error {
+	if js.bufReal.Len() > 0 {
+		js.flush()
+		js.flushWithExporters() //nolint
+		return nil
+	}
+	go func() {
+		t := time.NewTimer(maxWaitExporterTime)
+		defer t.Stop()
+		<-t.C
+		js.cancelFunc()
+		if js.logExporters != nil && len(js.logExporters) != 0 {
+			for _, exporter := range js.logExporters {
+				exporter.Shutdown(js.ctx) //nolint
+			}
+		}
+	}()
+	return nil
+}
+
+func (js *JsonEncoder) sync() {}
 
 func (js *JsonEncoder) dealIoWriter(f field.Field) {
 	//断言为数组形式
@@ -157,11 +208,13 @@ func (js *JsonEncoder) dealIoWriter(f field.Field) {
 	}
 }
 
-func (js *JsonEncoder) dealStdoutExporter(stdoutExporter exporter.LogExporter, f field.Field) {
+// dealStdoutExporter 处理控制台输出的特殊逻辑，控制台输出要求单条日志按时间顺序输出，并且只展示关键信息。
+func (js *JsonEncoder) dealStdoutExporter(stdoutExporter exporter.LogExporter, logs field.Field) {
 	//断言为数组形式
-	fieldArr, fieldArrOk := f.(*field.ArrayField)
+	fieldArr, fieldArrOk := logs.(*field.ArrayField)
 	if fieldArrOk {
 		for i := 0; i < fieldArr.Length(); i++ {
+			// 取出单个Log。
 			oneField, errArr := fieldArr.At(i)
 			if errArr != nil {
 				log.Println(field.GenerateSpecificError(errArr))
@@ -198,6 +251,7 @@ func (js *JsonEncoder) flush() error {
 }
 
 func (js *JsonEncoder) flushWithExporters() error {
+	var returnErr error = nil
 	if js.logExporters != nil && len(js.logExporters) != 0 {
 		for _, e := range js.logExporters {
 			//过滤掉已经输出的StdoutExporter，其他exporter正常输出
@@ -207,31 +261,12 @@ func (js *JsonEncoder) flushWithExporters() error {
 			if err := e.ExportLogs(js.ctx, js.bufReal.Bytes()); err != nil {
 				// 如果错误则记日志。
 				log.Println(field.GenerateSpecificError(err))
+				returnErr = err
 			}
 		}
 		js.bufReal.Reset()
 	}
-	return nil
-}
-
-func (js *JsonEncoder) Close() error {
-	if js.bufReal.Len() > 0 {
-		js.flush()
-		js.flushWithExporters() //nolint
-		return nil
-	}
-	go func() {
-		t := time.NewTimer(maxWaitExporterTime)
-		defer t.Stop()
-		<-t.C
-		js.cancelFunc()
-		if js.logExporters != nil && len(js.logExporters) != 0 {
-			for _, exporter := range js.logExporters {
-				exporter.Shutdown(js.ctx) //nolint
-			}
-		}
-	}()
-	return nil
+	return returnErr
 }
 
 func (js *JsonEncoder) write(f field.Field) error {
