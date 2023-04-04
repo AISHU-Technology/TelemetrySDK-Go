@@ -34,9 +34,6 @@ type LogSpan interface {
 	SetOption(...LogOptionFunc)
 
 	Free()
-
-	SetCodeAddress(file string, line int)
-	GetCodeAddress() (string, int)
 }
 
 type attribute struct {
@@ -176,13 +173,4 @@ func (l *logSpanV1) SpanID() string {
 		return defaultSpanID
 	}
 	return l.getTraceSpan().SpanContext().SpanID().String()
-}
-
-func (l *logSpanV1) SetCodeAddress(file string, line int) {
-	l.file = file
-	l.line = line
-}
-
-func (l *logSpanV1) GetCodeAddress() (string, int) {
-	return l.file, l.line
 }

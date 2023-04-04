@@ -9,10 +9,9 @@ import (
 
 const rootSpan = iota
 
-// SyncWriter_ 同步模式专用，同步上报数据且由返回值error判断是否发送成功。
-type SyncWriter_ interface {
-	Write([]field.LogSpan) error
-	Close() error
+// SyncWriter 同步模式专用，同步上报数据且由返回值error判断是否发送成功。
+type SyncWriter interface {
+	Writer
 	sync()
 }
 
@@ -41,8 +40,8 @@ func OpenTelemetryWriter(enc encoder.Encoder, resources field.Field) Writer {
 	return writer
 }
 
-// SyncWriter SyncLogger专用的初始化OpenTelemetry规范的日志写入器的方法。
-func SyncWriter(enc encoder.SyncEncoder, resources field.Field) SyncWriter_ {
+// NewSyncWriter SyncLogger专用的初始化OpenTelemetry规范的日志写入器的方法。
+func NewSyncWriter(enc encoder.SyncEncoder, resources field.Field) SyncWriter {
 	writer := &OpenTelemetry{
 		Encoder:  enc,
 		Resource: resources,

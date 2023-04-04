@@ -11,8 +11,6 @@ type LogExporter interface {
 
 // SyncExporter 同步模式专用。
 type SyncExporter interface {
-	Name() string
-	ExportLogs(ctx context.Context, p []byte) error
-	Shutdown(ctx context.Context) error
+	LogExporter
 	Sync()
 }

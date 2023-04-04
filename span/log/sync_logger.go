@@ -11,14 +11,14 @@ import (
 type SyncLogger interface {
 	SetSample(sample float32)
 	SetLevel(level int)
-	SetWriter(writer open_standard.SyncWriter_)
+	SetWriter(writer open_standard.SyncWriter)
 	Close()
-	TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
-	DebugField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
-	InfoField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
-	WarnField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
-	ErrorField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
-	FatalField(message field.Field, type_ string, opts ...field.LogOptionFunc) error
+	TraceField(message field.Field, typ string, opts ...field.LogOptionFunc) error
+	DebugField(message field.Field, typ string, opts ...field.LogOptionFunc) error
+	InfoField(message field.Field, typ string, opts ...field.LogOptionFunc) error
+	WarnField(message field.Field, typ string, opts ...field.LogOptionFunc) error
+	ErrorField(message field.Field, typ string, opts ...field.LogOptionFunc) error
+	FatalField(message field.Field, typ string, opts ...field.LogOptionFunc) error
 	Trace(message string, opts ...field.LogOptionFunc) error
 	Debug(message string, opts ...field.LogOptionFunc) error
 	Info(message string, opts ...field.LogOptionFunc) error
@@ -59,7 +59,7 @@ func (logger *syncLogger) SetSample(sample float32) {
 }
 
 // SetWriter 设置日志器写入器。
-func (logger *syncLogger) SetWriter(writer open_standard.SyncWriter_) {
+func (logger *syncLogger) SetWriter(writer open_standard.SyncWriter) {
 	logger.writer = writer
 }
 
@@ -69,51 +69,51 @@ func (logger *syncLogger) Close() {
 }
 
 // TraceField Trace 级别的日志，记录结构体。
-func (logger *syncLogger) TraceField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
+func (logger *syncLogger) TraceField(message field.Field, typ string, opts ...field.LogOptionFunc) error {
 	if TraceLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
-	return logger.writeLogField(type_, message, TraceLevelString, opts...)
+	return logger.writeLogField(typ, message, TraceLevelString, opts...)
 }
 
 // DebugField Debug 级别的日志，记录结构体。
-func (logger *syncLogger) DebugField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
+func (logger *syncLogger) DebugField(message field.Field, typ string, opts ...field.LogOptionFunc) error {
 	if DebugLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
-	return logger.writeLogField(type_, message, DebugLevelString, opts...)
+	return logger.writeLogField(typ, message, DebugLevelString, opts...)
 }
 
 // InfoField Info 级别的日志，记录结构体。
-func (logger *syncLogger) InfoField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
+func (logger *syncLogger) InfoField(message field.Field, typ string, opts ...field.LogOptionFunc) error {
 	if InfoLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
-	return logger.writeLogField(type_, message, InfoLevelString, opts...)
+	return logger.writeLogField(typ, message, InfoLevelString, opts...)
 }
 
 // WarnField Warn 级别的日志，记录结构体。
-func (logger *syncLogger) WarnField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
+func (logger *syncLogger) WarnField(message field.Field, typ string, opts ...field.LogOptionFunc) error {
 	if WarnLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
-	return logger.writeLogField(type_, message, WarnLevelString, opts...)
+	return logger.writeLogField(typ, message, WarnLevelString, opts...)
 }
 
 // ErrorField Error 级别的日志，记录结构体。
-func (logger *syncLogger) ErrorField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
+func (logger *syncLogger) ErrorField(message field.Field, typ string, opts ...field.LogOptionFunc) error {
 	if ErrorLevel < logger.logLevel || !logger.sampleCheck() {
 		return nil
 	}
-	return logger.writeLogField(type_, message, ErrorLevelString, opts...)
+	return logger.writeLogField(typ, message, ErrorLevelString, opts...)
 }
 
 // FatalField Fatal 级别的日志，记录结构体。
-func (logger *syncLogger) FatalField(message field.Field, type_ string, opts ...field.LogOptionFunc) error {
+func (logger *syncLogger) FatalField(message field.Field, typ string, opts ...field.LogOptionFunc) error {
 	if FatalLevel < logger.logLevel {
 		return nil
 	}
-	return logger.writeLogField(type_, message, FatalLevelString, opts...)
+	return logger.writeLogField(typ, message, FatalLevelString, opts...)
 }
 
 // Trace Trace 级别的日志，记录字符串。

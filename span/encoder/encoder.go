@@ -43,8 +43,7 @@ type Encoder interface {
 
 // SyncEncoder 同步模式专用，只能上报到一个地址。
 type SyncEncoder interface {
-	Write(field.Field) error
-	Close() error
+	Encoder
 	sync()
 }
 
@@ -109,10 +108,10 @@ func NewJsonEncoderWithExporters(exporters ...exporter.LogExporter) Encoder {
 }
 
 // NewSyncEncoder 创建2.6.0后的同步发送模式JSON编码器。
-func NewSyncEncoder(exporter_ exporter.SyncExporter) SyncEncoder {
+func NewSyncEncoder(e exporter.SyncExporter) SyncEncoder {
 	ctx, cancel := context.WithCancel(context.Background())
 	eps := make(map[string]exporter.LogExporter, 1)
-	eps[exporter_.Name()] = exporter_
+	eps[e.Name()] = e
 	res := &JsonEncoder{
 		w:            nil,
 		logExporters: eps,
