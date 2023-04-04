@@ -37,8 +37,8 @@ func (s *syncExporter) ExportLogs(ctx context.Context, logs []byte) error {
 	return s.ExportData(ctx, logs)
 }
 
-// SyncExporter 创建已启动的 LogExporter。
-func SyncExporter(c public.SyncClient) *syncExporter {
+// NewSyncExporter 创建已启动的 LogExporter。
+func NewSyncExporter(c public.SyncClient) *syncExporter {
 	return &syncExporter{
 		public.NewSyncExporter(c),
 	}

@@ -196,7 +196,7 @@ func (c *HttpClient) getScheme() string {
 
 // Sync 设置为同步模式。
 func (c *HttpClient) Sync() {
-	// 在初始化的地方修改了 SyncHTTPClient()。
+	// 在初始化的地方修改了 NewSyncHTTPClient()。
 }
 
 // arRequest 包了一层可重置的body reader。
@@ -264,8 +264,8 @@ func NewHTTPClient(opts ...config.Option) Client {
 	}
 }
 
-// SyncHTTPClient 创建Exporter的HTTP客户端。
-func SyncHTTPClient(opts ...config.Option) SyncClient {
+// NewSyncHTTPClient 创建Exporter的HTTP客户端。
+func NewSyncHTTPClient(opts ...config.Option) SyncClient {
 	cfg := config.NewConfig(opts...)
 	cfg.HTTPConfig.IsSync = true
 
