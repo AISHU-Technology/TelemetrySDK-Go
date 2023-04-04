@@ -1,6 +1,6 @@
 module devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter
 
-go 1.20
+go 1.18
 
 require (
 	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20230112082511-b8a2e3d551c0
