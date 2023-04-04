@@ -106,9 +106,9 @@ func HTTPExample() {
 	SystemLogger.SetRuntime(systemLogRunner)
 
 	// 2.初始化业务日志器，业务日志仅上报到AnyRobot，上报地址不同。
-	serviceLogClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
+	serviceLogClient := public.SyncHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-c9a577c302505576/events"),
 		public.WithCompression(0), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
-	serviceLogExporter := ar_log.NewExporter(serviceLogClient)
+	serviceLogExporter := ar_log.SyncExporter(serviceLogClient)
 	serviceLogWriter := open_standard.SyncWriter(
 		encoder.NewSyncEncoder(serviceLogExporter),
 		resource.LogResource())
@@ -141,7 +141,7 @@ func StdoutExporterExample() {
 	SystemLogger.SetRuntime(systemLogRunner)
 
 	// 2.初始化业务日志器，业务日志仅在控制台输出。
-	serviceLogExporter := exporter.GetStdoutExporter()
+	serviceLogExporter := exporter.SyncStdoutExporter()
 	serviceLogWriter := open_standard.SyncWriter(
 		encoder.NewSyncEncoder(serviceLogExporter),
 		resource.LogResource())

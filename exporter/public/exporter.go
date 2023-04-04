@@ -57,3 +57,18 @@ func NewExporter(client Client) *Exporter {
 		stopOnce: sync.Once{},
 	}
 }
+
+type SyncExporter struct {
+	*Exporter
+}
+
+func (s *SyncExporter) Sync() {
+	// 仅实现接口用，无功能。
+}
+
+// NewSyncExporter 创建已启动的Exporter。
+func NewSyncExporter(client Client) *SyncExporter {
+	return &SyncExporter{
+		NewExporter(client),
+	}
+}

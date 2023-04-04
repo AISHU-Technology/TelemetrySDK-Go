@@ -13,3 +13,14 @@ type Client interface {
 	// UploadData 用来发送任意数据，可能会并发调用。
 	UploadData(ctx context.Context, data []byte) error
 }
+
+type SyncClient interface {
+	// Path 用来获取上报地址。
+	Path() string
+	// Stop 用来关闭连接，它只会被调用一次因此不用担心幂等性问题，但是可能存在并发调用，需要上层 Exporter 通过sync.Once来控制。
+	Stop(ctx context.Context) error
+	// UploadData 用来发送任意数据，可能会并发调用。
+	UploadData(ctx context.Context, data []byte) error
+	// Sync 修改发送方式为同步发送。
+	Sync()
+}

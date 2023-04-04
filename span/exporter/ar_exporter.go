@@ -67,3 +67,11 @@ func export(p []byte) error {
 func (e *exporter) Sync() {
 	// 仅用于实现接口，无功能。
 }
+
+func SyncStdoutExporter() SyncExporter {
+	return &exporter{
+		name:     "StdoutExporter",
+		stopCh:   make(chan struct{}),
+		stopOnce: sync.Once{},
+	}
+}
