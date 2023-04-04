@@ -25,3 +25,9 @@ func NewExporter(c public.Client) *SpanExporter {
 		public.NewExporter(c),
 	}
 }
+
+func SyncExporter(c public.Client) *SpanExporter {
+	return &SpanExporter{
+		public.NewExporter(c),
+	}
+}

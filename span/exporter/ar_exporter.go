@@ -63,3 +63,7 @@ func export(p []byte) error {
 	_, err := file.Write(p)
 	return err
 }
+
+func (e *exporter) Sync() {
+	// 仅用于实现接口，无功能。
+}
