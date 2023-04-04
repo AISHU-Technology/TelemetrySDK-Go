@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20230404081217-cc8b04a8b683
-	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20230404081217-cc8b04a8b683
+	devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20230404081727-cff3c4971085
 	github.com/agiledragon/gomonkey/v2 v2.9.0
 	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/shirou/gopsutil/v3 v3.22.12

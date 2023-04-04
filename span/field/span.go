@@ -57,8 +57,6 @@ type logSpanV1 struct {
 	//traceID    string
 	ctx        context.Context
 	attributes MapField
-	file       string
-	line       int
 }
 
 var Pool = sync.Pool{
