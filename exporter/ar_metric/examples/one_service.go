@@ -18,7 +18,7 @@ const result = "the answer is"
 
 // addBefore 计算两数之和。
 func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x + y
 }
@@ -34,14 +34,14 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	}
 	_ = ar_metric.Meter.RegisterCallback([]instrument.Asynchronous{gauge}, gaugeTest)
 
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x + y
 }
 
 // multiplyBefore 计算两数之积。
 func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x * y
 }
@@ -64,7 +64,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	sum.Add(ctx, 25, attrs...)
 	sum.Add(ctx, 315, attrs...)
 	sum.Add(ctx, 628, attrs...)
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x * y
 }
@@ -83,7 +83,7 @@ func StdoutExample() {
 	ctx := context.Background()
 	metricClient := public.NewStdoutClient("./AnyRobotMetric.txt")
 	metricExporter := ar_metric.NewExporter(metricClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
 	metricProvider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter, sdkmetric.WithInterval(10*time.Second), sdkmetric.WithTimeout(10*time.Second))),
 		sdkmetric.WithResource(ar_metric.MetricResource()),
@@ -95,6 +95,7 @@ func StdoutExample() {
 	}()
 	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.TelemetrySDKVersion))
 
+	// 业务代码
 	ctx, num := add(ctx, 2, 8)
 	ctx, num = multiply(ctx, num, 7)
 	log.Println(result, num)
@@ -103,10 +104,11 @@ func StdoutExample() {
 // HTTPExample 通过HTTP发送器上报到接收器。
 func HTTPExample() {
 	ctx := context.Background()
-	metricClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1:8800/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/metrics"),
+	// metricClient := public.NewStdoutClient("./AnyRobotMetric.txt")
+	metricClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
 		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	metricExporter := ar_metric.NewExporter(metricClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
 	metricProvider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter, sdkmetric.WithInterval(10*time.Second), sdkmetric.WithTimeout(10*time.Second))),
 		sdkmetric.WithResource(ar_metric.MetricResource()),
@@ -118,6 +120,7 @@ func HTTPExample() {
 	}()
 	ar_metric.Meter = metricProvider.Meter(version.MetricInstrumentationName, metric.WithSchemaURL(version.MetricInstrumentationURL), metric.WithInstrumentationVersion(version.TelemetrySDKVersion))
 
+	// 业务代码
 	ctx, num := add(ctx, 2, 8)
 	ctx, num = multiply(ctx, num, 7)
 	log.Println(result, num)
