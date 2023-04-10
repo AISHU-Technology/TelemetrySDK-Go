@@ -16,7 +16,7 @@ const result = "the answer is"
 
 // addBefore 计算两数之和。
 func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x + y
 }
@@ -29,14 +29,14 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	span.AddEvent("AddEvent", trace.WithAttributes(attribute.KeyValue{Key: "succeeded", Value: attribute.BoolValue(true)}))
 	span.SetStatus(2, "成功计算加法")
 
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x + y
 }
 
 // multiplyBefore 计算两数之积。
 func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x * y
 }
@@ -49,7 +49,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	span.AddEvent("multiplyEvent", trace.WithAttributes(attribute.BoolSlice("key", []bool{true, true}), attribute.String("analyzed", "100ms")))
 	span.SetStatus(2, "成功计算乘积")
 
-	//业务代码
+	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x * y
 }
@@ -68,7 +68,7 @@ func StdoutExample() {
 	ctx := context.Background()
 	traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
 	traceExporter := ar_trace.NewExporter(traceClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 
 	otel.SetTracerProvider(tracerProvider)
@@ -78,6 +78,7 @@ func StdoutExample() {
 		}
 	}()
 
+	// 业务代码
 	ctx, num := multiply(ctx, 2, 3)
 	ctx, num = multiply(ctx, num, 7)
 	ctx, num = add(ctx, num, 8)
@@ -87,9 +88,10 @@ func StdoutExample() {
 // HTTPExample 通过HTTP发送器上报到接收器。
 func HTTPExample() {
 	ctx := context.Background()
-	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://a.b.c.d/api/feed_ingester/v1/jobs/abcd4f634e80d530/events"))
+	// traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
+	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"))
 	traceExporter := ar_trace.NewExporter(traceClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 
@@ -99,6 +101,7 @@ func HTTPExample() {
 		}
 	}()
 
+	// 业务代码
 	ctx, num := multiply(ctx, 2, 3)
 	ctx, num = multiply(ctx, num, 7)
 	ctx, num = add(ctx, num, 8)
@@ -110,11 +113,11 @@ func WithAllExample() {
 	ctx := context.Background()
 	header := make(map[string]string)
 	header["self-defined"] = "some_header"
-	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("https://a.b.c.d/api/feed_ingester/v1/jobs/job-abcd4f634e80d530/events"),
+	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
 		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithHeader(header),
 		public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	traceExporter := ar_trace.NewExporter(traceClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "")
+	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
@@ -123,16 +126,17 @@ func WithAllExample() {
 		}
 	}()
 
+	// 业务代码
 	ctx, num := multiply(ctx, 2, 3)
 	ctx, num = multiply(ctx, num, 7)
-	//调用ForceFlush之后会立即发送之前生产的2次乘法链路。
+	// 调用ForceFlush之后会立即发送之前生产的2次乘法链路。
 	_ = tracerProvider.ForceFlush(ctx)
-	//关闭Trace的发送，这3次加法产生的链路不会发送。
+	// 关闭Trace的发送，这3次加法产生的链路不会发送。
 	tracerProvider.UnregisterSpanProcessor(sdktrace.NewBatchSpanProcessor(traceExporter))
 	ctx, num = add(ctx, num, 8)
 	ctx, num = add(ctx, num, 9)
 	ctx, num = add(ctx, num, 10)
-	//开启Trace的发送，这1次乘法产生的链路会发送。
+	// 开启Trace的发送，这1次乘法产生的链路会发送。
 	tracerProvider.RegisterSpanProcessor(sdktrace.NewBatchSpanProcessor(traceExporter))
 	ctx, num = multiply(ctx, num, 9)
 	log.Println(result, num)
