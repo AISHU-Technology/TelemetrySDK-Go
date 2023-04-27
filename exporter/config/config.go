@@ -8,6 +8,7 @@ import (
 type Config struct {
 	HTTPConfig  *HTTPConfig
 	RetryConfig *RetryConfig
+	KafkaConfig *KafkaConfig
 }
 
 // DefaultConfig 默认的配置项。
@@ -15,6 +16,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		HTTPConfig:  DefaultHTTPConfig(),
 		RetryConfig: DefaultRetryConfig(),
+		KafkaConfig: DefaultKafkaConfig(),
 	}
 }
 
@@ -38,6 +40,15 @@ func DefaultRetryConfig() *RetryConfig {
 		InitialInterval: 5 * time.Second,
 		MaxInterval:     30 * time.Second,
 		MaxElapsedTime:  time.Minute,
+	}
+}
+
+func DefaultKafkaConfig() *KafkaConfig {
+	return &KafkaConfig{
+		Topic:    "pb_topic",
+		User:     "anyrobot",
+		Password: "eisoo.com123",
+		Address:  []string{"127.0.0.1:31000"},
 	}
 }
 
