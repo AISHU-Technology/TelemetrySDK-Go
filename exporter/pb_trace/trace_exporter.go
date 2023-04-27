@@ -6,7 +6,6 @@ import (
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/public"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/resource"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/version"
-	"google.golang.org/protobuf/proto"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -41,16 +40,11 @@ func (e *TraceExporter) ExportSpans(ctx context.Context, traces []sdktrace.ReadO
 		return nil
 	}
 	protoSpans := Spans(traces)
-	for _, protoSpan := range protoSpans {
-		sendBytes, err := proto.Marshal(protoSpan)
-		if err != nil {
-			err=e.ExportData(ctx, sendBytes)
-			if err != nil {
-				return err
-			}
-		}else{
-			return err
-		}
+	traceData := tracepb.TracesData{}
+	traceData.ResourceSpans = protoSpans
+	err := e.ExportData(ctx, []byte(traceData.String()))
+	if err != nil {
+		return err
 	}
 	return nil
 	//return e.ExportData(ctx, file.Bytes())
