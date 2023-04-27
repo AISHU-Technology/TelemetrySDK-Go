@@ -7,6 +7,7 @@ import (
 
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/ar_trace"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/config"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/pb_trace"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/public"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -88,11 +89,11 @@ func StdoutExample() {
 }
 
 // HTTPExample 通过HTTP发送器上报到接收器。
-func HTTPExample() {
+func KafkaExample() {
 	ctx := context.Background()
 	// traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
-	traceClient := public.NewKafkaClient(config.WithTopic("kafka_topic3"), config.WithAddress([]string{"10.4.15.62:31000"}))
-	traceExporter := ar_trace.NewExporter(traceClient)
+	traceClient := public.NewKafkaClient(config.WithTopic("kafka_topic10"), config.WithAddress([]string{"10.4.15.62:31000"}))
+	traceExporter := pb_trace.NewExporter(traceClient)
 	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
 	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
