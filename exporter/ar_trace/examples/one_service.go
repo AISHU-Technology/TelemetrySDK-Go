@@ -69,8 +69,11 @@ func StdoutExample() {
 	traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
 	traceExporter := ar_trace.NewExporter(traceClient)
 	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
-
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			sdktrace.WithBlocking(),
+			sdktrace.WithMaxExportBatchSize(1000)),
+		sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
@@ -92,7 +95,11 @@ func HTTPExample() {
 	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"))
 	traceExporter := ar_trace.NewExporter(traceClient)
 	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			sdktrace.WithBlocking(),
+			sdktrace.WithMaxExportBatchSize(1000)),
+		sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 
 	defer func() {
@@ -118,7 +125,11 @@ func WithAllExample() {
 		public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	traceExporter := ar_trace.NewExporter(traceClient)
 	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			sdktrace.WithBlocking(),
+			sdktrace.WithMaxExportBatchSize(1000)),
+		sdktrace.WithResource(ar_trace.TraceResource()))
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
 		if err := tracerProvider.Shutdown(ctx); err != nil {
