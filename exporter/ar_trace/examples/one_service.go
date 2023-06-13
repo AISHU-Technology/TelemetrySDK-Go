@@ -2,14 +2,17 @@ package examples
 
 import (
 	"context"
+	"log"
+	"time"
+
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/ar_trace"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/exporter/public"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
-	"log"
-	"time"
 )
 
 const result = "the answer is"
@@ -66,10 +69,19 @@ func Example() {
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
 	ctx := context.Background()
-	traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
-	traceExporter := ar_trace.NewExporter(traceClient)
+	//traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
+	attrs := []attribute.KeyValue{
+		attribute.String("job_id", "job-ea0ebc769228f873"),
+	}
+	jobResource := resource.NewWithAttributes("", attrs...)
+	resource.Merge(jobResource, ar_trace.TraceResource())
+	tempResource, err := resource.Merge(jobResource, ar_trace.TraceResource())
+	if err == nil {
+		jobResource = tempResource
+	}
+	traceExporter, _ := otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(), otlptracegrpc.WithEndpoint("127.0.0.1:13034"))
 	public.SetServiceInfo("YourServiceName", "1.0.0", "")
-	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(ar_trace.TraceResource()))
+	tracerProvider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(traceExporter), sdktrace.WithResource(jobResource))
 
 	otel.SetTracerProvider(tracerProvider)
 	defer func() {
