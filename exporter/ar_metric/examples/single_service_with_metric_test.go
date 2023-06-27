@@ -4,6 +4,36 @@ import (
 	"testing"
 )
 
+func TestFileExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"File",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			FileExample()
+		})
+	}
+}
+
+func TestConsoleExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"Console",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ConsoleExample()
+		})
+	}
+}
+
 func TestStdoutExample(t *testing.T) {
 	tests := []struct {
 		name string
@@ -24,7 +54,7 @@ func TestHTTPExample(t *testing.T) {
 		name string
 	}{
 		{
-			"Test发送到AnyRobot Trace数据接收器",
+			"Test发送到AnyRobot Metric数据接收器",
 		},
 	}
 	for _, tt := range tests {
@@ -45,21 +75,6 @@ func TestWithAllExample(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			WithAllExample()
-		})
-	}
-}
-
-func TestExample(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		{
-			"Test原始的业务系统",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			Example()
 		})
 	}
 }

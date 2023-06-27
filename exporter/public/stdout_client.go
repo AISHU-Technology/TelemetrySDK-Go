@@ -40,16 +40,16 @@ func (c *StdoutClient) UploadData(ctx context.Context, data []byte) error {
 
 	}
 	// 控制台输出。
-	file1 := os.Stdout
-	if _, err := file1.Write(data); err != nil {
+	output1 := os.Stdout
+	if _, err := output1.Write(data); err != nil {
 		return err
 	}
 	// 写入本地文件，每次追加。
-	file2, Err := os.OpenFile(c.filepath, os.O_CREATE|os.O_APPEND, 0666)
+	output2, Err := os.OpenFile(c.filepath, os.O_CREATE|os.O_APPEND, 0666)
 	if Err != nil {
 		return Err
 	}
-	if _, err := file2.Write(data); err != nil {
+	if _, err := output2.Write(data); err != nil {
 		return err
 	}
 	return nil

@@ -17,6 +17,9 @@ import (
 // 跨包实现接口占位用。
 var _ sdkmetric.Exporter = (*MetricExporter)(nil)
 
+// MetricProvider 是一个全局变量，用于在业务代码中生产Meter。
+var MetricProvider = (*sdkmetric.MeterProvider)(nil)
+
 // Meter 是一个全局变量，用于在业务代码中生产Metric。
 var Meter = metric.Meter(nil)
 

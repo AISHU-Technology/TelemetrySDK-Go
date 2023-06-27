@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"log"
 	"reflect"
 	"strconv"
@@ -81,7 +80,7 @@ func NewJsonEncoderBench(w io.Writer) Encoder {
 		logExporters: nil,
 		End:          _lineFeed,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
-		buf:          ioutil.Discard,
+		buf:          io.Discard,
 		ctx:          ctx,
 		cancelFunc:   cancel,
 	}
@@ -134,13 +133,13 @@ func (js *JsonEncoder) Write(f field.Field) error {
 	}
 	//判断用户是否使用2.6.0之后的exporter实现输出
 	if js.logExporters != nil && len(js.logExporters) != 0 {
-		//判断用户是否使用新增的StdoutExporter实现标准输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
-		stdoutExporter, ok := js.logExporters["StdoutExporter"]
+		//判断用户是否使用新增的RealTimeExporter实现标准输出，如果是的话由于批量发送，为保证与原来数据模型一致将数组遍历单个输出
+		stdoutExporter, ok := js.logExporters["RealTimeExporter"]
 		if ok {
-			//将数组遍历使用StdoutExporter单个输出，并提取关键信息输出。
-			js.dealStdoutExporter(stdoutExporter, f)
+			//将数组遍历使用RealTimeExporter单个输出，并提取关键信息输出。
+			js.dealRealTimeExporter(stdoutExporter, f)
 		}
-		//不是StdoutExporter的剩余exporter比如arExporter将输出整个数组，下面将整个数组转为byte
+		//不是RealTimeExporter的剩余exporter比如arExporter将输出整个数组，下面将整个数组转为byte
 		err := js.write(f)
 		if err != nil {
 			log.Println(field.GenerateSpecificError(err))
@@ -150,7 +149,7 @@ func (js *JsonEncoder) Write(f field.Field) error {
 		if writeBytesErr != nil {
 			log.Println(field.GenerateSpecificError(writeBytesErr))
 		}
-		//调用不是StdoutExporter的剩余exporter比如arExporter的输出方法将整个数组进行输出
+		//调用不是RealTimeExporter的剩余exporter比如arExporter的输出方法将整个数组进行输出
 		flushWithExportersErr := js.flushWithExporters()
 		if flushWithExportersErr != nil {
 			log.Println(field.GenerateSpecificError(flushWithExportersErr))
@@ -173,8 +172,8 @@ func (js *JsonEncoder) Close() error {
 		<-t.C
 		js.cancelFunc()
 		if js.logExporters != nil && len(js.logExporters) != 0 {
-			for _, exporter := range js.logExporters {
-				exporter.Shutdown(js.ctx) //nolint
+			for _, exporter_ := range js.logExporters {
+				exporter_.Shutdown(js.ctx) //nolint
 			}
 		}
 	}()
@@ -208,8 +207,8 @@ func (js *JsonEncoder) dealIoWriter(f field.Field) {
 	}
 }
 
-// dealStdoutExporter 处理控制台输出的特殊逻辑，控制台输出要求单条日志按时间顺序输出，并且只展示关键信息。
-func (js *JsonEncoder) dealStdoutExporter(stdoutExporter exporter.LogExporter, logs field.Field) {
+// dealRealTimeExporter 处理控制台输出的特殊逻辑，控制台输出要求单条日志按时间顺序输出，并且只展示关键信息。
+func (js *JsonEncoder) dealRealTimeExporter(stdoutExporter exporter.LogExporter, logs field.Field) {
 	//断言为数组形式
 	fieldArr, fieldArrOk := logs.(*field.ArrayField)
 	if fieldArrOk {
@@ -254,8 +253,8 @@ func (js *JsonEncoder) flushWithExporters() error {
 	var returnErr error = nil
 	if js.logExporters != nil && len(js.logExporters) != 0 {
 		for _, e := range js.logExporters {
-			//过滤掉已经输出的StdoutExporter，其他exporter正常输出
-			if e.Name() == "StdoutExporter" {
+			//过滤掉已经输出的RealTimeExporter，其他exporter正常输出
+			if e.Name() == "RealTimeExporter" {
 				continue
 			}
 			if err := e.ExportLogs(js.ctx, js.bufReal.Bytes()); err != nil {
@@ -276,13 +275,13 @@ func (js *JsonEncoder) write(f field.Field) error {
 		return nil
 	case field.IntType:
 		v := strconv.Itoa(int(f.(field.IntField)))
-		bytes := js.string2Bytes(v)
-		_, res := w.WriteBytes(bytes)
+		bytes_ := js.string2Bytes(v)
+		_, res := w.WriteBytes(bytes_)
 		return res
 	case field.Float64Type:
 		v := strconv.FormatFloat(float64(f.(field.Float64Field)), 'f', -1, 64)
-		bytes := js.string2Bytes(v)
-		_, res := w.WriteBytes(bytes)
+		bytes_ := js.string2Bytes(v)
+		_, res := w.WriteBytes(bytes_)
 		return res
 	case field.StringType:
 		v := string(f.(field.StringField))
@@ -292,8 +291,8 @@ func (js *JsonEncoder) write(f field.Field) error {
 		return res
 	case field.TimeType:
 		v := strconv.FormatInt(int64(time.Time(f.(field.TimeField)).UnixNano()), 10)
-		bytes := js.string2Bytes(v)
-		_, res := w.WriteBytes(bytes)
+		bytes_ := js.string2Bytes(v)
+		_, res := w.WriteBytes(bytes_)
 		return res
 	case field.ArrayType:
 		v := f.(*field.ArrayField)
@@ -371,37 +370,37 @@ func (js *JsonEncoder) string2Bytes(s string) []byte {
 func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 	left := 0
 	w := js
-	bytes := js.string2Bytes(s)
+	bytes_ := js.string2Bytes(s)
 	var res error
 	for k, i := range s {
 		switch i {
 		default:
 		case '"':
-			w.WriteBytes(bytes[left:k]) //nolint
+			w.WriteBytes(bytes_[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_quotationSafe) //nolint
 		case '\\':
-			w.WriteBytes(bytes[left:k]) //nolint
+			w.WriteBytes(bytes_[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_reverseSafe) //nolint
 		case '\b':
-			w.WriteBytes(bytes[left:k]) //nolint
+			w.WriteBytes(bytes_[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_backspaceSafe) //nolint
 		case '\f':
-			w.WriteBytes(bytes[left:k]) //nolint
+			w.WriteBytes(bytes_[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_formfeedSafe) //nolint
 		case '\t':
-			w.WriteBytes(bytes[left:k]) //nolint
+			w.WriteBytes(bytes_[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_horizontalSafe) //nolint
 		case '\n':
-			w.WriteBytes(bytes[left:k]) //nolint
+			w.WriteBytes(bytes_[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_lineFeedSafe) //nolint
 		case '\r':
-			w.WriteBytes(bytes[left:k]) //nolint
+			w.WriteBytes(bytes_[left:k]) //nolint
 			left = k + 1
 			_, res = w.WriteBytes(_carriageSafe) //nolint
 		}
@@ -410,8 +409,8 @@ func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 		}
 	}
 
-	if left < len(bytes) {
-		_, res = w.WriteBytes(bytes[left:]) //nolint
+	if left < len(bytes_) {
+		_, res = w.WriteBytes(bytes_[left:]) //nolint
 	}
 	return left, res
 }

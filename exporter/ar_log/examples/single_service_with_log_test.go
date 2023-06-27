@@ -1,18 +1,35 @@
 package examples
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestStdoutExporterExample(t *testing.T) {
+func TestFileExample(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
 		{
-			"StdoutExporterExample",
+			"File",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			StdoutExporterExample()
+			FileExample()
+		})
+	}
+}
+
+func TestConsoleExample(t *testing.T) {
+	tests := []struct {
+		name string
+	}{
+		{
+			"Console",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ConsoleExample()
 		})
 	}
 }
@@ -22,7 +39,7 @@ func TestHTTPExample(t *testing.T) {
 		name string
 	}{
 		{
-			"HTTPExample",
+			"Test发送到AnyRobot Log数据接收器",
 		},
 	}
 	for _, tt := range tests {
@@ -32,17 +49,17 @@ func TestHTTPExample(t *testing.T) {
 	}
 }
 
-func TestExample(t *testing.T) {
+func TestWithAllExample(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
 		{
-			"",
+			"Test调用全部接口的示例",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Example()
+			WithAllExample()
 		})
 	}
 }

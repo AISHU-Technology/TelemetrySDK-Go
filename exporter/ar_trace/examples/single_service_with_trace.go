@@ -14,13 +14,6 @@ import (
 
 const result = "the answer is"
 
-// addBefore 计算两数之和。
-func addBefore(ctx context.Context, x, y int64) (context.Context, int64) {
-	// 业务代码
-	time.Sleep(100 * time.Millisecond)
-	return ctx, x + y
-}
-
 // add 增加了Trace埋点的计算两数之和。
 func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	ctx, span := ar_trace.Tracer.Start(ctx, "加法", trace.WithSpanKind(1))
@@ -32,13 +25,6 @@ func add(ctx context.Context, x, y int64) (context.Context, int64) {
 	// 业务代码
 	time.Sleep(100 * time.Millisecond)
 	return ctx, x + y
-}
-
-// multiplyBefore 计算两数之积。
-func multiplyBefore(ctx context.Context, x, y int64) (context.Context, int64) {
-	// 业务代码
-	time.Sleep(100 * time.Millisecond)
-	return ctx, x * y
 }
 
 // multiply 增加了Trace埋点的计算两数之积。
@@ -54,77 +40,119 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 	return ctx, x * y
 }
 
-// Example 原始的业务系统入口
-func Example() {
+func FileTraceInit() {
+	public.SetServiceInfo("YourServiceName", "2.6.1", "983d7e1d5e8cda64")
+	traceClient := public.NewFileClient("./AnyRobotTrace.json")
+	traceExporter := ar_trace.NewExporter(traceClient)
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			sdktrace.WithBlocking(),
+			sdktrace.WithMaxExportBatchSize(1000)),
+		sdktrace.WithResource(ar_trace.TraceResource()))
+	otel.SetTracerProvider(tracerProvider)
+}
+
+func ConsoleTraceInit() {
+	public.SetServiceInfo("YourServiceName", "2.6.1", "983d7e1d5e8cda64")
+	traceClient := public.NewConsoleClient()
+	traceExporter := ar_trace.NewExporter(traceClient)
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			sdktrace.WithBlocking(),
+			sdktrace.WithMaxExportBatchSize(1000)),
+		sdktrace.WithResource(ar_trace.TraceResource()))
+	otel.SetTracerProvider(tracerProvider)
+}
+
+func StdoutTraceInit() {
+	public.SetServiceInfo("YourServiceName", "2.6.1", "983d7e1d5e8cda64")
+	traceClient := public.NewStdoutClient("./AnyRobotTrace.json")
+	traceExporter := ar_trace.NewExporter(traceClient)
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			sdktrace.WithBlocking(),
+			sdktrace.WithMaxExportBatchSize(1000)),
+		sdktrace.WithResource(ar_trace.TraceResource()))
+	otel.SetTracerProvider(tracerProvider)
+}
+
+func HTTPTraceInit() {
+	public.SetServiceInfo("YourServiceName", "2.6.1", "983d7e1d5e8cda64")
+	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-864ab9d78f6a1843/events"))
+	traceExporter := ar_trace.NewExporter(traceClient)
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter,
+			sdktrace.WithBlocking(),
+			sdktrace.WithMaxExportBatchSize(1000)),
+		sdktrace.WithResource(ar_trace.TraceResource()))
+	otel.SetTracerProvider(tracerProvider)
+}
+
+func TraceProviderExit(ctx context.Context) {
+	tracerProvider := otel.GetTracerProvider().(*sdktrace.TracerProvider)
+	if err := tracerProvider.Shutdown(ctx); err != nil {
+		log.Println(err)
+	}
+}
+
+// FileExample 输出到本地文件。
+func FileExample() {
+	FileTraceInit()
 	ctx := context.Background()
-	ctx, num := multiplyBefore(ctx, 2, 3)
-	ctx, num = multiplyBefore(ctx, num, 7)
-	ctx, num = addBefore(ctx, num, 8)
+	// 业务代码
+	ctx, num := multiply(ctx, 2, 3)
+	ctx, num = multiply(ctx, num, 7)
+	ctx, num = add(ctx, num, 8)
+	TraceProviderExit(ctx)
+	log.Println(result, num)
+}
+
+// ConsoleExample 输出到控制台。
+func ConsoleExample() {
+	ConsoleTraceInit()
+	ctx := context.Background()
+	// 业务代码
+	ctx, num := multiply(ctx, 2, 3)
+	ctx, num = multiply(ctx, num, 7)
+	ctx, num = add(ctx, num, 8)
+	TraceProviderExit(ctx)
 	log.Println(result, num)
 }
 
 // StdoutExample 输出到控制台和本地文件。
 func StdoutExample() {
+	StdoutTraceInit()
 	ctx := context.Background()
-	traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
-	traceExporter := ar_trace.NewExporter(traceClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
-	tracerProvider := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(traceExporter,
-			sdktrace.WithBlocking(),
-			sdktrace.WithMaxExportBatchSize(1000)),
-		sdktrace.WithResource(ar_trace.TraceResource()))
-	otel.SetTracerProvider(tracerProvider)
-	defer func() {
-		if err := tracerProvider.Shutdown(ctx); err != nil {
-			log.Println(err)
-		}
-	}()
-
 	// 业务代码
 	ctx, num := multiply(ctx, 2, 3)
 	ctx, num = multiply(ctx, num, 7)
 	ctx, num = add(ctx, num, 8)
+	TraceProviderExit(ctx)
 	log.Println(result, num)
 }
 
 // HTTPExample 通过HTTP发送器上报到接收器。
 func HTTPExample() {
+	HTTPTraceInit()
 	ctx := context.Background()
-	// traceClient := public.NewStdoutClient("./AnyRobotTrace.txt")
-	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"))
-	traceExporter := ar_trace.NewExporter(traceClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
-	tracerProvider := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(traceExporter,
-			sdktrace.WithBlocking(),
-			sdktrace.WithMaxExportBatchSize(1000)),
-		sdktrace.WithResource(ar_trace.TraceResource()))
-	otel.SetTracerProvider(tracerProvider)
-
-	defer func() {
-		if err := tracerProvider.Shutdown(ctx); err != nil {
-			log.Println(err)
-		}
-	}()
-
 	// 业务代码
 	ctx, num := multiply(ctx, 2, 3)
 	ctx, num = multiply(ctx, num, 7)
 	ctx, num = add(ctx, num, 8)
+	TraceProviderExit(ctx)
 	log.Println(result, num)
 }
 
 // WithAllExample 修改client所有入参。
 func WithAllExample() {
+	public.SetServiceInfo("YourServiceName", "2.6.1", "983d7e1d5e8cda64")
 	ctx := context.Background()
 	header := make(map[string]string)
 	header["self-defined"] = "some_header"
-	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),
+	traceClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-864ab9d78f6a1843/events"),
 		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithHeader(header),
 		public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	traceExporter := ar_trace.NewExporter(traceClient)
-	public.SetServiceInfo("YourServiceName", "1.0.0", "983d7e1d5e8cda64")
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(traceExporter,
 			sdktrace.WithBlocking(),
