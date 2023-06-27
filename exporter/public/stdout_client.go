@@ -44,8 +44,8 @@ func (c *StdoutClient) UploadData(ctx context.Context, data []byte) error {
 	if _, err := file1.Write(data); err != nil {
 		return err
 	}
-	// 写入本地文件，每次覆盖。
-	file2, Err := os.Create(c.filepath)
+	// 写入本地文件，每次追加。
+	file2, Err := os.OpenFile(c.filepath, os.O_CREATE|os.O_APPEND, 0666)
 	if Err != nil {
 		return Err
 	}
@@ -58,7 +58,7 @@ func (c *StdoutClient) UploadData(ctx context.Context, data []byte) error {
 // NewStdoutClient 创建Exporter的Local客户端。
 func NewStdoutClient(stdoutPath string) Client {
 	if strings.TrimSpace(stdoutPath) == "" {
-		return &StdoutClient{filepath: "./AnyRobotData.txt", stopCh: make(chan struct{})}
+		return &StdoutClient{filepath: "./AnyRobotData.json", stopCh: make(chan struct{})}
 	}
 	return &StdoutClient{filepath: stdoutPath, stopCh: make(chan struct{})}
 }

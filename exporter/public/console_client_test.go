@@ -2,43 +2,30 @@ package public
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 	"testing"
-
-	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event/eventsdk"
 )
 
-func TestNewStdoutClient(t *testing.T) {
-	type args struct {
-		stdoutPath string
-	}
+func TestNewConsoleClient(t *testing.T) {
 	tests := []struct {
 		name string
-		args args
 		want Client
 	}{
 		{
-			"创建未指定输出文件名的StdoutClient",
-			args{stdoutPath: ""},
-			NewStdoutClient(""),
-		},
-		{
-			"创建指定输出文件名的StdoutClient",
-			args{stdoutPath: "./simple.rst"},
-			NewStdoutClient("./simple.rst"),
+			"创建ConsoleClient",
+			NewConsoleClient(),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewStdoutClient(tt.args.stdoutPath); !reflect.DeepEqual(got.Path(), tt.want.Path()) {
-				t.Errorf("NewStdoutClient() = %v, want %v", got, tt.want)
+			if got := NewConsoleClient(); !reflect.DeepEqual(got.Path(), tt.want.Path()) {
+				t.Errorf("NewConsoleClient() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestStdoutClientPath(t *testing.T) {
+func TestConsoleClientPath(t *testing.T) {
 	type fields struct {
 		filepath string
 		stopCh   chan struct{}
@@ -51,15 +38,15 @@ func TestStdoutClientPath(t *testing.T) {
 		{
 			"获取上报地址",
 			fields{
-				filepath: "/path",
+				filepath: "CONSOLE",
 				stopCh:   nil,
 			},
-			"/path",
+			"CONSOLE",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &StdoutClient{
+			d := &ConsoleClient{
 				filepath: tt.fields.filepath,
 				stopCh:   tt.fields.stopCh,
 			}
@@ -70,7 +57,7 @@ func TestStdoutClientPath(t *testing.T) {
 	}
 }
 
-func TestStdoutClientStop(t *testing.T) {
+func TestConsoleClientStop(t *testing.T) {
 	type fields struct {
 		filepath string
 		stopCh   chan struct{}
@@ -85,7 +72,7 @@ func TestStdoutClientStop(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"关闭运行中的StdoutClient",
+			"关闭运行中的ConsoleClient",
 			fields{
 				filepath: "",
 				stopCh:   make(chan struct{}),
@@ -94,7 +81,7 @@ func TestStdoutClientStop(t *testing.T) {
 			false,
 		},
 		{
-			"重复关闭StdoutClient",
+			"重复关闭ConsoleClient",
 			fields{
 				filepath: "",
 				stopCh:   make(chan struct{}),
@@ -105,7 +92,7 @@ func TestStdoutClientStop(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &StdoutClient{
+			d := &ConsoleClient{
 				filepath: tt.fields.filepath,
 				stopCh:   tt.fields.stopCh,
 			}
@@ -116,12 +103,7 @@ func TestStdoutClientStop(t *testing.T) {
 	}
 }
 
-func byteData() []byte {
-	data, _ := json.Marshal(eventsdk.NewEvent())
-	return data
-}
-
-func TestStdoutClientUploadData(t *testing.T) {
+func TestConsoleClientUploadData(t *testing.T) {
 	type fields struct {
 		filepath string
 		stopCh   chan struct{}
@@ -137,9 +119,9 @@ func TestStdoutClientUploadData(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"StdoutClient数据写本地",
+			"ConsoleClient数据写控制台",
 			fields{
-				filepath: "./AnyRobotData.json",
+				filepath: "CONSOLE",
 				stopCh:   make(chan struct{}),
 			},
 			args{
@@ -149,7 +131,7 @@ func TestStdoutClientUploadData(t *testing.T) {
 			false,
 		},
 		{
-			"已关闭的StdoutClient写不了数据",
+			"已关闭的ConsoleClient写不了数据",
 			fields{
 				filepath: "",
 				stopCh:   make(chan struct{}),
@@ -163,7 +145,7 @@ func TestStdoutClientUploadData(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d := &StdoutClient{
+			d := &ConsoleClient{
 				filepath: tt.fields.filepath,
 				stopCh:   tt.fields.stopCh,
 			}
