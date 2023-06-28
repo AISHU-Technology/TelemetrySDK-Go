@@ -11,7 +11,6 @@ require (
 	go.opentelemetry.io/otel/trace v1.11.2
 	go.uber.org/multierr v1.6.0
 	go.uber.org/zap v1.16.0
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	gopkg.in/inconshreveable/log15.v2 v2.0.0-20200109203555-b30bc20e4fd1
 )
 
