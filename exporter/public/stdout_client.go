@@ -45,7 +45,7 @@ func (c *StdoutClient) UploadData(ctx context.Context, data []byte) error {
 		return err
 	}
 	// 写入本地文件，每次追加。
-	output2, Err := os.OpenFile(c.filepath, os.O_CREATE|os.O_APPEND, 0666)
+	output2, Err := os.OpenFile(c.filepath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
 	if Err != nil {
 		return Err
 	}
