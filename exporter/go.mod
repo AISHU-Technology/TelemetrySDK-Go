@@ -9,7 +9,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/shirou/gopsutil/v3 v3.22.12
 	github.com/smartystreets/goconvey v1.6.4
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.3
 	go.opentelemetry.io/otel v1.11.2
 	go.opentelemetry.io/otel/metric v0.34.0
 	go.opentelemetry.io/otel/sdk v1.11.2
@@ -19,7 +19,8 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/felixge/httpsnoop v1.0.3 // indirect
+	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
@@ -32,6 +33,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.37.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
