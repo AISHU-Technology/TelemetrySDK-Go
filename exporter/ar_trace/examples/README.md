@@ -21,17 +21,17 @@ single_service.go单独文件
 
 ## 调用关系
 
-multi_service_a.go->multi_service_b.go->multi_service_c.go
+multi_service_a_http.go->multi_service_b_http.go->multi_service_c_mysql.go
 
-## multi_service_a.go
+## multi_service_a_http.go | multi_service_d_gin.go
 
 原始的包含查询省份+城市的地址信息的函数。
 
-## multi_service_b.go
+## multi_service_b_http.go | multi_service_e_gin.go
 
 使用了http框架的服务，运行在本地。分别提供查询省份接口和查询城市接口。
 
-## multi_service_c.go
+## multi_service_c_mysql.go
 
 数据库查询服务，传入省份id或城市id，返回结果。需要连接本地数据库并填充简单示例。
 
@@ -42,23 +42,25 @@ multi_service_a.go->multi_service_b.go->multi_service_c.go
 |  3  | SiChuan  |
 |  4  | ChengDu  |
 
-## multi_service_a_with_trace.go
+## multi_service_a_with_trace_http.go | multi_service_d_with_trace_gin.go
 
 改造后的模拟查询地址程序入口，目的是展示父子关系调用，如何在代码中加入链路的初始化配置以及在Go服务调用链中跨服务传播链路上下文信息。
 
-## multi_service_b_with_trace.go
+## multi_service_b_with_trace_http.go | multi_service_e_with_trace_gin.go
 
 改造后的http框架，加入了传播链路上下文信息的插件：otelhttp、
 otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))。
 
-## multi_service_c_with_trace.go
+## multi_service_c_with_trace_mysql.go
 
 改造后的数据库查询模拟。
 
 # multi_service运行过程
 
-1. 启动service_b/main.go，运行service_a/main.go，成功获取“Address : SiChuan Province ChengDu City”。 
+1. 启动service_b/main.go，运行service_a/main.go，成功获取“Address : SiChuan Province ChengDu City”。
 2. StdoutClient仅用于调试，正式使用应修改为HTTPClient。
+3. 启动service_e/main.go，运行service_d/main.go，成功获取“Address : SiChuan Province ChengDu City”。
+4. StdoutClient仅用于调试，正式使用应修改为HTTPClient。
 
 
 
