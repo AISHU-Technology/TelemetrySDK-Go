@@ -4,7 +4,7 @@ import "net/http"
 
 func ProvinceBefore(w http.ResponseWriter, r *http.Request) {
 	var err error
-	if DBInitBefore() != nil {
+	if DBInitBefore() == nil {
 		_, err = w.Write([]byte(GetProvinceBefore("3")))
 	} else {
 		_, err = w.Write([]byte(MockGetProvinceBefore("3")))
@@ -16,7 +16,7 @@ func ProvinceBefore(w http.ResponseWriter, r *http.Request) {
 
 func CityBefore(w http.ResponseWriter, r *http.Request) {
 	var err error
-	if DBInitBefore() != nil {
+	if DBInitBefore() == nil {
 		_, err = w.Write([]byte(GetCityBefore("4")))
 	} else {
 		_, err = w.Write([]byte(MockGetCityBefore("4")))
