@@ -55,7 +55,7 @@ func (c *StdoutClient) UploadData(ctx context.Context, data []byte) error {
 	return nil
 }
 
-// NewStdoutClient 创建Exporter的Local客户端。
+// NewStdoutClient 创建Exporter的控制台+本地文件发送客户端。
 func NewStdoutClient(stdoutPath string) Client {
 	if strings.TrimSpace(stdoutPath) == "" {
 		return &StdoutClient{filepath: "./AnyRobotData.json", stopCh: make(chan struct{})}
