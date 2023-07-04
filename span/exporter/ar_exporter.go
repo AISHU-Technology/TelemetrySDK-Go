@@ -13,10 +13,15 @@ type exporter struct {
 	stopOnce sync.Once
 }
 
-// GetStdoutExporter 获取默认的 LogExporter 。
+// Deprecated: GetStdoutExporter 已废弃，使用 GetRealTimeExporter。
 func GetStdoutExporter() LogExporter {
+	return GetRealTimeExporter()
+}
+
+// GetRealTimeExporter 实时打印控制台的 LogExporter 。
+func GetRealTimeExporter() LogExporter {
 	return &exporter{
-		name:     "StdoutExporter",
+		name:     "RealTimeExporter",
 		stopCh:   make(chan struct{}),
 		stopOnce: sync.Once{},
 	}
@@ -68,9 +73,15 @@ func (e *exporter) Sync() {
 	// 仅用于实现接口，无功能。
 }
 
+// Deprecated: SyncStdoutExporter 已废弃，使用 SyncRealTimeExporter。
 func SyncStdoutExporter() SyncExporter {
+	return SyncRealTimeExporter()
+}
+
+// SyncRealTimeExporter 同步模式实时打印控制台的 LogExporter 。
+func SyncRealTimeExporter() SyncExporter {
 	return &exporter{
-		name:     "StdoutExporter",
+		name:     "RealTimeExporter",
 		stopCh:   make(chan struct{}),
 		stopOnce: sync.Once{},
 	}

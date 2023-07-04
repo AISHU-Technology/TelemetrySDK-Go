@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -93,7 +92,7 @@ func (c *HttpClient) UploadData(ctx context.Context, data []byte) error {
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
-			if _, err := io.Copy(ioutil.Discard, resp.Body); err != nil {
+			if _, err := io.Copy(io.Discard, resp.Body); err != nil {
 				_ = resp.Body.Close()
 				return err
 			}
@@ -168,7 +167,7 @@ func send(c *HttpClient, req *http.Request) (*http.Response, error) {
 // gzPool Gzip压缩流。
 var gzPool = sync.Pool{
 	New: func() interface{} {
-		w := gzip.NewWriter(ioutil.Discard)
+		w := gzip.NewWriter(io.Discard)
 		return w
 	},
 }
@@ -227,7 +226,7 @@ func newResponseError(header http.Header) error {
 // bodyReader 返回字节流的读写体。
 func bodyReader(buf []byte) func() io.ReadCloser {
 	return func() io.ReadCloser {
-		return ioutil.NopCloser(bytes.NewReader(buf))
+		return io.NopCloser(bytes.NewReader(buf))
 	}
 }
 
@@ -264,7 +263,7 @@ func NewHTTPClient(opts ...config.Option) Client {
 	}
 }
 
-// NewSyncHTTPClient 创建Exporter的HTTP客户端。
+// NewSyncHTTPClient 创建Exporter的HTTP发送客户端。
 func NewSyncHTTPClient(opts ...config.Option) SyncClient {
 	cfg := config.NewConfig(opts...)
 	cfg.HTTPConfig.IsSync = true
