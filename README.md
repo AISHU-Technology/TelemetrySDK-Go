@@ -38,10 +38,9 @@ go work文件允许在同一个项目下跨go module开发。go mod文件描述�
 
 每次提交新代码需要注意的地方：
 
-1. 查看README.md描述是否需要修改
-2. 修改exporter/version/version.go/TelemetrySDKVersion;event/version/version.go/EventInstrumentationVersion
-3. 修改exporter/version/version_test.go;event/version/version_test.go
-4. 运行go mod tidy更新依赖项
-5. 本地运行go test ./...;golangci-lint run ./...单元测试和语法检查是否通过
-6. Eyes_Docs拉取和项目相同分支并修改对应描述
-7. 提交合并主线拉取请求，和项目负责人联系审批
+1. 查看README.md描述是否需要修改。
+2. 使用Replace in Files修改版本号。
+3. 运行go mod tidy更新依赖项。
+4. 本地运行go test ./...;golangci-lint run ./...单元测试和语法检查是否通过。
+5. Eyes_Docs拉取和项目相同分支并修改对应描述。
+6. 提交合并主线拉取请求，和项目负责人联系审批。
