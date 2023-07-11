@@ -139,7 +139,7 @@ func TestStdoutClientUploadData(t *testing.T) {
 		{
 			"StdoutClient数据写本地",
 			fields{
-				filepath: "./AnyRobotData.txt",
+				filepath: "./AnyRobotData.json",
 				stopCh:   make(chan struct{}),
 			},
 			args{
@@ -149,7 +149,7 @@ func TestStdoutClientUploadData(t *testing.T) {
 			false,
 		},
 		{
-			"已关闭的StdoutClient_Client写不了数据",
+			"已关闭的StdoutClient写不了数据",
 			fields{
 				filepath: "",
 				stopCh:   make(chan struct{}),

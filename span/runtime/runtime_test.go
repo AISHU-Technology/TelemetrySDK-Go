@@ -39,9 +39,9 @@ func setTestSpance(s field.LogSpan) {
 func TestRecord(t *testing.T) {
 	// runtimeSpan := NewRuntime(NewSpanFromPool)
 	buf := bytes.NewBuffer(nil)
-	writer := &open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(buf),
-	}
+	writer := open_standard.OpenTelemetryWriter(
+		encoder.NewJsonEncoder(buf),
+		field.IntField(0))
 	runtimeSpan := NewRuntime(writer, field.NewSpanFromPool)
 	// go runtimeSpan.Run()
 	runtimeSpan.SetUploadInternalAndMaxLog(3*time.Second, 10)

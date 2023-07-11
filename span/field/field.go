@@ -115,13 +115,3 @@ func (f MapField) Append(key string, value Field) {
 func MallocMapField() MapField {
 	return MapField(make(map[string]interface{}))
 }
-
-func WithServiceInfo(ServiceName string, ServiceVersion string, ServiceInstanceID string) Field {
-	service := make(map[string]interface{})
-	service["name"] = ServiceName
-	service["version"] = ServiceVersion
-	service["instance"] = map[string]string{"id": ServiceInstanceID}
-
-	mapServiceInfo := MapField(map[string]interface{}{"service": service})
-	return mapServiceInfo
-}

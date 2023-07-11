@@ -24,6 +24,7 @@ type HTTPConfig struct {
 	Timeout     time.Duration
 	Headers     map[string]string
 	TLSCfg      *tls.Config
+	IsSync      bool
 }
 
 // 以下各项为发送器配置项目。

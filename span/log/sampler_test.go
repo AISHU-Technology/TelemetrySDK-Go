@@ -68,9 +68,11 @@ func testLogLevel(t *testing.T, l *SamplerLogger, level int) {
 func TestSamplerLoggerSpan(t *testing.T) {
 	buf := ioutil.Discard
 	l := NewDefaultSamplerLogger()
-	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(buf),
-	}, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()
 
@@ -121,9 +123,11 @@ func TestSampleCheck(t *testing.T) {
 func TestSamplerLoggerNil(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	l := NewDefaultSamplerLogger()
-	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(buf),
-	}, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	l.LogLevel = AllLevel
 	go run.Run()
@@ -158,9 +162,11 @@ func TestSamplerLoggerNil(t *testing.T) {
 func TestSamplerLoggerClose(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	l := NewDefaultSamplerLogger()
-	enc := encoder.NewJsonEncoder(buf)
-	ot := open_standard.NewOpenTelemetry(enc, nil)
-	run := runtime.NewRuntime(&ot, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	go run.Run()
 
@@ -187,9 +193,11 @@ func TestSamplerLogger(t *testing.T) {
 	// 0. create logger and start runtime
 	buf := bytes.NewBuffer(nil)
 	l := NewDefaultSamplerLogger()
-	run := runtime.NewRuntime(&open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(buf),
-	}, field.NewSpanFromPool)
+	run := runtime.NewRuntime(
+		open_standard.OpenTelemetryWriter(
+			encoder.NewJsonEncoder(buf),
+			field.IntField(0)),
+		field.NewSpanFromPool)
 	l.SetRuntime(run)
 	l.LogLevel = AllLevel
 	go run.Run()
@@ -242,4 +250,101 @@ func TestSamplerLogger(t *testing.T) {
 	}
 
 	// fmt.Print(buf.String())
+}
+
+func TestSamplerLoggerSetSample(t *testing.T) {
+	type fields struct {
+		Sample   float32
+		LogLevel int
+		runtime  *runtime.Runtime
+		ctx      context.Context
+	}
+	type args struct {
+		sample float32
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			"",
+			fields{
+				Sample:   0.0,
+				LogLevel: 2,
+				runtime:  nil,
+				ctx:      nil,
+			},
+			args{0.5},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &SamplerLogger{
+				Sample:   tt.fields.Sample,
+				LogLevel: tt.fields.LogLevel,
+				runtime:  tt.fields.runtime,
+				ctx:      tt.fields.ctx,
+			}
+			s.SetSample(tt.args.sample)
+		})
+	}
+}
+
+func TestSamplerLoggerAllLogLevel(t *testing.T) {
+	type fields struct {
+		Sample   float32
+		LogLevel int
+		runtime  *runtime.Runtime
+		ctx      context.Context
+	}
+	type args struct {
+		message      string
+		messageField field.Field
+		typ          string
+		options      []field.LogOptionFunc
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+	}{
+		{
+			"",
+			fields{
+				Sample:   0,
+				LogLevel: 7,
+				runtime:  nil,
+				ctx:      nil,
+			},
+			args{
+				message:      "123",
+				messageField: field.StringField("456"),
+				typ:          "type_test",
+				options:      nil,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &SamplerLogger{
+				Sample:   tt.fields.Sample,
+				LogLevel: tt.fields.LogLevel,
+				runtime:  tt.fields.runtime,
+				ctx:      tt.fields.ctx,
+			}
+			s.Trace(tt.args.message, tt.args.options...)
+			s.Debug(tt.args.message, tt.args.options...)
+			s.Info(tt.args.message, tt.args.options...)
+			s.Warn(tt.args.message, tt.args.options...)
+			s.Error(tt.args.message, tt.args.options...)
+			s.Fatal(tt.args.message, tt.args.options...)
+			s.TraceField(tt.args.messageField, tt.args.typ, tt.args.options...)
+			s.DebugField(tt.args.messageField, tt.args.typ, tt.args.options...)
+			s.InfoField(tt.args.messageField, tt.args.typ, tt.args.options...)
+			s.WarnField(tt.args.messageField, tt.args.typ, tt.args.options...)
+			s.ErrorField(tt.args.messageField, tt.args.typ, tt.args.options...)
+			s.FatalField(tt.args.messageField, tt.args.typ, tt.args.options...)
+		})
+	}
 }

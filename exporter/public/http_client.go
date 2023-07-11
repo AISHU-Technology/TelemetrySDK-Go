@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
@@ -93,7 +92,7 @@ func (c *HttpClient) UploadData(ctx context.Context, data []byte) error {
 		// 网络错误，使用~可重发错误~来管理重发机制。
 		case http.StatusTooManyRequests, http.StatusInternalServerError, http.StatusServiceUnavailable:
 			rErr = newResponseError(resp.Header)
-			if _, err := io.Copy(ioutil.Discard, resp.Body); err != nil {
+			if _, err := io.Copy(io.Discard, resp.Body); err != nil {
 				_ = resp.Body.Close()
 				return err
 			}
@@ -123,6 +122,11 @@ func (c *HttpClient) newRequest(body []byte) (arRequest, error) {
 	}
 	// 设置来源记录。
 	r.Header.Set("Service-Language", "Golang")
+
+	// 判断是否使用同步模式。
+	if c.cfg.IsSync {
+		r.Header.Set("sync-mode", "sync")
+	}
 
 	req := arRequest{Request: r}
 	// 是否使用压缩。
@@ -163,7 +167,7 @@ func send(c *HttpClient, req *http.Request) (*http.Response, error) {
 // gzPool Gzip压缩流。
 var gzPool = sync.Pool{
 	New: func() interface{} {
-		w := gzip.NewWriter(ioutil.Discard)
+		w := gzip.NewWriter(io.Discard)
 		return w
 	},
 }
@@ -187,6 +191,11 @@ func (c *HttpClient) getScheme() string {
 		return "http"
 	}
 	return "https"
+}
+
+// Sync 设置为同步模式。
+func (c *HttpClient) Sync() {
+	// 在初始化的地方修改了 NewSyncHTTPClient()。
 }
 
 // arRequest 包了一层可重置的body reader。
@@ -217,7 +226,7 @@ func newResponseError(header http.Header) error {
 // bodyReader 返回字节流的读写体。
 func bodyReader(buf []byte) func() io.ReadCloser {
 	return func() io.ReadCloser {
-		return ioutil.NopCloser(bytes.NewReader(buf))
+		return io.NopCloser(bytes.NewReader(buf))
 	}
 }
 
@@ -240,6 +249,24 @@ var ourTransport = &http.Transport{
 // NewHTTPClient 创建Exporter的HTTP客户端。
 func NewHTTPClient(opts ...config.Option) Client {
 	cfg := config.NewConfig(opts...)
+
+	client := &http.Client{
+		Transport: ourTransport,
+		Timeout:   cfg.HTTPConfig.Timeout,
+	}
+
+	return &HttpClient{
+		cfg:       cfg.HTTPConfig,
+		retryFunc: cfg.RetryConfig.RetryFunc(),
+		stopCh:    make(chan struct{}),
+		client:    client,
+	}
+}
+
+// NewSyncHTTPClient 创建Exporter的HTTP发送客户端。
+func NewSyncHTTPClient(opts ...config.Option) SyncClient {
+	cfg := config.NewConfig(opts...)
+	cfg.HTTPConfig.IsSync = true
 
 	client := &http.Client{
 		Transport: ourTransport,

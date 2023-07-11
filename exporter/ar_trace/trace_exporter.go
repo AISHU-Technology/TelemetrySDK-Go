@@ -20,7 +20,7 @@ var _ sdktrace.SpanExporter = (*TraceExporter)(nil)
 // Tracer 是一个全局变量，用于在业务代码中生产Span。
 var Tracer = otel.GetTracerProvider().Tracer(
 	version.TraceInstrumentationName,
-	trace.WithInstrumentationVersion(version.TraceInstrumentationVersion),
+	trace.WithInstrumentationVersion(version.TelemetrySDKVersion),
 	trace.WithSchemaURL(version.TraceInstrumentationURL),
 )
 

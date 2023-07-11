@@ -17,7 +17,7 @@ trigger:
 variables:
   - group: anyrobot-global-config
   - name: BUILD_IMAGE
-    value: "acr.aishu.cn/ar/go.build:1.18.8-20221108"
+    value: "acr.aishu.cn/ar/go.build:1.18.10-20230221"
   - name: SONARQUBE_IMAGE
     value: "acr.aishu.cn/public/sonarsource/sonar-scanner-cli:4.7"
   - name: LintReportName # 此行保持一致
@@ -545,7 +545,7 @@ stages:
 
                 APP_NAME="TelemetrySDK-Span-Go"
                 INCLUSION_DIR=""
-                EXCLUSION_DIR="**/errors/**,**/*_test.go,**/examples/**"
+                EXCLUSION_DIR="**/errors/**,**/*_test.go,**/examples/**,**/benchmarks/**"
                 GLOBAL_EXCLUSION_DIR="**/report/**"
 
                 docker run --rm \

@@ -29,7 +29,7 @@ func (o eventStartOptionFunc) apply(cfg *eventStartConfig) *eventStartConfig {
 //	})
 //}
 
-// WithEventType 设置事件级别。
+// WithEventType 设置事件类型。
 func WithEventType(eventType string) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		if strings.TrimSpace(eventType) != "" {
@@ -49,6 +49,7 @@ func WithTime(t time.Time) EventStartOption {
 	})
 }
 
+// withLevel 设置事件级别。
 func withLevel(level Level) EventStartOption {
 	return eventStartOptionFunc(func(cfg *eventStartConfig) *eventStartConfig {
 		cfg.Level = level
