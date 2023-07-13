@@ -6,7 +6,7 @@ type IntField int
 type Float64Field float64
 type StringField string
 type TimeField time.Time
-type FieldTpye int
+type FieldType int
 type JsonFiled struct {
 	Data interface{}
 }
@@ -25,11 +25,11 @@ const (
 )
 
 type Field interface {
-	Type() FieldTpye
+	Type() FieldType
 	protect()
 }
 
-func (f IntField) Type() FieldTpye {
+func (f IntField) Type() FieldType {
 	return IntType
 }
 
@@ -37,7 +37,7 @@ func (f IntField) protect() {
 	// Avoiding irrelevant personnel to implement Field interface
 }
 
-func (f Float64Field) Type() FieldTpye {
+func (f Float64Field) Type() FieldType {
 	return Float64Type
 }
 
@@ -46,7 +46,7 @@ func (f Float64Field) protect() {
 	// Avoiding irrelevant personnel to implement Field interface
 }
 
-func (f StringField) Type() FieldTpye {
+func (f StringField) Type() FieldType {
 	return StringType
 }
 
@@ -55,7 +55,7 @@ func (f StringField) protect() {
 	// Avoiding irrelevant personnel to implement Field interface
 }
 
-func (f TimeField) Type() FieldTpye {
+func (f TimeField) Type() FieldType {
 	return TimeType
 }
 
@@ -64,7 +64,7 @@ func (f TimeField) protect() {
 	// Avoiding irrelevant personnel to implement Field interface
 }
 
-func (f *ArrayField) Type() FieldTpye {
+func (f *ArrayField) Type() FieldType {
 	return ArrayType
 }
 
@@ -73,7 +73,7 @@ func (f *ArrayField) protect() {
 	// Avoiding irrelevant personnel to implement Field interface
 }
 
-func (f *StructField) Type() FieldTpye {
+func (f *StructField) Type() FieldType {
 	return StructType
 }
 
@@ -82,7 +82,7 @@ func (f *StructField) protect() {
 	// Avoiding irrelevant personnel to implement Field interface
 }
 
-func (f *JsonFiled) Type() FieldTpye {
+func (f *JsonFiled) Type() FieldType {
 	return JsonType
 }
 
@@ -97,7 +97,7 @@ func MallocJsonField(data interface{}) *JsonFiled {
 	}
 }
 
-func (f MapField) Type() FieldTpye {
+func (f MapField) Type() FieldType {
 	return MapType
 }
 
@@ -107,11 +107,11 @@ func (f MapField) protect() {
 
 func (f MapField) Append(key string, value Field) {
 	if f == nil {
-		f = MallocMapField()
+		return
 	}
 	f[key] = value
 }
 
 func MallocMapField() MapField {
-	return MapField(make(map[string]interface{}))
+	return make(map[string]interface{})
 }

@@ -40,19 +40,13 @@ type Encoder interface {
 	Close() error
 }
 
-// SyncEncoder 同步模式专用，只能上报到一个地址。
-type SyncEncoder interface {
-	Encoder
-	sync()
-}
-
 // JsonEncoder JSON编码器。
 type JsonEncoder struct {
 	w            io.Writer
-	logExporters map[string]exporter.LogExporter
 	buf          io.Writer
-	End          []byte
 	bufReal      *bytes.Buffer
+	End          []byte
+	logExporters map[string]exporter.LogExporter
 	ctx          context.Context
 	cancelFunc   context.CancelFunc
 }
@@ -60,31 +54,32 @@ type JsonEncoder struct {
 // NewJsonEncoder 创建2.5.0及之前的版本的JSON编码器。
 func NewJsonEncoder(w io.Writer) Encoder {
 	ctx, cancel := context.WithCancel(context.Background())
-	res := &JsonEncoder{
+	encoder := &JsonEncoder{
 		w:            w,
-		logExporters: nil,
-		End:          _lineFeed,
+		buf:          nil,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		End:          _lineFeed,
+		logExporters: nil,
 		ctx:          ctx,
 		cancelFunc:   cancel,
 	}
-	res.buf = res.bufReal
-	return res
+	encoder.buf = encoder.bufReal
+	return encoder
 }
 
 // NewJsonEncoderBench 创建2.5.0及之前的版本的JSON编码器。
 func NewJsonEncoderBench(w io.Writer) Encoder {
 	ctx, cancel := context.WithCancel(context.Background())
-	res := &JsonEncoder{
+	encoder := &JsonEncoder{
 		w:            w,
-		logExporters: nil,
-		End:          _lineFeed,
-		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
 		buf:          io.Discard,
+		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		End:          _lineFeed,
+		logExporters: nil,
 		ctx:          ctx,
 		cancelFunc:   cancel,
 	}
-	return res
+	return encoder
 }
 
 // NewJsonEncoderWithExporters 创建2.6.0后的异步发送模式JSON编码器。
@@ -94,33 +89,17 @@ func NewJsonEncoderWithExporters(exporters ...exporter.LogExporter) Encoder {
 	for _, e := range exporters {
 		eps[e.Name()] = e
 	}
-	res := &JsonEncoder{
+	encoder := &JsonEncoder{
 		w:            nil,
-		logExporters: eps,
-		End:          _lineFeed,
+		buf:          nil,
 		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+		End:          _lineFeed,
+		logExporters: eps,
 		ctx:          ctx,
 		cancelFunc:   cancel,
 	}
-	res.buf = res.bufReal
-	return res
-}
-
-// NewSyncEncoder 创建2.6.0后的同步发送模式JSON编码器。
-func NewSyncEncoder(e exporter.SyncExporter) SyncEncoder {
-	ctx, cancel := context.WithCancel(context.Background())
-	eps := make(map[string]exporter.LogExporter, 1)
-	eps[e.Name()] = e
-	res := &JsonEncoder{
-		w:            nil,
-		logExporters: eps,
-		End:          _lineFeed,
-		bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
-		ctx:          ctx,
-		cancelFunc:   cancel,
-	}
-	res.buf = res.bufReal
-	return res
+	encoder.buf = encoder.bufReal
+	return encoder
 }
 
 // Write 区分本地输出和上报AnyRobot，本地输出仅提取关键信息输出，上报AnyRobot为数组形式，有返回值error判断是否发送成功。
@@ -144,7 +123,6 @@ func (js *JsonEncoder) Write(f field.Field) error {
 		if err != nil {
 			log.Println(field.GenerateSpecificError(err))
 		}
-		// _, res := js.WriteBytes(js.End)
 		_, writeBytesErr := js.WriteBytes(js.End)
 		if writeBytesErr != nil {
 			log.Println(field.GenerateSpecificError(writeBytesErr))
@@ -162,8 +140,8 @@ func (js *JsonEncoder) Write(f field.Field) error {
 // Close 关闭JSON编码器。
 func (js *JsonEncoder) Close() error {
 	if js.bufReal.Len() > 0 {
-		js.flush()
-		js.flushWithExporters() //nolint
+		_ = js.flush()
+		_ = js.flushWithExporters()
 		return nil
 	}
 	go func() {
@@ -173,14 +151,12 @@ func (js *JsonEncoder) Close() error {
 		js.cancelFunc()
 		if js.logExporters != nil && len(js.logExporters) != 0 {
 			for _, exporter_ := range js.logExporters {
-				exporter_.Shutdown(js.ctx) //nolint
+				_ = exporter_.Shutdown(js.ctx)
 			}
 		}
 	}()
 	return nil
 }
-
-func (js *JsonEncoder) sync() {}
 
 func (js *JsonEncoder) dealIoWriter(f field.Field) {
 	//断言为数组形式
@@ -196,19 +172,18 @@ func (js *JsonEncoder) dealIoWriter(f field.Field) {
 			if err != nil {
 				log.Println(field.GenerateSpecificError(err))
 			}
-			// _, res := js.WriteBytes(js.End)
 			_, writeBytesErr := js.WriteBytes(js.End)
 			if writeBytesErr != nil {
 				log.Println(field.GenerateSpecificError(writeBytesErr))
 			}
 			//输出
-			js.flush()
+			_ = js.flush()
 		}
 	}
 }
 
-// dealRealTimeExporter 处理控制台输出的特殊逻辑，控制台输出要求单条日志按时间顺序输出，并且只展示关键信息。
-func (js *JsonEncoder) dealRealTimeExporter(stdoutExporter exporter.LogExporter, logs field.Field) {
+// dealRealTimeExporter 处理控制台输出的特殊逻辑，控制台输出要求单条日志按时间顺序输出，并且不换行，只展示关键信息。
+func (js *JsonEncoder) dealRealTimeExporter(realTimeExporter exporter.LogExporter, logs field.Field) {
 	//断言为数组形式
 	fieldArr, fieldArrOk := logs.(*field.ArrayField)
 	if fieldArrOk {
@@ -223,13 +198,12 @@ func (js *JsonEncoder) dealRealTimeExporter(stdoutExporter exporter.LogExporter,
 			if err != nil {
 				log.Println(field.GenerateSpecificError(err))
 			}
-			// _, res := js.WriteBytes(js.End)
 			_, writeBytesErr := js.WriteBytes(js.End)
 			if writeBytesErr != nil {
 				log.Println(field.GenerateSpecificError(writeBytesErr))
 			}
-			//调用stdoutExporter的输出方法将单个log输出
-			exportLogsErr := stdoutExporter.ExportLogs(js.ctx, js.bufReal.Bytes())
+			//调用 realTimeExporter 的输出方法将单个log输出
+			exportLogsErr := realTimeExporter.ExportLogs(js.ctx, js.bufReal.Bytes())
 			if exportLogsErr != nil {
 				log.Println(field.GenerateSpecificError(exportLogsErr))
 			}
@@ -240,9 +214,9 @@ func (js *JsonEncoder) dealRealTimeExporter(stdoutExporter exporter.LogExporter,
 
 func (js *JsonEncoder) flush() error {
 	if js.w != nil {
-		_, res := js.w.Write(js.bufReal.Bytes())
-		if res != nil {
-			log.Println(field.GenerateSpecificError(res))
+		_, err := js.w.Write(js.bufReal.Bytes())
+		if err != nil {
+			log.Println(field.GenerateSpecificError(err))
 		}
 		js.bufReal.Reset()
 	}
@@ -269,66 +243,65 @@ func (js *JsonEncoder) flushWithExporters() error {
 }
 
 func (js *JsonEncoder) write(f field.Field) error {
-	w := js
 	switch f.Type() {
 	default:
 		return nil
 	case field.IntType:
 		v := strconv.Itoa(int(f.(field.IntField)))
 		bytes_ := js.string2Bytes(v)
-		_, res := w.WriteBytes(bytes_)
-		return res
+		_, err := js.WriteBytes(bytes_)
+		return err
 	case field.Float64Type:
 		v := strconv.FormatFloat(float64(f.(field.Float64Field)), 'f', -1, 64)
 		bytes_ := js.string2Bytes(v)
-		_, res := w.WriteBytes(bytes_)
-		return res
+		_, err := js.WriteBytes(bytes_)
+		return err
 	case field.StringType:
 		v := string(f.(field.StringField))
-		w.WriteBytes(_quotation) //nolint
-		js.safeWriteString(v)    //nolint
-		_, res := w.WriteBytes(_quotation)
-		return res
+		_, _ = js.WriteBytes(_quotation)
+		_, _ = js.safeWriteString(v)
+		_, err := js.WriteBytes(_quotation)
+		return err
 	case field.TimeType:
-		v := strconv.FormatInt(int64(time.Time(f.(field.TimeField)).UnixNano()), 10)
+		v := strconv.FormatInt(time.Time(f.(field.TimeField)).UnixNano(), 10)
 		bytes_ := js.string2Bytes(v)
-		_, res := w.WriteBytes(bytes_)
-		return res
+		_, err := js.WriteBytes(bytes_)
+		return err
 	case field.ArrayType:
 		v := f.(*field.ArrayField)
-		w.WriteBytes(_leftBracket) //nolint
+		_, _ = js.WriteBytes(_leftBracket)
 		i := 0
 		for ; i < len(*v)-1; i += 1 {
-			js.write((*v)[i])        //nolint
-			w.WriteBytes(_seperator) //nolint
+			_ = js.write((*v)[i])
+			_, _ = js.WriteBytes(_seperator)
 		}
 		if i < len(*v) {
-			js.write((*v)[i]) //nolint
+			_ = js.write((*v)[i])
 		}
-		_, res := w.WriteBytes(_rightBracket) //nolint
-		return res
+		_, err := js.WriteBytes(_rightBracket)
+		return err
 	case field.StructType:
 		fs := f.(*field.StructField)
-		w.WriteBytes(_leftBigBracket) //nolint
+		_, _ = js.WriteBytes(_leftBigBracket)
 		i := 0
 		for ; i < fs.Length()-1; i += 1 {
 			k, v, _ := fs.At(i)
-			w.WriteBytes(_quotation) //nolint
-			js.safeWriteString(k)    //nolint
-			w.WriteBytes(_quotation) //nolint
-			w.WriteBytes(_colon)     //nolint
-			js.write(v)              //nolint
-			w.WriteBytes(_seperator) //nolint
+			_, _ = js.WriteBytes(_quotation)
+			_, _ = js.safeWriteString(k)
+			_, _ = js.WriteBytes(_quotation)
+			_, _ = js.WriteBytes(_colon)
+			_ = js.write(v)
+			_, _ = js.WriteBytes(_seperator)
 		}
 		if k, v, err := fs.At(i); err == nil {
-			w.WriteBytes(_quotation) //nolint
-			js.safeWriteString(k)    //nolint
-			w.WriteBytes(_quotation) //nolint
-			w.WriteBytes(_colon)     //nolint
-			js.write(v)              //nolint
+			_, _ = js.WriteBytes(_quotation)
+			_, _ = js.safeWriteString(k)
+			_, _ = js.WriteBytes(_quotation)
+			_, _ = js.WriteBytes(_colon)
+			_ = js.write(v)
 		}
-		_, res := w.WriteBytes(_rightBigBracket)
-		return res
+		_, err := js.WriteBytes(_rightBigBracket)
+		return err
 
 	case field.JsonType:
 		j := f.(*field.JsonFiled)
@@ -337,8 +310,8 @@ func (js *JsonEncoder) write(f field.Field) error {
 		if err != nil {
 			return err
 		}
-		_, res := w.WriteBytes(b)
-		return res
+		_, err = js.WriteBytes(b)
+		return err
 
 	case field.MapType:
 		b, err := json.Marshal(f)
@@ -346,8 +319,8 @@ func (js *JsonEncoder) write(f field.Field) error {
 		if err != nil {
 			return err
 		}
-		_, res := w.WriteBytes(b)
-		return res
+		_, err = js.WriteBytes(b)
+		return err
 	}
 
 }
@@ -359,60 +332,53 @@ func (js *JsonEncoder) string2Bytes(s string) []byte {
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&result))
 	bh.Data = sh.Data
 	return result
-	// bh := reflect.SliceHeader{
-	// 	Data: sh.Data,
-	// 	Len:  sh.Len,
-	// 	Cap:  sh.Len,
-	// }
-	// return *(*[]byte)(unsafe.Pointer(&bh))
 }
 
 func (js *JsonEncoder) safeWriteString(s string) (int, error) {
 	left := 0
-	w := js
 	bytes_ := js.string2Bytes(s)
-	var res error
+	var err error
 	for k, i := range s {
 		switch i {
 		default:
 		case '"':
-			w.WriteBytes(bytes_[left:k]) //nolint
+			_, _ = js.WriteBytes(bytes_[left:k])
 			left = k + 1
-			_, res = w.WriteBytes(_quotationSafe) //nolint
+			_, err = js.WriteBytes(_quotationSafe)
 		case '\\':
-			w.WriteBytes(bytes_[left:k]) //nolint
+			_, _ = js.WriteBytes(bytes_[left:k])
 			left = k + 1
-			_, res = w.WriteBytes(_reverseSafe) //nolint
+			_, err = js.WriteBytes(_reverseSafe)
 		case '\b':
-			w.WriteBytes(bytes_[left:k]) //nolint
+			_, _ = js.WriteBytes(bytes_[left:k])
 			left = k + 1
-			_, res = w.WriteBytes(_backspaceSafe) //nolint
+			_, err = js.WriteBytes(_backspaceSafe)
 		case '\f':
-			w.WriteBytes(bytes_[left:k]) //nolint
+			_, _ = js.WriteBytes(bytes_[left:k])
 			left = k + 1
-			_, res = w.WriteBytes(_formfeedSafe) //nolint
+			_, err = js.WriteBytes(_formfeedSafe)
 		case '\t':
-			w.WriteBytes(bytes_[left:k]) //nolint
+			_, _ = js.WriteBytes(bytes_[left:k])
 			left = k + 1
-			_, res = w.WriteBytes(_horizontalSafe) //nolint
+			_, err = js.WriteBytes(_horizontalSafe)
 		case '\n':
-			w.WriteBytes(bytes_[left:k]) //nolint
+			_, _ = js.WriteBytes(bytes_[left:k])
 			left = k + 1
-			_, res = w.WriteBytes(_lineFeedSafe) //nolint
+			_, err = js.WriteBytes(_lineFeedSafe)
 		case '\r':
-			w.WriteBytes(bytes_[left:k]) //nolint
+			_, _ = js.WriteBytes(bytes_[left:k])
 			left = k + 1
-			_, res = w.WriteBytes(_carriageSafe) //nolint
+			_, err = js.WriteBytes(_carriageSafe)
 		}
-		if res != nil {
-			return left, res
+		if err != nil {
+			return left, err
 		}
 	}
 
 	if left < len(bytes_) {
-		_, res = w.WriteBytes(bytes_[left:]) //nolint
+		_, err = js.WriteBytes(bytes_[left:])
 	}
-	return left, res
+	return left, err
 }
 
 func (js *JsonEncoder) WriteBytes(c []byte) (int, error) {

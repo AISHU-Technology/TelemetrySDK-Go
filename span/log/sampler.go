@@ -24,7 +24,7 @@ type Logger interface {
 	// level can be log.AllLevel,log.debugLevel,...,log.OffLevel
 	SetLevel(level int)
 
-	// close logger
+	// Close logger
 	Close()
 
 	// SetRuntime for logger
@@ -130,11 +130,11 @@ func NewDefaultSamplerLogger() *SamplerLogger {
 func newRecord(typ string, message field.Field) field.Field {
 	record := field.MallocStructField(2)
 	record.Set(typ, message)
-	record.Set("Type", field.StringField(typ))
+	record.Set("FieldType", field.StringField(typ))
 	return record
 }
 
-// close logger
+// Close logger
 func (s *SamplerLogger) Close() {
 	if s.runtime != nil {
 		s.runtime.Signal()
@@ -166,9 +166,8 @@ func (s *SamplerLogger) sampleCheck() bool {
 		return false
 	}
 
-	rand.Seed(time.Now().UnixNano())
-
-	return rand.Float32() <= s.Sample
+	newRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return newRand.Float32() <= s.Sample
 }
 
 // SetSample set the log sample

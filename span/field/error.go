@@ -2,7 +2,7 @@ package field
 
 import "errors"
 
-const defualtError = "TelemetrySDK-GO/Span(Log).Error: "
+const defaultError = "TelemetrySDK-GO/Span(Log).Error: "
 
 type StringError string
 
@@ -16,5 +16,5 @@ const (
 )
 
 func GenerateSpecificError(e error) error {
-	return errors.New(defualtError + e.Error())
+	return errors.New(defaultError + e.Error())
 }

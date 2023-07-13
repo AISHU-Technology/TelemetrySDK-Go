@@ -84,12 +84,10 @@ func (r *Runtime) Signal() {
 	r.once.Do(func() {
 		r.stop <- 0
 		close(r.cache)
-		// r.close = true
-		r.w.Close()
+		_ = r.w.Close()
 	})
-
 	r.runLock.Lock()
-	r.runLock.Unlock() //nolint
+	r.runLock.Unlock()
 	r.closeLock.Unlock()
 }
 
