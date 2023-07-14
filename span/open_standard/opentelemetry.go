@@ -70,8 +70,7 @@ func (o *OpenTelemetry) write(logSpans []field.LogSpan, flag int) error {
 		telemetry.Set("Timestamp", field.StringField(time.Now().Format(time.RFC3339Nano)))
 		telemetry.Set("SeverityText", t.GetLogLevel())
 		telemetry.Set("Body", t.GetRecord())
-		attrs := t.GetAttributes()
-		telemetry.Set("Attributes", attrs)
+		telemetry.Set("Attributes", t.GetAttributes())
 		telemetry.Set("Resource", o.Resource)
 		telemetrys.Append(telemetry)
 	}

@@ -3,9 +3,7 @@ package runtime
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"runtime"
+	"io"
 	"testing"
 	"time"
 
@@ -15,18 +13,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
-
-func fakeTestStructField() field.Field { //nolint
-	_, msg, line, _ := runtime.Caller(1)
-
-	res := field.MallocStructField(4)
-	res.Set("Level", field.IntField(0))
-	res.Set("Model", field.StringField("test Eacape \\\"\b\f\\t{}\r\n"))
-	res.Set("Message", field.StringField(fmt.Sprintf("%s: %d", msg, line)))
-	res.Set("eventNum", field.IntField(1))
-
-	return res
-}
 
 func setTestSpance(s field.LogSpan) {
 	r1 := field.MallocStructField(2)
@@ -75,19 +61,19 @@ func TestRecord(t *testing.T) {
 	runtimeSpan.Run()
 
 	// test runtime stop
-	after_stop := runtimeSpan.Children(nil) //nolint
-	assert.Equal(t, nil, after_stop)
+	afterStop := runtimeSpan.Children(nil) //nolint
+	assert.Equal(t, nil, afterStop)
 
 	// check result
 	var err error
-	cap := map[string]interface{}{}
-	bytes := buf.Bytes()
+	capacity := map[string]interface{}{}
+	betty := buf.Bytes()
 	left := 0
 	i := 0
 	n := 0
-	for ; i < len(bytes); i += 1 {
-		if bytes[i] == '\n' {
-			if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+	for ; i < len(betty); i += 1 {
+		if betty[i] == '\n' {
+			if err = json.Unmarshal(betty[left:i], &capacity); err != nil {
 				t.Error(err)
 				t.FailNow()
 			} else {
@@ -96,8 +82,8 @@ func TestRecord(t *testing.T) {
 			left = i + 1
 		}
 	}
-	if left < len(bytes) {
-		if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+	if left < len(betty) {
+		if err = json.Unmarshal(betty[left:i], &capacity); err != nil {
 			t.Error(err)
 			t.FailNow()
 		} else {
@@ -111,7 +97,7 @@ func TestRecord(t *testing.T) {
 
 func TestSignal(t *testing.T) {
 	writer := &open_standard.OpenTelemetry{
-		Encoder: encoder.NewJsonEncoder(ioutil.Discard),
+		Encoder: encoder.NewJsonEncoder(io.Discard),
 	}
 	runtimeSpan := NewRuntime(writer, field.NewSpanFromPool)
 

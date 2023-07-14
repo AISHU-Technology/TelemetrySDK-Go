@@ -3,6 +3,7 @@ package open_standard
 import (
 	"bytes"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/encoder"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/exporter"
 	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/field"
 	"encoding/json"
 	"fmt"
@@ -28,7 +29,9 @@ func TestOpenTelemetryWrite(t *testing.T) {
 		encoder.NewJsonEncoder(buf),
 		field.IntField(0))
 
-	defer open.Close()
+	defer func(open Writer) {
+		_ = open.Close()
+	}(open)
 
 	err := open.Write(rootSpans)
 	if err != nil {
@@ -37,14 +40,14 @@ func TestOpenTelemetryWrite(t *testing.T) {
 	}
 
 	// check result
-	cap := map[string]interface{}{}
-	bytes := buf.Bytes()
+	capacity := map[string]interface{}{}
+	betty := buf.Bytes()
 	left := 0
 	i := 0
 	n := 0
-	for ; i < len(bytes); i += 1 {
-		if bytes[i] == '\n' {
-			if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+	for ; i < len(betty); i += 1 {
+		if betty[i] == '\n' {
+			if err = json.Unmarshal(betty[left:i], &capacity); err != nil {
 				t.Error(err)
 				t.FailNow()
 			} else {
@@ -53,14 +56,17 @@ func TestOpenTelemetryWrite(t *testing.T) {
 			left = i + 1
 		}
 	}
-	if left < len(bytes) {
-		if err = json.Unmarshal(bytes[left:i], &cap); err != nil {
+	if left < len(betty) {
+		if err = json.Unmarshal(betty[left:i], &capacity); err != nil {
 			t.Error(err)
 			t.FailNow()
-		} // else {
-		//n += 1
-		//}
+		}
 	}
 
 	fmt.Print(buf.String())
+}
+
+func TestNewSyncWriter(t *testing.T) {
+	w := NewSyncWriter(encoder.NewSyncEncoder(exporter.SyncRealTimeExporter()), nil)
+	_ = w.Close()
 }

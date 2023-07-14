@@ -14,7 +14,7 @@ var (
 
 type LogSpan interface {
 	GetAttributes() Field
-	// Recode record log
+	// SetRecord Recode record log
 	SetRecord(Field)
 
 	GetRecord() Field
@@ -69,7 +69,7 @@ func SyncLog() LogSpan {
 	return &logSpanV1{}
 }
 
-// NewSpan get span from sync.pool
+// NewSpanFromPool get span from sync.pool
 func NewSpanFromPool(own func(LogSpan), ctx context.Context) LogSpan {
 	s := Pool.Get().(*logSpanV1)
 	// s.reset()
@@ -153,7 +153,7 @@ func (l *logSpanV1) SetLogLevel(level Field) {
 	l.level = level
 }
 
-// ctx is nil or not trace context,return true
+// IsNilContext ctx is nil or not trace context,return true
 func (l *logSpanV1) IsNilContext() bool {
 	spanCtx := l.getTraceSpan().SpanContext()
 	return l.ctx == nil || (spanCtx.TraceID() == trace.TraceID{} && spanCtx.SpanID() == trace.SpanID{})

@@ -28,7 +28,9 @@ func TestGenID(t *testing.T) {
 	tp1 := tracesdk.NewTracerProvider()
 	tr1 := tp1.Tracer("123")
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
-	defer tp1.Shutdown(nil) //nolint
+	defer func(tp1 *tracesdk.TracerProvider, ctx context.Context) {
+		_ = tp1.Shutdown(ctx)
+	}(tp1, nil)
 	defer span.End()
 	s0 := NewSpanFromPool(func(LogSpan) {}, ctx1)
 	assert.Equal(t, span.SpanContext().TraceID().String(), s0.TraceID())
@@ -124,7 +126,6 @@ func TestLogSpanV1Attribute(t *testing.T) {
 
 	record := MallocMapField()
 	record.Append(attr.Type, attr.Message)
-	//record.Set("Type", StringField(attr.Type))
 
 	assert.Equal(t, s0.GetAttributes(), Field(record))
 
@@ -141,7 +142,9 @@ func TestLogSpanV1Context(t *testing.T) {
 	tp1 := tracesdk.NewTracerProvider()
 	tr1 := tp1.Tracer("123")
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
-	defer tp1.Shutdown(nil) //nolint
+	defer func(tp1 *tracesdk.TracerProvider, ctx context.Context) {
+		_ = tp1.Shutdown(ctx)
+	}(tp1, nil)
 	defer span.End()
 
 	s1 := NewSpanFromPool(func(LogSpan) {}, nil)
@@ -161,7 +164,9 @@ func TestLogSpanV1IsNilContext(t *testing.T) {
 	tp1 := tracesdk.NewTracerProvider()
 	tr1 := tp1.Tracer("123")
 	ctx1, span := tr1.Start(context.Background(), "fdsaf")
-	defer tp1.Shutdown(nil) //nolint
+	defer func(tp1 *tracesdk.TracerProvider, ctx context.Context) {
+		_ = tp1.Shutdown(ctx)
+	}(tp1, nil)
 	defer span.End()
 	s0.SetOption(WithContext(ctx1))
 	assert.False(t, s0.IsNilContext())

@@ -84,12 +84,11 @@ func (r *Runtime) Signal() {
 	r.once.Do(func() {
 		r.stop <- 0
 		close(r.cache)
-		// r.close = true
-		r.w.Close()
+		_ = r.w.Close()
 	})
-
 	r.runLock.Lock()
-	r.runLock.Unlock() //nolint
+	//nolint 这里不去掉是因为git提交记录[bugfix](runtime) 关闭runtime线程与runtime运行线程同步问题可能导致数据丢失
+	r.runLock.Unlock()
 	r.closeLock.Unlock()
 }
 
