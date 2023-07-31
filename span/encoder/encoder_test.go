@@ -1,9 +1,12 @@
 package encoder
 
 import (
-	bytess "bytes"
+	"bytes"
+	"context"
+	"devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span/exporter"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"runtime"
 	"testing"
 	"time"
@@ -32,29 +35,6 @@ func GetTestFieds() []field.Field {
 
 	r3 := getTestJson()
 	return []field.Field{r0, r1, r3}
-
-	// m0 := getTestMetric()
-
-	// s.Metric(m0)
-
-	// t0 := TraceSpan{}
-	// setTestTrace(&t0)
-	// s.Trace(&t0)
-}
-
-func GetTestFiedsArray() field.Field {
-	fieldArr := field.MallocArrayField(3)
-	r0 := fakeTestStructField()
-
-	r1 := field.MallocStructField(2)
-	r1.Set("Level", field.IntField(1))
-	r1.Set("eventNum", field.IntField(2))
-
-	r3 := getTestJson()
-	fieldArr.Append(r0)
-	fieldArr.Append(r1)
-	fieldArr.Append(r3)
-	return fieldArr
 }
 
 func fakeTestStructField() field.Field {
@@ -77,7 +57,7 @@ func TestJsonEncoder(t *testing.T) {
 	// test log encoder
 	fields := GetTestFieds()
 
-	b := bytess.NewBuffer(nil)
+	b := bytes.NewBuffer(nil)
 	enc := NewJsonEncoder(b)
 	for _, i := range fields {
 		if err := enc.Write(i); err != nil {
@@ -88,10 +68,10 @@ func TestJsonEncoder(t *testing.T) {
 	// fmt.Println("--------log-------------:")
 	left := 0
 	i := 0
-	bytess := b.Bytes()
-	for ; i < len(bytess); i += 1 {
-		if bytess[i] == '\n' {
-			if err = json.Unmarshal(bytess[left:i], &check); err != nil {
+	betty := b.Bytes()
+	for ; i < len(betty); i += 1 {
+		if betty[i] == '\n' {
+			if err = json.Unmarshal(betty[left:i], &check); err != nil {
 				t.Error(err)
 			}
 			left = i + 1
@@ -102,9 +82,9 @@ func TestJsonEncoder(t *testing.T) {
 }
 
 func TestArrayField(t *testing.T) {
-	cap := 10
+	capacity := 10
 	length := 11
-	a := field.MallocArrayField(cap)
+	a := field.MallocArrayField(capacity)
 
 	for i := 0; i < length; i += 1 {
 		a.Append(field.IntField(i))
@@ -114,19 +94,52 @@ func TestArrayField(t *testing.T) {
 		assert.Equal(t, field.IntField(i), (*a)[i])
 	}
 
-	b := bytess.NewBuffer(nil)
+	b := bytes.NewBuffer(nil)
 	enc := NewJsonEncoder(b)
-	enc.Write(a) //nolint
+	_ = enc.Write(a)
 
 }
 
 func TestNewJsonEncoderBench(t *testing.T) {
-	b := bytess.NewBuffer(nil)
+	b := bytes.NewBuffer(nil)
 	en := NewJsonEncoderBench(b)
 	err := en.Write(field.TimeField(time.Now()))
 	if err != nil {
 		panic(err)
 	}
-	en.Close()
+	_ = en.Close()
 
+}
+
+func TestNewJsonEncoderWithExporters(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	type args struct {
+		exporters []exporter.LogExporter
+	}
+	tests := []struct {
+		name string
+		args args
+		want Encoder
+	}{
+		{
+			"TestNewJsonEncoderWithExporters",
+			args{[]exporter.LogExporter{exporter.GetRealTimeExporter()}},
+			&JsonEncoder{
+				w:            nil,
+				buf:          nil,
+				bufReal:      bytes.NewBuffer(make([]byte, 0, 4096)),
+				End:          _lineFeed,
+				logExporters: make(map[string]exporter.LogExporter),
+				ctx:          ctx,
+				cancelFunc:   cancel,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewJsonEncoderWithExporters(tt.args.exporters...); !reflect.DeepEqual(got.Close(), tt.want.Close()) {
+				t.Errorf("NewJsonEncoderWithExporters(%v), want %v", got, tt.want)
+			}
+		})
+	}
 }

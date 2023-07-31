@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"testing"
 	"time"
 
@@ -59,14 +59,14 @@ func testLogField(l *SamplerLogger) {
 	l.FatalField(FatalLevelString, "test")
 }
 
-func testLogLevel(t *testing.T, l *SamplerLogger, level int) {
+func testLogLevel(l *SamplerLogger, level int) {
 	l.SetLevel(level)
 	testLogString(l)
 	testLogField(l)
 }
 
 func TestSamplerLoggerSpan(t *testing.T) {
-	buf := ioutil.Discard
+	buf := io.Discard
 	l := NewDefaultSamplerLogger()
 	run := runtime.NewRuntime(
 		open_standard.OpenTelemetryWriter(
@@ -76,12 +76,12 @@ func TestSamplerLoggerSpan(t *testing.T) {
 	l.SetRuntime(run)
 	go run.Run()
 
-	testLogLevel(t, l, TraceLevel)
-	testLogLevel(t, l, DebugLevel)
-	testLogLevel(t, l, InfoLevel)
-	testLogLevel(t, l, WarnLevel)
-	testLogLevel(t, l, ErrorLevel)
-	testLogLevel(t, l, FatalLevel)
+	testLogLevel(l, TraceLevel)
+	testLogLevel(l, DebugLevel)
+	testLogLevel(l, InfoLevel)
+	testLogLevel(l, WarnLevel)
+	testLogLevel(l, ErrorLevel)
+	testLogLevel(l, FatalLevel)
 
 	l.Close()
 }
@@ -221,35 +221,30 @@ func TestSamplerLogger(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	cap := map[string]interface{}{}
-	bytes := buf.Bytes()
+	capacity := map[string]interface{}{}
+	betty := buf.Bytes()
 	left := 0
 	i := 0
 	n := 0
-	for ; i < len(bytes); i += 1 {
-		if bytes[i] == '\n' {
-			if err := json.Unmarshal(bytes[left:i], &cap); err != nil {
+	for ; i < len(betty); i += 1 {
+		if betty[i] == '\n' {
+			if err := json.Unmarshal(betty[left:i], &capacity); err != nil {
 				t.Error(err)
 				t.FailNow()
 			} else {
 				n += 1
-				fmt.Println(string(bytes[left:i]))
+				fmt.Println(string(betty[left:i]))
 				fmt.Println()
 			}
 			left = i + 1
 		}
 	}
-	if left < len(bytes) {
-		if err := json.Unmarshal(bytes[left:i], &cap); err != nil {
+	if left < len(betty) {
+		if err := json.Unmarshal(betty[left:i], &capacity); err != nil {
 			t.Error(err)
 			t.FailNow()
-		} // else {
-		// 	n += 1
-		// 	fmt.Println(string(bytes[left:i]))
-		// }
+		}
 	}
-
-	// fmt.Print(buf.String())
 }
 
 func TestSamplerLoggerSetSample(t *testing.T) {
@@ -347,4 +342,9 @@ func TestSamplerLoggerAllLogLevel(t *testing.T) {
 			s.FatalField(tt.args.messageField, tt.args.typ, tt.args.options...)
 		})
 	}
+}
+
+func TestNewSamplerLogger(t *testing.T) {
+	l := NewSamplerLogger()
+	l.Close()
 }

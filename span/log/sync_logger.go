@@ -65,7 +65,9 @@ func (logger *syncLogger) SetWriter(writer open_standard.SyncWriter) {
 
 // Close 释放Writer。
 func (logger *syncLogger) Close() {
-	logger.writer.Close()
+	if logger.writer != nil {
+		_ = logger.writer.Close()
+	}
 }
 
 // TraceField Trace 级别的日志，记录结构体。
