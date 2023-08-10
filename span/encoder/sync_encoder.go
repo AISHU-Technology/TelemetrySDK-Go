@@ -42,10 +42,8 @@ func (js *SyncJsonEncoder) Write(f field.Field) error {
 		cancelFunc: cancel,
 	}
 	encoder.buf = encoder.bufReal
-	//发送结束释放JsonEncoder
-	defer func(encoder *JsonEncoder) {
-		_ = encoder.Close()
-	}(encoder)
+	//发送结束等待Golang垃圾回收机制释放JsonEncoder
+
 	//以下部分为JsonEncoder.Write相似代码
 	stdoutExporter, ok := encoder.logExporters["RealTimeExporter"]
 	if ok {
