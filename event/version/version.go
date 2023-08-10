@@ -4,6 +4,6 @@ package version
 
 const (
 	EventInstrumentationName    = "TelemetrySDK-Go/exporter/ar_event"
-	EventInstrumentationVersion = "2.6.2"
+	EventInstrumentationVersion = "2.6.3"
 	EventInstrumentationURL     = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporter/ar_event"
 )

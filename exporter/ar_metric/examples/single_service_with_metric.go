@@ -56,7 +56,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 }
 
 func FileMetricInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	metricClient := public.NewFileClient("./AnyRobotMetric.json")
 	metricExporter := ar_metric.NewExporter(metricClient)
 	ar_metric.MetricProvider = sdkmetric.NewMeterProvider(
@@ -67,7 +67,7 @@ func FileMetricInit() {
 }
 
 func ConsoleMetricInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	metricClient := public.NewConsoleClient()
 	metricExporter := ar_metric.NewExporter(metricClient)
 	ar_metric.MetricProvider = sdkmetric.NewMeterProvider(
@@ -78,7 +78,7 @@ func ConsoleMetricInit() {
 }
 
 func StdoutMetricInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	metricClient := public.NewStdoutClient("./AnyRobotMetric.json")
 	metricExporter := ar_metric.NewExporter(metricClient)
 	ar_metric.MetricProvider = sdkmetric.NewMeterProvider(
@@ -89,7 +89,7 @@ func StdoutMetricInit() {
 }
 
 func HTTPMetricInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	metricClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-864ab9d78f6a1843/events"),
 		public.WithCompression(1), public.WithTimeout(10*time.Second), public.WithRetry(true, 5*time.Second, 30*time.Second, 1*time.Minute))
 	metricExporter := ar_metric.NewExporter(metricClient)
