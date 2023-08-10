@@ -45,7 +45,7 @@ func multiply(ctx context.Context, x, y int64) (context.Context, int64) {
 }
 
 func FileEventInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	eventClient := public.NewFileClient("./AnyRobotEvent.json")
 	eventExporter := ar_event.NewExporter(eventClient)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.Exporters(eventExporter), ar_event.EventResource())
@@ -53,7 +53,7 @@ func FileEventInit() {
 }
 
 func ConsoleEventInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	eventClient := public.NewConsoleClient()
 	eventExporter := ar_event.NewExporter(eventClient)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.Exporters(eventExporter), ar_event.EventResource())
@@ -61,7 +61,7 @@ func ConsoleEventInit() {
 }
 
 func StdoutEventInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	eventClient := public.NewStdoutClient("./AnyRobotEvent.json")
 	eventExporter := ar_event.NewExporter(eventClient)
 	eventProvider := eventsdk.NewEventProvider(eventsdk.Exporters(eventExporter), ar_event.EventResource())
@@ -69,7 +69,7 @@ func StdoutEventInit() {
 }
 
 func HTTPEventInit() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	eventClient := public.NewHTTPClient(
 		public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-864ab9d78f6a1843/events"),
 		public.WithCompression(0),
@@ -137,7 +137,7 @@ func HTTPExample() {
 
 // WithAllExample 修改client所有入参。
 func WithAllExample() {
-	public.SetServiceInfo("YourServiceName", "2.6.2", "983d7e1d5e8cda64")
+	public.SetServiceInfo("YourServiceName", "2.6.3", "983d7e1d5e8cda64")
 	ctx := context.Background()
 	// eventClient := public.NewStdoutClient("./AnyRobotEvent.txt")
 	eventClient := public.NewHTTPClient(public.WithAnyRobotURL("http://127.0.0.1/api/feed_ingester/v1/jobs/job-983d7e1d5e8cda64/events"),

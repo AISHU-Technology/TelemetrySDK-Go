@@ -3,7 +3,7 @@ package version
 // 每次拉release都要修改这里的版本号。
 
 const (
-	TelemetrySDKVersion = "2.6.2"
+	TelemetrySDKVersion = "2.6.3"
 
 	TraceInstrumentationName = "TelemetrySDK-Go/exporter/ar_trace"
 	TraceInstrumentationURL  = "https://devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go?path=/exporter/ar_trace"
