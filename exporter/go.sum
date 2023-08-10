@@ -1,7 +1,7 @@
-devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20230713084923-9b198c2ce327 h1:evSJa4WHKF3FI6edv26giByNoux51P6eqAZ3xzhjSQM=
-devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20230713084923-9b198c2ce327/go.mod h1:GBCGHicLdqVaQb6ji7qBgFNgtgaJkJfpIhD5DkDQa+Q=
-devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20230713084923-9b198c2ce327 h1:LD2awzCKQM0uoHBDapvjGKnJ4IxSaezvFNWXCnRlGYQ=
-devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20230713084923-9b198c2ce327/go.mod h1:/lZgLRq2MQF3qwFM4yq9Lmvzy+SzgN6l/Sx8IKJQBZs=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20230810030407-2921aceed7d9 h1:soAr+jyRFuwnWch5NzDsC/zv/1rElGK3mGlI0No2Bbo=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/event v0.0.0-20230810030407-2921aceed7d9/go.mod h1:GBCGHicLdqVaQb6ji7qBgFNgtgaJkJfpIhD5DkDQa+Q=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20230810030407-2921aceed7d9 h1:nLK0WTHa764z12cE5OBv3NpDq0HErufmkYcmEPMEFbk=
+devops.aishu.cn/AISHUDevOps/ONE-Architecture/_git/TelemetrySDK-Go.git/span v0.0.0-20230810030407-2921aceed7d9/go.mod h1:/lZgLRq2MQF3qwFM4yq9Lmvzy+SzgN6l/Sx8IKJQBZs=
 github.com/agiledragon/gomonkey/v2 v2.9.0 h1:PDiKKybR596O6FHW+RVSG0Z7uGCBNbmbUXh3uCNQ7Hc=
 github.com/agiledragon/gomonkey/v2 v2.9.0/go.mod h1:ap1AmDzcVOAz1YpeJ3TCzIgstoaWLA6jbbgxfB4w2iY=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=
